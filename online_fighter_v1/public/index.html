@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ONLINE FIGHTER — ARENA</title>
 <style>
-*{box-sizing:border-box}body{margin:0;padding:18px;background:#101827;color:#f4f7ff;font-family:Arial,sans-serif}.wrap{max-width:1000px;margin:auto}h1{margin:4px 0}.sub,.muted{color:#aab8cc;font-size:13px}.panel{background:#1b2940;border:1px solid #344762;border-radius:13px;padding:14px;margin:12px 0}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}button,input{border:1px solid #617590;border-radius:8px;padding:11px;font-weight:bold}button{background:#375477;color:white;cursor:pointer}button:disabled{opacity:.45}input{background:#fff;color:#111;flex:1;min-width:130px}.code{font-size:22px;letter-spacing:4px;color:#fff;font-weight:bold}canvas{width:100%;height:auto;display:block;border-radius:12px;background:#dce8ee;touch-action:none}.hud{display:grid;grid-template-columns:1fr 1fr;gap:12px}.name{font-weight:bold;margin-bottom:8px}.hp{height:14px;border-radius:9px;background:#48566a;overflow:hidden}.fill{height:100%;background:#ef5965;width:100%}.fill.blue{background:#42a5f5}.meter{font-size:12px;color:#c6d3e5;margin-top:5px}.help{display:grid;grid-template-columns:1fr 1fr;gap:12px}.help p{margin:7px 0}.tag{color:#ffd66b;font-weight:bold}@media(max-width:600px){body{padding:8px}.panel{padding:10px}.help{font-size:13px}}
+*{box-sizing:border-box}body{margin:0;padding:18px;background:#101827;color:#f4f7ff;font-family:Arial,sans-serif}.wrap{max-width:1000px;margin:auto}h1{margin:4px 0}.sub,.muted{color:#aab8cc;font-size:13px}.panel{background:#1b2940;border:1px solid #344762;border-radius:13px;padding:14px;margin:12px 0}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}button,input{border:1px solid #617590;border-radius:8px;padding:11px;font-weight:bold}button{background:#375477;color:white;cursor:pointer}button:disabled{opacity:.45}input{background:#fff;color:#111;flex:1;min-width:130px}.code{font-size:22px;letter-spacing:4px;color:#fff;font-weight:bold}canvas{width:100%;height:auto;display:block;border-radius:12px;background:#dce8ee;touch-action:none}.mobile-controls{display:none;align-items:center;justify-content:space-between;gap:8px;padding:12px 6px 5px;user-select:none;-webkit-user-select:none}.stick-group{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}.stick{position:relative;width:76px;height:76px;border:2px solid #7794b6;border-radius:50%;background:radial-gradient(circle,#263d59 0%,#172941 72%);touch-action:none;box-shadow:inset 0 0 12px #07111f;flex:none}.stick.move{width:100px;height:100px;border-color:#68a9e8}.stick .knob{position:absolute;width:34px;height:34px;left:50%;top:50%;margin:-17px 0 0 -17px;border-radius:50%;background:linear-gradient(145deg,#d8eaff,#6e9dcc);border:2px solid #fff;box-shadow:0 2px 9px #0008;pointer-events:none}.stick.move .knob{width:42px;height:42px;margin:-21px 0 0 -21px}.stick-label{font-size:11px;font-weight:bold;color:#d9eaff;white-space:nowrap}.stick-group small{font-size:10px;color:#9eb2cb}@media(hover:none),(max-width:760px){.mobile-controls{display:flex}.stick{width:clamp(52px,14vw,76px);height:clamp(52px,14vw,76px)}.stick .knob{width:28px;height:28px;margin:-14px 0 0 -14px}.stick.move{width:clamp(76px,21vw,100px);height:clamp(76px,21vw,100px)}.stick.move .knob{width:36px;height:36px;margin:-18px 0 0 -18px}.stick-label{font-size:10px}.help{display:none}body{padding:6px}.panel{margin:8px 0;padding:9px}.hud{gap:6px}.meter{font-size:10px}}.hud{display:grid;grid-template-columns:1fr 1fr;gap:12px}.name{font-weight:bold;margin-bottom:8px}.hp{height:14px;border-radius:9px;background:#48566a;overflow:hidden}.fill{height:100%;background:#ef5965;width:100%}.fill.blue{background:#42a5f5}.meter{font-size:12px;color:#c6d3e5;margin-top:5px}.help{display:grid;grid-template-columns:1fr 1fr;gap:12px}.help p{margin:7px 0}.tag{color:#ffd66b;font-weight:bold}@media(max-width:600px){body{padding:8px}.panel{padding:10px}.help{font-size:13px}}
 </style>
 </head>
 <body><main class="wrap">
@@ -16,6 +16,13 @@
 <section class="panel"><div class="name" style="color:#7fc5ff">PLAYER 2 · 참가자</div><div id="hp2">HP 10000</div><div class="hp"><div id="bar2" class="fill blue"></div></div><div id="super2" class="meter">영혼 사슬 준비 · 게이지 0 / 14400</div></section>
 </div>
 <canvas id="game" width="900" height="600"></canvas>
+<div class="mobile-controls" id="mobileControls" aria-label="모바일 조이스틱 조작">
+ <div class="stick-group"><div class="stick move" data-stick="move"><div class="knob"></div></div><span class="stick-label">이동</span><small>방향 조작</small></div>
+ <div class="stick-group"><div class="stick" data-stick="attack"><div class="knob"></div></div><span class="stick-label">공격</span><small>밀어서 공격</small></div>
+ <div class="stick-group"><div class="stick" data-stick="skill1"><div class="knob"></div></div><span class="stick-label">스킬 1</span><small>방향 지정</small></div>
+ <div class="stick-group"><div class="stick" data-stick="skill2"><div class="knob"></div></div><span class="stick-label">스킬 2</span><small>방향 지정</small></div>
+ <div class="stick-group"><div class="stick" data-stick="skill3"><div class="knob"></div></div><span class="stick-label">스킬 3</span><small>방향 지정</small></div>
+</div>
 <div id="msg" class="panel">방을 만들거나 친구의 방 코드로 참가하세요.</div>
 <div class="help">
 <section class="panel"><b style="color:#ff8792">PLAYER 1 (방장)</b><p>W A S D : 이동</p><p>마우스 : 조준</p><p>마우스 왼쪽 버튼 : 기본 공격</p><p>E + 마우스 오른쪽 버튼 : 스킬 1</p><p>R + 마우스 오른쪽 버튼 : 스킬 2</p><p>T + 마우스 오른쪽 버튼 : 스킬 3</p><p>E/R/T 키만 누르면 범위 미리보기</p></section>
@@ -27,6 +34,7 @@
 (()=>{
 const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d'),W=900,H=600,TILE=60;
 let ws=null,role=null,roomCode='',peer=false,started=false,ended=false,practiceMode=false,keys={},mouse={x:450,y:300,down:false,rightDown:false},remoteInput={},serverP2=null,last=0,lastInputSent=0,lastStateSent=0,shake=0,hitPause=0,hitNumbers=[];
+const mobileSticks={move:{x:0,y:0,active:false,pointer:null},attack:{x:0,y:0,active:false,pointer:null},skill1:{x:0,y:0,active:false,pointer:null},skill2:{x:0,y:0,active:false,pointer:null},skill3:{x:0,y:0,active:false,pointer:null}};
 const obstacles=[{x:205,y:105,w:125,h:70},{x:570,y:105,w:125,h:70},{x:390,y:245,w:120,h:110},{x:205,y:425,w:125,h:70},{x:570,y:425,w:125,h:70}];
 const CHARACTER={generalK:{name:'제너럴 K',hp:10000,speed:2,ammo:3,reload:2},tendo:{name:'텐도 사츠시',hp:7000,speed:3,ammo:1,reload:3}};
 let selectedCharacter='generalK';
@@ -63,7 +71,32 @@ window.addEventListener('pointerup',e=>{if(e.button===0)mouse.down=false;if(e.bu
 window.addEventListener('keydown',e=>{unlockAudio();const k=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();keys[k]=true;if(role==='guest'&&started)send({type:'input',input:inputForLocal()})});
 window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;if(role==='guest'&&started)send({type:'input',input:inputForLocal()})});
 window.addEventListener('blur',()=>{keys={};mouse.down=false;mouse.rightDown=false});
-function inputForLocal(){return {x:(keys.d?1:0)-(keys.a?1:0),y:(keys.s?1:0)-(keys.w?1:0),aimX:mouse.x,aimY:mouse.y,shoot:mouse.down,skill1:!!keys.e&&mouse.rightDown,skill2:!!keys.r&&mouse.rightDown,skill3:!!keys.t&&mouse.rightDown,preview1:!!keys.e,preview2:!!keys.r,preview3:!!keys.t,character:selectedCharacter}}
+function inputForLocal(){
+const m=mobileSticks,move=m.move.active?{x:m.move.x,y:m.move.y}:null;
+const direction=m.skill3.active?m.skill3:m.skill2.active?m.skill2:m.skill1.active?m.skill1:m.attack.active?m.attack:null;
+const local=role==='guest'?p2:p1;
+const aim=direction?{aimX:local.x+direction.x*300,aimY:local.y+direction.y*300}:{aimX:mouse.x,aimY:mouse.y};
+return {x:move?move.x:(keys.d?1:0)-(keys.a?1:0),y:move?move.y:(keys.s?1:0)-(keys.w?1:0),...aim,shoot:m.attack.active||mouse.down,skill1:m.skill1.active||!!keys.e&&mouse.rightDown,skill2:m.skill2.active||!!keys.r&&mouse.rightDown,skill3:m.skill3.active||!!keys.t&&mouse.rightDown,preview1:!!keys.e,preview2:!!keys.r,preview3:!!keys.t,character:selectedCharacter}
+}
+function updateStick(name,e){
+const pad=e.currentTarget,rect=pad.getBoundingClientRect(),radius=Math.min(rect.width,rect.height)/2-12;
+let dx=e.clientX-(rect.left+rect.width/2),dy=e.clientY-(rect.top+rect.height/2),length=Math.hypot(dx,dy);
+if(length>radius){dx=dx/length*radius;dy=dy/length*radius}
+const stick=mobileSticks[name],knob=pad.querySelector('.knob');
+stick.x=dx/radius;stick.y=dy/radius;const magnitude=Math.hypot(stick.x,stick.y);
+stick.active=name==='move'?magnitude>.08:magnitude>.22;
+if(!stick.active&&name!=='move'){stick.x=0;stick.y=0}
+knob.style.transform='translate('+dx+'px,'+dy+'px)';
+if(role==='guest'&&started)send({type:'input',input:inputForLocal()});
+}
+function releaseStick(name){const stick=mobileSticks[name];stick.x=0;stick.y=0;stick.active=false;stick.pointer=null;const pad=document.querySelector('[data-stick="'+name+'"]');if(pad)pad.querySelector('.knob').style.transform='translate(0,0)';if(role==='guest'&&started)send({type:'input',input:inputForLocal()})}
+document.querySelectorAll('[data-stick]').forEach(pad=>{
+const name=pad.dataset.stick;
+pad.addEventListener('pointerdown',e=>{e.preventDefault();unlockAudio();const s=mobileSticks[name];if(s.pointer!==null)return;s.pointer=e.pointerId;pad.setPointerCapture(e.pointerId);updateStick(name,e)});
+pad.addEventListener('pointermove',e=>{if(mobileSticks[name].pointer===e.pointerId){e.preventDefault();updateStick(name,e)}});
+const end=e=>{if(mobileSticks[name].pointer===e.pointerId)releaseStick(name)};
+pad.addEventListener('pointerup',end);pad.addEventListener('pointercancel',end);pad.addEventListener('lostpointercapture',end);
+});
 function circleRect(x,y,r,o){const cx=Math.max(o.x,Math.min(x,o.x+o.w)),cy=Math.max(o.y,Math.min(y,o.y+o.h)),dx=x-cx,dy=y-cy;return dx*dx+dy*dy<r*r}
 // 공격 시작점과 대상 사이의 선분이 장애물 사각형을 통과하는지 검사한다.
 function segmentHitsObstacle(x1,y1,x2,y2){const dx=x2-x1,dy=y2-y1,steps=Math.max(1,Math.ceil(Math.hypot(dx,dy)/2));for(let n=0;n<=steps;n++){const t=n/steps,x=x1+dx*t,y=y1+dy*t;for(const o of obstacles){if(x>=o.x-4&&x<=o.x+o.w+4&&y>=o.y-4&&y<=o.y+o.h+4)return true;}}return false}
