@@ -11,14 +11,14 @@
 <h1>⚔ ONLINE FIGHTER</h1><div class="sub">TOP-DOWN ARENA · 실시간 온라인 1대1</div>
 <section class="panel"><b>온라인 대전 방</b><div class="row" style="margin-top:10px"><button id="create">방 만들기</button><input id="code" maxlength="6" placeholder="친구의 6자리 코드"><button id="join">참가하기</button></div><div class="row" style="margin-top:10px"><span>내 방 코드</span><span id="mycode" class="code">------</span><button id="copy">코드 복사</button></div><div id="net" class="muted" style="margin-top:8px">서버 연결 중...</div></section>
 <div class="hud">
-<section class="panel"><div class="name" style="color:#ff8792">PLAYER 1 · 방장</div><div id="hp1">HP 100</div><div class="hp"><div id="bar1" class="fill"></div></div><div id="super1" class="meter">특수 공격 0%</div></section>
-<section class="panel"><div class="name" style="color:#7fc5ff">PLAYER 2 · 참가자</div><div id="hp2">HP 100</div><div class="hp"><div id="bar2" class="fill blue"></div></div><div id="super2" class="meter">특수 공격 0%</div></section>
+<section class="panel"><div class="name" style="color:#ff8792">PLAYER 1 · 방장</div><div id="hp1">HP 100</div><div class="hp"><div id="bar1" class="fill"></div></div><div id="super1" class="meter">스킬 1 충전 0%</div></section>
+<section class="panel"><div class="name" style="color:#7fc5ff">PLAYER 2 · 참가자</div><div id="hp2">HP 100</div><div class="hp"><div id="bar2" class="fill blue"></div></div><div id="super2" class="meter">스킬 1 충전 0%</div></section>
 </div>
 <canvas id="game" width="900" height="600"></canvas>
 <div id="msg" class="panel">방을 만들거나 친구의 방 코드로 참가하세요.</div>
 <div class="help">
-<section class="panel"><b style="color:#ff8792">PLAYER 1 (방장)</b><p>W A S D : 이동</p><p>마우스 : 조준</p><p>마우스 왼쪽 버튼 : 발사</p><p>E : 특수 공격</p></section>
-<section class="panel"><b style="color:#7fc5ff">PLAYER 2 (참가자)</b><p>방장과 동일한 조작</p><p>W A S D : 이동</p><p>마우스 : 조준 / 클릭 : 발사</p><p>E : 특수 공격</p></section>
+<section class="panel"><b style="color:#ff8792">PLAYER 1 (방장)</b><p>W A S D : 이동</p><p>마우스 : 조준</p><p>마우스 왼쪽 버튼 : 발사</p><p>E : 스킬 1</p><p>R : 스킬 2 · T : 스킬 3</p></section>
+<section class="panel"><b style="color:#7fc5ff">PLAYER 2 (참가자)</b><p>방장과 동일한 조작</p><p>W A S D : 이동</p><p>마우스 : 조준 / 클릭 : 발사</p><p>E : 스킬 1</p><p>R : 스킬 2 · T : 스킬 3</p></section>
 </div>
 <div class="row"><button id="rematch" disabled>재대결</button><span class="muted">3발 탄창 · 자동 재장전 · 장애물 엄폐 · 특수 공격</span></div>
 </main>
@@ -32,7 +32,7 @@ let p1=freshPlayer(125,300,'#e64f61'),p2=freshPlayer(775,300,'#328fe0'),bullets=
 function say(s){$('msg').textContent=s}function net(s){$('net').textContent=s}
 function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
 function reset(){p1=freshPlayer(125,300,'#e64f61');p2=freshPlayer(775,300,'#328fe0');bullets=[];serverP2=null;ended=false;shake=0;started=peer;$('rematch').disabled=true;hud()}
-function hud(){for(const [p,n] of [[p1,1],[p2,2]]){$('hp'+n).textContent='HP '+Math.ceil(p.hp);$('bar'+n).style.width=Math.max(0,p.hp)+'%';$('super'+n).textContent='특수 공격 '+Math.floor(p.super)+'%'}}
+function hud(){for(const [p,n] of [[p1,1],[p2,2]]){$('hp'+n).textContent='HP '+Math.ceil(p.hp);$('bar'+n).style.width=Math.max(0,p.hp)+'%';$('super'+n).textContent='스킬 1 충전 '+Math.floor(p.super)+'%'}}
 function connect(){const scheme=location.protocol==='https:'?'wss:':'ws:';ws=new WebSocket(scheme+'//'+location.host);ws.onopen=()=>net('서버 연결 완료 · 방을 만들거나 참가하세요.');ws.onclose=()=>{peer=false;started=false;net('서버 연결이 끊어졌습니다. 새로고침하세요.')};ws.onerror=()=>net('서버 연결 오류');ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}
 if(m.type==='created'||m.type==='joined'){role=m.role;roomCode=m.code;$('mycode').textContent=roomCode;$('code').value=roomCode;net((role==='host'?'방장(P1)':'참가자(P2)')+' · 방 연결 완료');say(role==='host'?'친구가 참가하기를 기다리는 중...':'방에 입장했습니다. 상대가 준비되면 시작합니다.');if(role==='guest'){peer=true;started=true}}
 else if(m.type==='peer-joined'){peer=true;started=true;reset();say('상대 참가 완료! 전투 시작!')}
@@ -50,7 +50,7 @@ function pointer(e){const r=canvas.getBoundingClientRect();mouse.x=(e.clientX-r.
 canvas.addEventListener('pointermove',e=>{pointer(e);if(role==='guest'&&started)send({type:'input',input:inputForLocal()})});canvas.addEventListener('pointerdown',e=>{pointer(e);mouse.down=true;if(role==='guest'&&started)send({type:'input',input:inputForLocal()});canvas.setPointerCapture(e.pointerId)});window.addEventListener('pointerup',()=>{mouse.down=false;if(role==='guest'&&started)send({type:'input',input:inputForLocal()})});
 window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();keys[k]=true;if(role==='guest'&&started)send({type:'input',input:inputForLocal()})});
 window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;if(role==='guest'&&started)send({type:'input',input:inputForLocal()})});window.addEventListener('blur',()=>{keys={};mouse.down=false});
-function inputForLocal(){return {x:(keys.d?1:0)-(keys.a?1:0),y:(keys.s?1:0)-(keys.w?1:0),aimX:mouse.x,aimY:mouse.y,shoot:mouse.down,super:!!keys.e}}
+function inputForLocal(){return {x:(keys.d?1:0)-(keys.a?1:0),y:(keys.s?1:0)-(keys.w?1:0),aimX:mouse.x,aimY:mouse.y,shoot:mouse.down,skill1:!!keys.e,skill2:!!keys.r,skill3:!!keys.t}}
 function circleRect(x,y,r,o){const cx=Math.max(o.x,Math.min(x,o.x+o.w)),cy=Math.max(o.y,Math.min(y,o.y+o.h)),dx=x-cx,dy=y-cy;return dx*dx+dy*dy<r*r}
 function movePlayer(p,input,dt){let mx=Number(input.x)||0,my=Number(input.y)||0;const len=Math.hypot(mx,my);if(len>1){mx/=len;my/=len}const nx=p.x+mx*p.speed*dt,ny=p.y+my*p.speed*dt;
 if(nx>p.r&&nx<W-p.r&&!obstacles.some(o=>circleRect(nx,p.y,p.r,o)))p.x=nx;
@@ -59,7 +59,7 @@ p.angle=Math.atan2((Number(input.aimY)||p.y)-p.y,(Number(input.aimX)||p.x)-p.x);
 p.flash=Math.max(0,p.flash-dt);p.fire=Math.max(0,p.fire-dt);p.reload=Math.max(0,p.reload-dt);
 if(p.ammo<3&&p.reload===0){p.ammo++;p.reload=p.ammo<3?0.62:0}
 if(input.shoot&&p.fire<=0&&p.ammo>0){p.ammo--;p.fire=.24;if(p.ammo<3&&p.reload<=0)p.reload=1.05;bullets.push({x:p.x+Math.cos(p.angle)*27,y:p.y+Math.sin(p.angle)*27,vx:Math.cos(p.angle)*570,vy:Math.sin(p.angle)*570,owner:p,life:1.25,damage:18})}
-if(input.super&&p.super>=100){p.super=0;const target=p===p1?p2:p1;if(Math.hypot(target.x-p.x,target.y-p.y)<175){target.hp=Math.max(0,target.hp-36);target.flash=.18;shake=12;p.super=Math.min(100,p.super+0)}else{shake=5}}
+if(input.skill1&&p.super>=100){p.super=0;const target=p===p1?p2:p1;if(Math.hypot(target.x-p.x,target.y-p.y)<175){target.hp=Math.max(0,target.hp-36);target.flash=.18;shake=12;p.super=Math.min(100,p.super+0)}else{shake=5}}
 }
 function simulate(dt){movePlayer(p1,inputForLocal(),dt);movePlayer(p2,remoteInput,dt);
 for(let i=bullets.length-1;i>=0;i--){const b=bullets[i];b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;let remove=b.life<=0||b.x<0||b.x>W||b.y<0||b.y>H||obstacles.some(o=>b.x>o.x&&b.x<o.x+o.w&&b.y>o.y&&b.y<o.y+o.h);const target=b.owner===p1?p2:p1;if(!remove&&Math.hypot(target.x-b.x,target.y-b.y)<target.r+5){target.hp=Math.max(0,target.hp-b.damage);target.flash=.15;b.owner.super=Math.min(100,b.owner.super+12);shake=6;remove=true;if(target.hp<=0){ended=true;started=false;say((target===p1?'PLAYER 2':'PLAYER 1')+' 승리!');$('rematch').disabled=false}}if(remove)bullets.splice(i,1)}
