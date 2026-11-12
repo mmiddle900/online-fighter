@@ -68,8 +68,19 @@ wss.on('connection', ws => {
   ws.on('close', () => {
     const room = ws.room;
     if (!room) return;
-    relay(room, ws, {type:'peer-left', message:'상대 플레이어의 연결이 끊어졌습니다.'});
+    // 연결이 끊긴 플레이어가 남긴 방 참조를 모두 정리해 재입장을 막지 않도록 한다.
     rooms.delete(room.code);
+    for (const player of room.players) {
+      if (player === ws) continue;
+      player.room = null;
+      player.role = null;
+      player.playerIndex = null;
+      send(player, {type:'peer-left', message:'상대 플레이어의 연결이 끊어졌습니다. 새 방을 만들거나 다시 참가하세요.'});
+    }
+    room.players.length = 0;
+    ws.room = null;
+    ws.role = null;
+    ws.playerIndex = null;
   });
 });
 
