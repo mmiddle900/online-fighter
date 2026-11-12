@@ -38,7 +38,7 @@ if(m.type==='created'||m.type==='joined'){role=m.role;roomCode=m.code;$('mycode'
 else if(m.type==='peer-joined'){peer=true;started=true;reset();say('상대 참가 완료! 전투 시작!')}
 else if(m.type==='input'&&role==='host'){remoteInput=m.input||{}}
 else if(m.type==='state'&&role==='guest'){p1=m.p1;p2=m.p2;bullets=m.bullets||[];hud();if(m.ended&&!ended){ended=true;started=false;say(m.winner+' 승리!');$('rematch').disabled=false}}
-else if(m.type==='rematch'){if(role==='host'){reset();started=true;send({type:'state',p1,p2,bullets,ended:false});say('재대결 시작!')}else{reset();started=true;say('재대결 시작!')}}
+else if(m.type==='rematch'){if(role==='host'){reset();started=true;send({type:'rematch'});say('재대결 시작!')}else{reset();started=true;say('재대결 시작!')}}
 else if(m.type==='peer-left'){peer=false;started=false;say(m.message);net('상대 연결 종료')}
 else if(m.type==='error')say(m.message);
 }}
@@ -47,9 +47,9 @@ $('join').onclick=()=>{if(!ws||ws.readyState!==1)return net('서버 연결 대�
 $('copy').onclick=()=>{if(roomCode&&navigator.clipboard)navigator.clipboard.writeText(roomCode).then(()=>net('방 코드 복사 완료')).catch(()=>net('방 코드: '+roomCode))};
 $('rematch').onclick=()=>{if(!peer)return;if(role==='host'){reset();started=true;send({type:'rematch'});say('재대결 시작!')}else send({type:'rematch'})};
 function pointer(e){const r=canvas.getBoundingClientRect();mouse.x=(e.clientX-r.left)*W/r.width;mouse.y=(e.clientY-r.top)*H/r.height}
-canvas.addEventListener('pointermove',pointer);canvas.addEventListener('pointerdown',e=>{pointer(e);mouse.down=true;canvas.setPointerCapture(e.pointerId)});window.addEventListener('pointerup',()=>mouse.down=false);
-window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();keys[k]=true});
-window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);window.addEventListener('blur',()=>{keys={};mouse.down=false});
+canvas.addEventListener('pointermove',e=>{pointer(e);if(role==='guest'&&started)send({type:'input',input:inputForLocal()})});canvas.addEventListener('pointerdown',e=>{pointer(e);mouse.down=true;if(role==='guest'&&started)send({type:'input',input:inputForLocal()});canvas.setPointerCapture(e.pointerId)});window.addEventListener('pointerup',()=>{mouse.down=false;if(role==='guest'&&started)send({type:'input',input:inputForLocal()})});
+window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();keys[k]=true;if(role==='guest'&&started)send({type:'input',input:inputForLocal()})});
+window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;if(role==='guest'&&started)send({type:'input',input:inputForLocal()})});window.addEventListener('blur',()=>{keys={};mouse.down=false});
 function inputForLocal(){return {x:(keys.d?1:0)-(keys.a?1:0),y:(keys.s?1:0)-(keys.w?1:0),aimX:mouse.x,aimY:mouse.y,shoot:mouse.down,super:!!keys.e}}
 function circleRect(x,y,r,o){const cx=Math.max(o.x,Math.min(x,o.x+o.w)),cy=Math.max(o.y,Math.min(y,o.y+o.h)),dx=x-cx,dy=y-cy;return dx*dx+dy*dy<r*r}
 function movePlayer(p,input,dt){let mx=Number(input.x)||0,my=Number(input.y)||0;const len=Math.hypot(mx,my);if(len>1){mx/=len;my/=len}const nx=p.x+mx*p.speed*dt,ny=p.y+my*p.speed*dt;
