@@ -32,11 +32,12 @@ wss.on('connection', ws => {
     if (msg.type === 'create') {
       if (ws.room) return send(ws, {type:'error', message:'이미 방에 참가 중입니다.'});
       const code = newCode();
-      const room = {code, players:[ws], host:ws};
+      const maxPlayers = Number(msg.maxPlayers) === 3 ? 3 : 2;
+      const room = {code, players:[ws], host:ws, maxPlayers};
       rooms.set(code, room);
       ws.room = room;
       ws.role = 'host';
-      return send(ws, {type:'created', code, role:'host'});
+      return send(ws, {type:'created', code, role:'host', maxPlayers, count:1});
     }
 
     if (msg.type === 'join') {
@@ -44,14 +45,14 @@ wss.on('connection', ws => {
       const code = String(msg.code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
       const room = rooms.get(code);
       if (!room) return send(ws, {type:'error', message:'방을 찾을 수 없습니다. 코드를 확인하세요.'});
-      if (room.players.length >= 3) return send(ws, {type:'error', message:'3인 방이 가득 찼습니다.'});
+      if (room.players.length >= room.maxPlayers) return send(ws, {type:'error', message:room.maxPlayers+'인 방이 가득 찼습니다.'});
       const existingPlayers = room.players.slice();
       room.players.push(ws);
       ws.room = room;
       ws.role = 'guest';
       ws.playerIndex = room.players.length;
-      send(ws, {type:'joined', code, role:'guest', playerIndex:ws.playerIndex});
-      for (const player of existingPlayers) send(player, {type:'peer-joined', playerIndex:ws.playerIndex, count:room.players.length});
+      send(ws, {type:'joined', code, role:'guest', playerIndex:ws.playerIndex, maxPlayers:room.maxPlayers, count:room.players.length});
+      for (const player of existingPlayers) send(player, {type:'peer-joined', playerIndex:ws.playerIndex, count:room.players.length, maxPlayers:room.maxPlayers});
       return;
     }
 
