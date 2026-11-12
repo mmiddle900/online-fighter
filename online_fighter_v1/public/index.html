@@ -151,7 +151,7 @@ if(p.ammo<p.maxAmmo){p.reloadTimer-=dt;if(p.reloadTimer<=0){p.ammo++;p.reloadTim
 const shoot=!!input.shoot;if(shoot&&!p.prevShoot&&p.ammo>0){p.ammo--;if(p.ammo<p.maxAmmo&&p.reloadTimer<=0)p.reloadTimer=p.reloadSeconds;pendingSlashes.push({owner,x:p.x,y:p.y,angle:p.angle,timer:p.charId==='tendo'?0:0.3});p.attackAnim=.32;p.attackKind='basic';p.combatIdle=0;}p.prevShoot=shoot;
 if(p.teleport){p.teleport.timer-=dt;if(p.teleport.timer<=0){if(canMove(p.teleport.x,p.teleport.y,p.r)){p.x=p.teleport.x;p.y=p.teleport.y;}p.teleport=null;shake=Math.max(shake,16);}}
 if(p.impactPrep){p.impactPrep.timer-=dt;if(p.impactPrep.timer<=0){const a=p.impactPrep,tx=owner===1?p2:p1,dx=tx.x-a.x,dy=tx.y-a.y,forward=dx*Math.cos(a.angle)+dy*Math.sin(a.angle),side=Math.abs(-dx*Math.sin(a.angle)+dy*Math.cos(a.angle));impactZones.push({x:a.x,y:a.y,angle:a.angle,length:5*TILE,width:TILE,life:2.5});if(forward>=0&&forward<=5*TILE&&side<=TILE/2&&!segmentHitsObstacle(a.x,a.y,tx.x,tx.y)){if(damage(tx,500)){tx.dotTimer=5;tx.dotTick=0;}}p.impactPrep=null;}}
-if(p.dotTimer>0){p.dotTimer-=dt;p.dotTick+=dt;while(p.dotTick>=1&&p.dotTimer>=0){p.dotTick-=1;damage(p===p1?p1:p2,500);break;}}
+if(p.dotTimer>0){const activeDt=Math.min(dt,p.dotTimer);p.dotTick=(p.dotTick||0)+activeDt;p.dotTimer=Math.max(0,p.dotTimer-activeDt);while(p.dotTick+1e-8>=1){p.dotTick-=1;damage(p,500);}if(p.dotTimer===0)p.dotTick=0;}
 
 const e=!!input.skill1,r=!!input.skill2,t=!!input.skill3;if(e&&!p.prevE)activateSkill(p,1,owner);if(r&&!p.prevR)activateSkill(p,2,owner);if(t&&!p.prevT)activateSkill(p,3,owner);p.prevE=e;p.prevR=r;p.prevT=t;
 }
