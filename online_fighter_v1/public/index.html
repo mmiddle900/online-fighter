@@ -5,9 +5,31 @@
 <title>ONLINE FIGHTER — ARENA</title>
 <style>
 *{box-sizing:border-box}body{margin:0;padding:18px;background:#101827;color:#f4f7ff;font-family:Arial,sans-serif}.wrap{max-width:1000px;margin:auto}h1{margin:4px 0}.sub,.muted{color:#aab8cc;font-size:13px}.panel{background:#1b2940;border:1px solid #344762;border-radius:13px;padding:14px;margin:12px 0}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}button,input{border:1px solid #617590;border-radius:8px;padding:11px;font-weight:bold}button{background:#375477;color:white;cursor:pointer}button:disabled{opacity:.45}input{background:#fff;color:#111;flex:1;min-width:130px}.code{font-size:22px;letter-spacing:4px;color:#fff;font-weight:bold}canvas{width:100%;height:auto;display:block;border-radius:12px;background:#dce8ee;touch-action:none}.mobile-controls{display:none;align-items:center;justify-content:space-between;gap:8px;padding:12px 6px 5px;user-select:none;-webkit-user-select:none}.stick-group{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}.stick{position:relative;width:76px;height:76px;border:2px solid #7794b6;border-radius:50%;background:radial-gradient(circle,#263d59 0%,#172941 72%);touch-action:none;box-shadow:inset 0 0 12px #07111f;flex:none}.stick.move{width:100px;height:100px;border-color:#68a9e8}.stick .knob{position:absolute;width:34px;height:34px;left:50%;top:50%;margin:-17px 0 0 -17px;border-radius:50%;background:linear-gradient(145deg,#d8eaff,#6e9dcc);border:2px solid #fff;box-shadow:0 2px 9px #0008;pointer-events:none}.stick.move .knob{width:42px;height:42px;margin:-21px 0 0 -21px}.stick-label{font-size:11px;font-weight:bold;color:#d9eaff;white-space:nowrap}.stick-group small{font-size:10px;color:#9eb2cb}@media(hover:none),(max-width:760px){.mobile-controls{display:flex}.stick{width:clamp(52px,14vw,76px);height:clamp(52px,14vw,76px)}.stick .knob{width:28px;height:28px;margin:-14px 0 0 -14px}.stick.move{width:clamp(76px,21vw,100px);height:clamp(76px,21vw,100px)}.stick.move .knob{width:36px;height:36px;margin:-18px 0 0 -18px}.stick-label{font-size:10px}.help{display:none}body{padding:6px}.panel{margin:8px 0;padding:9px}.hud{gap:6px}.meter{font-size:10px}}.hud{display:grid;grid-template-columns:1fr 1fr;gap:12px}.name{font-weight:bold;margin-bottom:8px}.hp{height:14px;border-radius:9px;background:#48566a;overflow:hidden}.fill{height:100%;background:#ef5965;width:100%}.fill.blue{background:#42a5f5}.meter{font-size:12px;color:#c6d3e5;margin-top:5px}.help{display:grid;grid-template-columns:1fr 1fr;gap:12px}.help p{margin:7px 0}.tag{color:#ffd66b;font-weight:bold}@media(max-width:600px){body{padding:8px}.panel{padding:10px}.help{font-size:13px}}
-</style>
+.rotate-notice{display:none}
+@media (hover:none) and (orientation:portrait) and (max-width:900px){
+ .rotate-notice{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#101827;color:#f4f7ff;text-align:center;padding:24px}
+ .rotate-notice .rotate-icon{font-size:64px;animation:turn-phone 1.8s ease-in-out infinite}
+ .rotate-notice strong{font-size:23px}.rotate-notice span{color:#aab8cc;font-size:14px}
+}
+@keyframes turn-phone{0%,100%{transform:rotate(0)}50%{transform:rotate(90deg)}}
+@media (hover:none) and (orientation:landscape) and (max-height:520px){
+ body{padding:3px;overflow-x:hidden}
+ h1{font-size:17px;margin:0}.sub{display:none}
+ .panel{margin:3px 0;padding:5px;border-radius:8px}
+ .wrap{max-width:none}
+ #game{width:auto;max-width:100%;max-height:54dvh;margin:0 auto}
+ .mobile-controls{position:fixed;z-index:20;left:4px;right:4px;bottom:3px;padding:2px 5px;gap:4px;background:linear-gradient(90deg,rgba(12,24,40,.84),rgba(12,24,40,.55));border-radius:12px}
+ .stick-group{gap:2px}.stick-group small{display:none}.stick-label{font-size:9px}
+ .stick{width:clamp(48px,11dvh,62px);height:clamp(48px,11dvh,62px)}
+ .stick .knob{width:25px;height:25px;margin:-12.5px 0 0 -12.5px}
+ .stick.move{width:clamp(62px,15dvh,82px);height:clamp(62px,15dvh,82px)}
+ .stick.move .knob{width:32px;height:32px;margin:-16px 0 0 -16px}
+ .hud{gap:4px}.name{font-size:11px;margin-bottom:2px}.hp{height:8px}.meter{font-size:9px;margin-top:2px}
+ #msg{font-size:11px}
+ #mobileControls{touch-action:none}
+}</style>
 </head>
-<body><main class="wrap">
+<body><div class="rotate-notice"><div class="rotate-icon">📱</div><strong>화면을 가로로 돌려주세요</strong><span>ONLINE FIGHTER는 모바일 가로 화면에 최적화되어 있습니다.</span></div><main class="wrap">
 <h1>⚔ ONLINE FIGHTER</h1><div class="sub">TOP-DOWN ARENA · 실시간 온라인 1대1</div>
 <section class="panel"><b>게임 모드</b><div class="row" style="margin-top:10px"><button id="practice">혼자 테스트하기</button><button id="exitPractice" disabled>테스트 종료</button><button id="soundOn">🔊 소리 켜기</button><label>내 캐릭터 <select id="characterSelect" style="padding:9px;border-radius:8px"><option value="generalK">제너럴 K</option><option value="tendo">텐도 사츠시</option></select></label><span class="muted">대전 시작 전에 선택하세요.</span><span id="soundStatus" class="muted">소리 활성화 전</span><span class="muted">체력이 무한인 훈련용 더미를 공격해 볼 수 있습니다.</span></div></section>
 <section class="panel"><b>온라인 대전 방</b><div class="row" style="margin-top:10px"><button id="create">방 만들기</button><input id="code" maxlength="6" placeholder="친구의 6자리 코드"><button id="join">참가하기</button></div><div class="row" style="margin-top:10px"><span>내 방 코드</span><span id="mycode" class="code">------</span><button id="copy">코드 복사</button></div><div id="net" class="muted" style="margin-top:8px">서버 연결 중...</div></section>
@@ -32,6 +54,9 @@
 </main>
 <script>
 (()=>{
+function requestLandscape(){try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(()=>{});}catch(e){}}
+window.addEventListener('pointerdown',requestLandscape,{once:true,passive:true});
+window.addEventListener('touchstart',requestLandscape,{once:true,passive:true});
 const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d'),W=900,H=600,TILE=60;
 let ws=null,role=null,roomCode='',peer=false,started=false,ended=false,practiceMode=false,keys={},mouse={x:450,y:300,down:false,rightDown:false},remoteInput={},serverP2=null,last=0,lastInputSent=0,lastStateSent=0,shake=0,hitPause=0,hitNumbers=[];
 const mobileSticks={move:{x:0,y:0,active:false,pointer:null},attack:{x:0,y:0,active:false,pointer:null},skill1:{x:0,y:0,active:false,pointer:null},skill2:{x:0,y:0,active:false,pointer:null},skill3:{x:0,y:0,active:false,pointer:null}};
