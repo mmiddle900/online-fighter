@@ -44,18 +44,23 @@ wss.on('connection', ws => {
       const code = String(msg.code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
       const room = rooms.get(code);
       if (!room) return send(ws, {type:'error', message:'방을 찾을 수 없습니다. 코드를 확인하세요.'});
-      if (room.players.length >= 2) return send(ws, {type:'error', message:'방이 가득 찼습니다.'});
+      if (room.players.length >= 3) return send(ws, {type:'error', message:'3인 방이 가득 찼습니다.'});
       room.players.push(ws);
       ws.room = room;
       ws.role = 'guest';
-      send(ws, {type:'joined', code, role:'guest'});
-      send(room.host, {type:'peer-joined'});
+      ws.playerIndex = room.players.length;
+      send(ws, {type:'joined', code, role:'guest', playerIndex:ws.playerIndex});
+      send(room.host, {type:'peer-joined', playerIndex:ws.playerIndex, count:room.players.length});
       return;
     }
 
     const room = ws.room;
     if (!room) return;
-    if (['input','state','rematch'].includes(msg.type)) relay(room, ws, msg);
+    if (msg.type === 'input') {
+      if (ws.role === 'host') return;
+      return send(room.host, {...msg, playerIndex:ws.playerIndex});
+    }
+    if (['state','rematch'].includes(msg.type)) relay(room, ws, msg);
   });
 
   ws.on('close', () => {
