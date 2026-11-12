@@ -63,7 +63,7 @@ window.addEventListener('blur',()=>{keys={};mouse.down=false});
 function inputForLocal(){return {x:(keys.d?1:0)-(keys.a?1:0),y:(keys.s?1:0)-(keys.w?1:0),aimX:mouse.x,aimY:mouse.y,shoot:mouse.down,skill1:!!keys.e,skill2:!!keys.r,skill3:!!keys.t}}
 function circleRect(x,y,r,o){const cx=Math.max(o.x,Math.min(x,o.x+o.w)),cy=Math.max(o.y,Math.min(y,o.y+o.h)),dx=x-cx,dy=y-cy;return dx*dx+dy*dy<r*r}
 // 공격 시작점과 대상 사이의 선분이 장애물 사각형을 통과하는지 검사한다.
-function segmentHitsObstacle(x1,y1,x2,y2){for(const o of obstacles){let t0=0,t1=1;const dx=x2-x1,dy=y2-y1;for(const [p,q] of [[-dx,x1-o.x],[dx,o.x+o.w-x1],[-dy,y1-o.y],[dy,o.y+o.h-y1]]){if(Math.abs(p)<1e-9){if(q<0){t0=2;break}}else{const t=q/p;if(p<0)t0=Math.max(t0,t);else t1=Math.min(t1,t);}}if(t0<=t1&&t0<=1&&t1>=0)return true;}return false}
+function segmentHitsObstacle(x1,y1,x2,y2){const dx=x2-x1,dy=y2-y1,steps=Math.max(1,Math.ceil(Math.hypot(dx,dy)/2));for(let n=0;n<=steps;n++){const t=n/steps,x=x1+dx*t,y=y1+dy*t;for(const o of obstacles){if(x>=o.x-4&&x<=o.x+o.w+4&&y>=o.y-4&&y<=o.y+o.h+4)return true;}}return false}
 function canMove(x,y,r){return x>r&&x<W-r&&y>r&&y<H-r&&!obstacles.some(o=>circleRect(x,y,r,o))}
 function stopGame(winner){if(ended)return;ended=true;started=false;say(winner+' 승리!');$('rematch').disabled=false}
 function damage(p,amount){if(!(practiceMode&&p===p2))p.hp=Math.max(0,p.hp-amount);p.flash=.16;hitNumbers.push({x:p.x,y:p.y-34,value:Math.round(amount),life:.9});if(amount>=2000){shake=Math.max(shake,13);hitPause=Math.max(hitPause,.05)}else shake=Math.max(shake,5);sfx('hit');if(!(practiceMode&&p===p2)&&p.hp<=0)stopGame(p===p1?'PLAYER 2':'PLAYER 1')}
