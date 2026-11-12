@@ -133,11 +133,12 @@ if(attacker.charId==='tendo'){const dx=target.x-originX,dy=target.y-originY,forw
 else{const dx=target.x-originX,dy=target.y-originY,dist=Math.hypot(dx,dy),facing=Math.cos(angle)*dx+Math.sin(angle)*dy;hit=dist<=5*TILE&&facing>=0&&!segmentHitsObstacle(originX,originY,target.x,target.y);const dealt=2400*(attacker.ultimateTimer>0?1.25:1);if(hit&&damage(target,dealt)){attacker.slashHits++;attacker.wolfGauge=Math.min(4800,attacker.wolfGauge+dealt);attacker.ultimateGauge=Math.min(14400,attacker.ultimateGauge+dealt);slashEffects.push({x:originX,y:originY,angle,timer:.35,owner});}}
 if(attacker.charId==='generalK'&&target.wolf){const wx=target.wolf.x-originX,wy=target.wolf.y-originY;if(Math.hypot(wx,wy)<=5*TILE&&Math.cos(angle)*wx+Math.sin(angle)*wy>=0&&!segmentHitsObstacle(originX,originY,target.wolf.x,target.wolf.y)){target.wolf.hp-=2400;if(target.wolf.hp<=0)target.wolf=null}}}
 
+function resolveImpact(p,owner,a){const tx=owner===1?p2:p1,dx=tx.x-a.x,dy=tx.y-a.y,forward=dx*Math.cos(a.angle)+dy*Math.sin(a.angle),side=Math.abs(-dx*Math.sin(a.angle)+dy*Math.cos(a.angle));impactZones.push({x:a.x,y:a.y,angle:a.angle,length:5*TILE,width:TILE,life:2.5});if(forward>=0&&forward<=5*TILE&&side<=TILE/2&&!segmentHitsObstacle(a.x,a.y,tx.x,tx.y)){if(damage(tx,500)){tx.dotTimer=5;tx.dotTick=0;}}}
 function activateSkill(p,id,owner){
 p.attackAnim=.42;p.attackKind='skill';
 if(p.charId==='tendo'){
  if(id===1&&p.teleportCooldown<=0&&!p.teleport){p.combatIdle=0;p.teleportCooldown=10;p.teleport={x:Math.max(p.r,Math.min(W-p.r,p.aimX??mouse.x)),y:Math.max(p.r,Math.min(H-p.r,p.aimY??mouse.y)),timer:3};shake=Math.max(shake,14);sfx('chain');}
- if(id===2&&p.impactGauge>=6000&&!p.impactPrep){p.impactGauge-=6000;p.combatIdle=0;p.impactPrep={x:p.x,y:p.y,angle:p.angle,timer:1.5};}
+ if(id===2&&p.impactGauge>=6000&&!p.impactPrep){p.impactGauge-=6000;p.combatIdle=0;const strike={x:p.x,y:p.y,angle:p.angle,timer:0};if(p.ultimateTimer>0){p.attackAnim=.42;p.attackKind='skill';resolveImpact(p,owner,strike);}else p.impactPrep={...strike,timer:1.5};}
  if(id===3&&p.moonGauge>=12000&&p.ultimateTimer<=0){p.moonGauge-=12000;p.combatIdle=0;p.ultimateTimer=6;sfx('ultimate');}
  return;
 }
@@ -150,7 +151,7 @@ p.flash=Math.max(0,p.flash-dt);p.attackAnim=Math.max(0,(p.attackAnim||0)-dt);p.c
 if(p.ammo<p.maxAmmo){p.reloadTimer-=dt;if(p.reloadTimer<=0){p.ammo++;p.reloadTimer=p.ammo<p.maxAmmo?p.reloadSeconds:0}}
 const shoot=!!input.shoot;if(shoot&&!p.prevShoot&&p.ammo>0){p.ammo--;if(p.ammo<p.maxAmmo&&p.reloadTimer<=0)p.reloadTimer=p.reloadSeconds;pendingSlashes.push({owner,x:p.x,y:p.y,angle:p.angle,timer:p.charId==='tendo'?0:0.3});p.attackAnim=.32;p.attackKind='basic';p.combatIdle=0;}p.prevShoot=shoot;
 if(p.teleport){p.teleport.timer-=dt;if(p.teleport.timer<=0){if(canMove(p.teleport.x,p.teleport.y,p.r)){p.x=p.teleport.x;p.y=p.teleport.y;}p.teleport=null;shake=Math.max(shake,16);}}
-if(p.impactPrep){p.impactPrep.timer-=dt;if(p.impactPrep.timer<=0){const a=p.impactPrep,tx=owner===1?p2:p1,dx=tx.x-a.x,dy=tx.y-a.y,forward=dx*Math.cos(a.angle)+dy*Math.sin(a.angle),side=Math.abs(-dx*Math.sin(a.angle)+dy*Math.cos(a.angle));impactZones.push({x:a.x,y:a.y,angle:a.angle,length:5*TILE,width:TILE,life:2.5});if(forward>=0&&forward<=5*TILE&&side<=TILE/2&&!segmentHitsObstacle(a.x,a.y,tx.x,tx.y)){if(damage(tx,500)){tx.dotTimer=5;tx.dotTick=0;}}p.impactPrep=null;}}
+if(p.impactPrep){p.impactPrep.timer-=dt;if(p.impactPrep.timer<=0){resolveImpact(p,owner,p.impactPrep);p.impactPrep=null;}}
 if(p.dotTimer>0){const activeDt=Math.min(dt,p.dotTimer);p.dotTick=(p.dotTick||0)+activeDt;p.dotTimer=Math.max(0,p.dotTimer-activeDt);while(p.dotTick+1e-8>=1){p.dotTick-=1;damage(p,500);}if(p.dotTimer===0)p.dotTick=0;}
 
 const e=!!input.skill1,r=!!input.skill2,t=!!input.skill3;if(e&&!p.prevE)activateSkill(p,1,owner);if(r&&!p.prevR)activateSkill(p,2,owner);if(t&&!p.prevT)activateSkill(p,3,owner);p.prevE=e;p.prevR=r;p.prevT=t;
