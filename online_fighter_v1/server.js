@@ -45,12 +45,13 @@ wss.on('connection', ws => {
       const room = rooms.get(code);
       if (!room) return send(ws, {type:'error', message:'방을 찾을 수 없습니다. 코드를 확인하세요.'});
       if (room.players.length >= 3) return send(ws, {type:'error', message:'3인 방이 가득 찼습니다.'});
+      const existingPlayers = room.players.slice();
       room.players.push(ws);
       ws.room = room;
       ws.role = 'guest';
       ws.playerIndex = room.players.length;
       send(ws, {type:'joined', code, role:'guest', playerIndex:ws.playerIndex});
-      send(room.host, {type:'peer-joined', playerIndex:ws.playerIndex, count:room.players.length});
+      for (const player of existingPlayers) send(player, {type:'peer-joined', playerIndex:ws.playerIndex, count:room.players.length});
       return;
     }
 
