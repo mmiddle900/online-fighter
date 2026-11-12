@@ -80,8 +80,8 @@ else if(m.type==='peer-joined'){roomPlayers=m.count||roomPlayers+1;roomCapacity=
 else if(m.type==='input'&&role==='host'){remoteInputs[m.playerIndex]=m.input||{}}
 else if(m.type==='state'&&role==='guest'){p1=m.p1;p2=m.p2;p3=m.p3||p3;remoteInput=m.hostInput||{};remoteInputs=m.remoteInputs||{};const local=playerByIndex(playerIndex);serverP2={x:local.x,y:local.y};chains=m.chains||[];bullets=m.bullets||[];rockets=m.rockets||[];drones=m.drones||[];pendingSlashes=m.pendingSlashes||[];slashEffects=m.slashEffects||[];hitNumbers=m.hitNumbers||[];hitPause=m.hitPause||0;shake=Math.max(shake,m.shake||0);hud();if(m.ended&&!ended){ended=true;started=false;say(m.winner+' 승리!');$('rematch').disabled=false}}
 else if(m.type==='rematch'){if(role==='host'){selectedCharacter=$('characterSelect').value;reset();started=true;send({type:'rematch'});say('재대결 시작!')}else{selectedCharacter=$('characterSelect').value;reset();started=true;say('재대결 시작!')}}
-else if(m.type==='peer-left'){peer=false;started=false;say(m.message);net('상대 연결 종료')}
-else if(m.type==='error')say(m.message);
+else if(m.type==='peer-left'){peer=false;started=false;role=null;playerIndex=1;roomCode='';$('mycode').textContent='------';say(m.message);net('방 연결 종료 · 새 방을 만들거나 다시 참가하세요.')}
+else if(m.type==='error'){say('입장/방 생성 실패: '+m.message);net('오류: '+m.message)}
 }}
 $('characterSelect').onchange=e=>{selectedCharacter=e.target.value;if(role==='guest'&&started)send({type:'input',input:inputForLocal()});};
 $('practice').onclick=()=>{selectedCharacter=$('characterSelect').value;playerIndex=1;roomCapacity=2;roomPlayers=2;practiceMode=true;role='host';peer=false;reset();practiceMode=true;playerIndex=1;roomCapacity=2;roomPlayers=2;started=true;ended=false;p1.x=170;p1.y=300;p2=freshPlayer(650,300,'#328fe0');remoteInput={};remoteInputs={};serverP2=null;$('exitPractice').disabled=false;updateModeUi();say('테스트 모드 시작! 훈련용 더미는 체력이 무한합니다. WASD로 이동하고 마우스로 조준해 공격하세요.');net('로컬 테스트 모드 · 온라인 방과 별개');hud()};
