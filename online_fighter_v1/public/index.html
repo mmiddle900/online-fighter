@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ONLINE FIGHTER</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#101522;color:#f5f7fb;font-family:Arial,sans-serif;padding:16px}.wrap{max-width:960px;margin:auto}.panel{background:#1b2333;border:1px solid #36435c;border-radius:12px;padding:13px;margin:10px 0}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}button,input{padding:11px;border-radius:8px;border:1px solid #60708c;font-weight:bold}button{background:#34435f;color:white;cursor:pointer}button:disabled{opacity:.45}input{min-width:0;flex:1;background:white;color:#111}.muted{font-size:12px;color:#aab6ca}canvas{display:block;width:100%;height:auto;background:#e2eaf2;border-radius:10px;touch-action:none}.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.bar{height:13px;background:#48536a;border-radius:10px;overflow:hidden}.fill{height:100%;background:#e64f5b}.blue{background:#3996e5}.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}.code{font-size:22px;letter-spacing:4px;font-weight:bold;color:white}@media(max-width:520px){body{padding:8px}.controls{font-size:13px}}
+</style></head><body><main class="wrap">
+<h1>⚔ ONLINE FIGHTER</h1><div class="muted">실시간 1대1 온라인 격투 · 버전 1.0</div>
+<section class="panel"><b>온라인 방</b><div class="row" style="margin-top:10px"><button id="create">방 만들기</button><input id="code" maxlength="6" placeholder="6자리 방 코드"><button id="join">참가하기</button></div><div class="row" style="margin-top:10px"><span>내 방 코드:</span><span id="mycode" class="code">------</span><button id="copy">코드 복사</button></div><div id="net" class="muted" style="margin-top:8px">서버 연결 중...</div></section>
+<div class="stats"><section class="panel"><b style="color:#ff929a">PLAYER 1</b><div id="hp1">HP 100</div><div class="bar"><div id="bar1" class="fill" style="width:100%"></div></div></section><section class="panel"><b style="color:#80c4ff">PLAYER 2</b><div id="hp2">HP 100</div><div class="bar"><div id="bar2" class="fill blue" style="width:100%"></div></div></section></div>
+<canvas id="game" width="900" height="440"></canvas><div class="panel" id="msg">방을 만들거나 친구의 방 코드로 참가하세요.</div>
+<div class="controls"><section class="panel"><b style="color:#ff929a">PLAYER 1</b><p>A / D 이동 · W 점프</p><p>F 일반 공격 · G 강공격</p></section><section class="panel"><b style="color:#80c4ff">PLAYER 2</b><p>← / → 이동 · ↑ 점프</p><p>K 일반 공격 · L 강공격</p></section></div>
+<div class="row"><button id="rematch" disabled>재대결</button><span class="muted">방장=P1 · 참가자=P2 · 2명 접속 시 자동 시작</span></div>
+<p class="muted">공개 인터넷 대전을 하려면 이 프로젝트를 Node.js 호스팅 서비스에 배포해야 합니다. ZIP만으로 서버가 자동 운영되지는 않습니다.</p>
+</main><script>
+(()=>{
+const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d'),W=900,H=440,floor=365;
+let ws=null,role=null,roomCode='',peer=false,keys={},remoteInput={},last=0,started=false,ended=false,shake=0;
+const make=(x,color,dir)=>({x,y:floor-90,w:48,h:90,vx:0,vy:0,hp:100,color,dir,ground:true,normal:0,strong:0,flash:0});
+let p1=make(220,'#d94b55',1),p2=make(680,'#328bd5',-1);
+function status(s){$('net').textContent=s}function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
+function ui(){for(const [p,n] of [[p1,1],[p2,2]]){$('hp'+n).textContent='HP '+Math.ceil(p.hp);$('bar'+n).style.width=Math.max(0,p.hp)+'%'}}
+function reset(){p1=make(220,'#d94b55',1);p2=make(680,'#328bd5',-1);ended=false;ui();$('rematch').disabled=true}
+function connect(){const proto=location.protocol==='https:'?'wss:':'ws:';ws=new WebSocket(proto+'//'+location.host);ws.onopen=()=>status('서버 연결 완료 · 방을 만들거나 참가하세요.');ws.onclose=()=>{peer=false;started=false;status('서버 연결이 끊어졌습니다. 새로고침하세요.')};ws.onerror=()=>status('서버 연결 오류');ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}
+if(m.type==='created'||m.type==='joined'){role=m.role;roomCode=m.code;$('mycode').textContent=roomCode;$('code').value=roomCode;status((role==='host'?'방장(P1)':'참가자(P2)')+' · 방 연결 완료');$('msg').textContent='친구가 참가하기를 기다리는 중...'}
+else if(m.type==='peer-joined'){peer=true;started=true;ended=false;reset();$('msg').textContent='상대 참가 완료! FIGHT!'}
+else if(m.type==='input'&&role==='host')remoteInput=m.keys||{};
+else if(m.type==='state'&&role==='guest'){p1=m.p1;p2=m.p2;ui();if(m.ended){ended=true;started=false;$('msg').textContent=m.winner+' 승리!';$('rematch').disabled=false}}
+else if(m.type==='rematch'){if(role==='host'){reset();started=true;$('msg').textContent='재대결 시작!'}else{reset();started=true;$('msg').textContent='재대결 시작!'}}
+else if(m.type==='peer-left'){peer=false;started=false;$('msg').textContent=m.message;status('상대 연결 종료')}
+else if(m.type==='error')$('msg').textContent=m.message;
+}}
+$('create').onclick=()=>{if(!ws||ws.readyState!==1)return status('서버 연결 대기 중');send({type:'create'})};
+$('join').onclick=()=>{if(!ws||ws.readyState!==1)return status('서버 연결 대기 중');const c=$('code').value.trim().toUpperCase();if(c.length!==6)return $('msg').textContent='6자리 코드를 입력하세요.';send({type:'join',code:c})};
+$('copy').onclick=()=>{if(roomCode&&navigator.clipboard)navigator.clipboard.writeText(roomCode).then(()=>status('방 코드 복사 완료')).catch(()=>status('방 코드: '+roomCode))};
+$('rematch').onclick=()=>{if(!peer)return;if(role==='host'){reset();started=true;$('msg').textContent='재대결 시작!';send({type:'rematch'})}else send({type:'rematch'})};
+function attack(p,t,strong){const now=performance.now(),k=strong?'strong':'normal';if(now<p[k])return;p[k]=now+(strong?1100:450);p.flash=.15;const d=Math.abs((p.x+p.w/2)-(t.x+t.w/2));if(d<(strong?125:90)&&(t.x-p.x)*p.dir>0){t.hp=Math.max(0,t.hp-(strong?22:10));t.vx=p.dir*(strong?390:240);t.vy=-100;t.flash=.2;shake=9;ui();if(t.hp<=0){ended=true;started=false;$('msg').textContent=(p===p1?'PLAYER 1':'PLAYER 2')+' 승리!';$('rematch').disabled=false}}}
+function simulate(dt){const inputs=[keys,remoteInput];for(let i=0;i<2;i++){const p=i===0?p1:p2,k=inputs[i],left=i===0?'a':'ArrowLeft',right=i===0?'d':'ArrowRight',jump=i===0?'w':'ArrowUp';const move=(k[left]?-1:0)+(k[right]?1:0);if(move){p.vx=move*230;p.dir=move}else p.vx*=Math.pow(.0008,dt);if(k[jump]&&p.ground){p.vy=-490;p.ground=false}p.vy+=1100*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;if(p.y+p.h>=floor){p.y=floor-p.h;p.vy=0;p.ground=true}p.x=Math.max(15,Math.min(W-p.w-15,p.x));if(p.x<=15||p.x>=W-p.w-15)p.vx*=-.4;p.flash=Math.max(0,p.flash-dt);if(k[i===0?'f':'k'])attack(p,i===0?p2:p1,false);if(k[i===0?'g':'l'])attack(p,i===0?p2:p1,true)}if(p1.x<p2.x){if(!keys.a&&!keys.d)p1.dir=1;if(!remoteInput.ArrowLeft&&!remoteInput.ArrowRight)p2.dir=-1}else{if(!keys.a&&!keys.d)p1.dir=-1;if(!remoteInput.ArrowLeft&&!remoteInput.ArrowRight)p2.dir=1}send({type:'state',p1,p2,ended,winner:ended?(p1.hp>0?'PLAYER 1':'PLAYER 2'):null})}
+function draw(p,label){ctx.save();ctx.translate(p.x+p.w/2,p.y+p.h/2);ctx.scale(p.dir,1);ctx.translate(-24,-45);ctx.fillStyle=p.flash>0?'#fff':p.color;ctx.fillRect(5,27,38,48);ctx.fillStyle='#f0c9a5';ctx.beginPath();ctx.arc(24,15,17,0,Math.PI*2);ctx.fill();ctx.fillStyle='#252c3b';ctx.fillRect(8,0,32,8);ctx.fillRect(28,12,5,4);ctx.fillRect(7,72,14,18);ctx.fillRect(27,72,14,18);ctx.fillStyle='#fff';ctx.font='bold 13px Arial';ctx.textAlign='center';ctx.scale(p.dir,1);ctx.fillText(label,24,-12);ctx.restore()}
+function frame(t){const dt=Math.min((t-last)/1000||0,.03);last=t;if(started&&!ended){if(role==='host')simulate(dt);else if(role==='guest')send({type:'input',keys})}ctx.save();if(shake>.2){ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);shake*=.8}ctx.clearRect(-20,-20,W+40,H+40);const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#edf3f8');g.addColorStop(1,'#c5d3df');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.strokeStyle='#bdcbd8';for(let x=0;x<W;x+=45){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,floor);ctx.stroke()}ctx.fillStyle='#6e7887';ctx.fillRect(0,floor,W,H-floor);ctx.fillStyle='#8996a6';ctx.fillRect(0,floor,W,8);draw(p1,'P1');draw(p2,'P2');ctx.restore();requestAnimationFrame(frame)}
+window.addEventListener('keydown',e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;if(['ArrowLeft','ArrowRight','ArrowUp',' '].includes(e.key))e.preventDefault();keys[k]=true});window.addEventListener('keyup',e=>{keys[e.key.length===1?e.key.toLowerCase():e.key]=false});connect();requestAnimationFrame(frame);
+})();
+</script></body></html>
