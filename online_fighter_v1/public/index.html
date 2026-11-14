@@ -100,7 +100,7 @@ function syncActor(key,p,label){
  g.userData.blade.visible=p.rushTimer<=0;
 }
 function render3D(){
- if(!threeRenderer)return;const T=window.THREE,viewer=playerByIndex(playerIndex)||p1;
+ if(!threeRenderer){init3D();if(!threeRenderer)return;}const T=window.THREE,viewer=playerByIndex(playerIndex)||p1;
  for(const [i,p] of players().entries())syncActor('p'+(i+1),p);
  for(const key of [...threeActors.keys()])if(key.startsWith('p')&&Number(key.slice(1))>players().length){threeScene.remove(threeActors.get(key));threeActors.delete(key)}
  const target=new T.Vector3((viewer.x-W/2)/TILE,0,(viewer.y-H/2)/TILE),back= new T.Vector3(Math.sin(viewer.angle)*8,0,Math.cos(viewer.angle)*8);
