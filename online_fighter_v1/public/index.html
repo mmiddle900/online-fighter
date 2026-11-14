@@ -54,7 +54,7 @@ const canvas=$('game'),ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.heigh
 let raf=0,last=0,active=false,keys={},mouse={x:W*.68,y:H*.5,down:false},player,dummy,effects=[],portals=[],wolves=[],eggs=[],audio=null,lastBasic=0,basicMissLockUntil=0,damageTotal=0,cd={chain:0,wolf:0,ult:0,egg:0,blink:0,field:0},ultTime=0,pendingChain=null,character="general",fieldTime=0,stopTime=0,chainEmpowered=false;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 /* Shared training/multiplayer character core */
-const CHARACTER_RULES=Object.freeze({general:{hp:2500,speed:2.8,basic:{cooldown:.5,range:4,halfAngle:Math.PI*2/3,damage:500},skills:{t:{cooldown:10,windup:.5,range:30},f:{cooldown:15,count:3,speed:10,range:30,damage:300},c:{gauge:5000,duration:10,radius:5,tick:30}}},noh:{hp:1500,speed:3.6,basic:{cooldown:1.5,projectileSpeed:30,range:100,damage:250},skills:{t:{cooldown:15,distance:10,projectileAdvance:3},f:{cooldown:20,duration:5,radius:5,slow:.25},c:{gauge:5500,duration:9}}}});
+const CHARACTER_RULES=Object.freeze({general:{hp:2500,speed:2.8,basic:{cooldown:5,range:4,halfAngle:Math.PI*2/3,damage:500},skills:{t:{cooldown:10,windup:.5,range:30},f:{cooldown:15,count:3,speed:10,range:30,damage:300},c:{gauge:5000,duration:10,radius:5,tick:30}}},noh:{hp:1500,speed:3.6,basic:{cooldown:1.5,projectileSpeed:30,range:100,damage:250},skills:{t:{cooldown:15,distance:10,projectileAdvance:3},f:{cooldown:20,duration:5,radius:5,slow:.25},c:{gauge:5500,duration:9}}}});
 function characterRules(id){return CHARACTER_RULES[id]||CHARACTER_RULES.general}
 /* One canonical character instance factory for both practice and online modes. */
 function createCharacterState(id,x,y,angle=0){
