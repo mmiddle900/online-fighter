@@ -162,8 +162,8 @@ function activateSkill(p,i,key,v){
  p._skillHeld=p._skillHeld||{};p._skillHeld[key]=true;
  const ch=p.character,enemy=onlineState.players[1-i],dx=enemy.x-p.x,dy=enemy.y-p.y,dist=Math.hypot(dx,dy),ang=p.angle;
  if(ch==='general'){
-  if(key==='e'&&p.cool.e<=0){p.cool.e=15;const hit=dist<=30*CELL&&Math.abs(Math.atan2(Math.sin(Math.atan2(dy,dx)-ang),Math.cos(Math.atan2(dy,dx)-ang)))<.16;if(hit){dealOnlineDamage(enemy,1000,p);enemy.x=p.x+Math.cos(ang)*1.5*CELL;enemy.y=p.y+Math.sin(ang)*1.5*CELL;p.chainEmpowered=true;}}
-  if(key==='r'&&p.gauge>=4800&&!p.wolf){p.gauge-=4800;p.wolf=true;p.wolfCd=0;}
+  if(key==='e'&&p.cool.e<=0){p.cool.e=15;const hit=dist<=30*CELL&&Math.abs(Math.atan2(Math.sin(Math.atan2(dy,dx)-ang),Math.cos(Math.atan2(dy,dx)-ang)))<.16;if(hit)projectile(i,p.x,p.y,ang,10*CELL,1000,30*CELL,'#6bd3ff','chain');}
+  if(key==='r'&&p.gauge>=4800&&!p.wolf){p.gauge-=4800;p.wolf=true;p.wolfHp=5000;p.wolfCd=0;}
   if(key==='t'&&p.gauge>=14400&&p.drug<=0){p.gauge-=14400;p.drug=10;}
  }else if(ch==='tendo'){
   if(key==='e'&&p.cool.e<=0){p.cool.e=10;p.pending={type:'blink',time:3,x:clamp(v.aimX??p.x+Math.cos(ang)*5*CELL,25,OW-25),y:clamp(v.aimY??p.y+Math.sin(ang)*5*CELL,25,OH-25)}}
@@ -188,7 +188,7 @@ function simulateOnline(dt,a,b){
   if(p.healTime>0){const heal=Math.min(p.healLeft,150*dt);p.hp=Math.min(p.maxHp,p.hp+heal);p.healLeft-=heal;p.healTime=Math.max(0,p.healTime-dt)}
   if(p.pending){p.pending.time-=dt;if(p.pending.time<=0){if(p.pending.type==='blink'){p.x=p.pending.x;p.y=p.pending.y;onlineState.effects.push({x:p.x,y:p.y,text:'공간 도약',life:.8,color:'#a6d5ff'})}else if(p.pending.type==='impact'){const ang=p.pending.angle,dx=enemy.x-p.x,dy=enemy.y-p.y,along=dx*Math.cos(ang)+dy*Math.sin(ang),side=Math.abs(-dx*Math.sin(ang)+dy*Math.cos(ang));if(along>0&&along<5*CELL&&side<CELL*.5){dealOnlineDamage(enemy,500,p);enemy.damageOverTime=500;enemy.dotTime=5}}p.pending=null}}
   if(p.damageOverTime>0&&p.dotTime>0){const tick=Math.min(dt,p.dotTime);p.dotTime-=tick;p.damageOverTime-=500*tick;if(p.dotTime<=0)p.damageOverTime=0;dealOnlineDamage(p,500*tick,enemy)}
-  if(p.wolf){p.wolfCd+=dt;if(p.wolfCd>=3){p.wolfCd=0;if(Math.hypot(enemy.x-p.x,enemy.y-p.y)<3*CELL)dealOnlineDamage(enemy,1000,p)}}
+  if(p.wolf&&p.wolfHp>0){p.wolfCd+=dt;if(p.wolfCd>=3){p.wolfCd=0;if(Math.hypot(enemy.x-p.x,enemy.y-p.y)<3*CELL)dealOnlineDamage(enemy,1000,p)}}
   if(p.invuln>0&&p.character==='tendo'){const a=Math.random()*Math.PI*2,r=Math.random()*.5*CELL,o=p.invulnOrigin||{x:p.x,y:p.y};p.x=clamp(o.x+Math.cos(a)*r,24,OW-24);p.y=clamp(o.y+Math.sin(a)*r,24,OH-24)}
   if(p.field>0&&Math.hypot(enemy.x-p.x,enemy.y-p.y)<5*CELL)enemy.slow=Math.max(enemy.slow,.12);if(p.pushTimer>0){const step=Math.min(dt,p.pushTimer);p.x=clamp(p.x+(p.pushVx||0)*step,24,OW-24);p.y=clamp(p.y+(p.pushVy||0)*step,24,OH-24);p.pushTimer=Math.max(0,p.pushTimer-dt)}
   const speed=p.speed*CELL*(p.drug>0?1.5:1)*(p.character==='general'&&p.drug>0?1.5:1)*(p.slow>0?.25:1);
@@ -199,7 +199,7 @@ function simulateOnline(dt,a,b){
   if(p.ammo<=0&&p.reload<=0){p.reload=p.reloadTime}
   if(p.character==='general'&&p.drug>0){/* ultimate buffs are applied by its active timer */}
  }
- if(onlineState.globalFreeze>0)onlineState.globalFreeze=Math.max(0,onlineState.globalFreeze-dt);for(const s of onlineState.shots){if(onlineState.globalFreeze>0)continue;const owner=players[s.owner],target=players[1-s.owner],step=Math.hypot(s.vx,s.vy)*dt;s.x+=s.vx*dt;s.y+=s.vy*dt;s.travel+=step;s.life-=dt;if(s.life<=0||s.travel>s.range){s.hit=true;continue}if(Math.hypot(s.x-target.x,s.y-target.y)<22){if(s.kind==='egg'){dealOnlineDamage(target,s.damage,owner);target.pending={type:'egg-knock',time:.3,vx:Math.cos(Math.atan2(s.vy,s.vx))*5*CELL,vy:Math.sin(Math.atan2(s.vy,s.vx))*5*CELL}}else dealOnlineDamage(target,s.damage,owner);s.hit=true}}
+ if(onlineState.globalFreeze>0)onlineState.globalFreeze=Math.max(0,onlineState.globalFreeze-dt);for(const s of onlineState.shots){if(onlineState.globalFreeze>0)continue;const owner=players[s.owner],target=players[1-s.owner],step=Math.hypot(s.vx,s.vy)*dt;s.x+=s.vx*dt;s.y+=s.vy*dt;s.travel+=step;s.life-=dt;if(s.life<=0||s.travel>s.range){s.hit=true;continue}if(Math.hypot(s.x-target.x,s.y-target.y)<22){if(s.kind==='egg'){dealOnlineDamage(target,s.damage,owner);target.pending={type:'egg-knock',time:.3,vx:Math.cos(Math.atan2(s.vy,s.vx))*5*CELL,vy:Math.sin(Math.atan2(s.vy,s.vx))*5*CELL}}else if(s.kind==='chain'){dealOnlineDamage(target,s.damage,owner);target.x=clamp(owner.x+Math.cos(owner.angle)*1.5*CELL,24,OW-24);target.y=clamp(owner.y+Math.sin(owner.angle)*1.5*CELL,24,OH-24);owner.chainEmpowered=true}else dealOnlineDamage(target,s.damage,owner);s.hit=true}}
  onlineState.shots=onlineState.shots.filter(s=>!s.hit);
  for(const p of players){if(p.pending?.type==='egg-knock'){p.pending.time-=dt;if(p.pending.time<=0){p.x=clamp(p.x+p.pending.vx*.3,24,OW-24);p.y=clamp(p.y+p.pending.vy*.3,24,OH-24);p.pending=null}}if(p.rocket){const enemy=players[1-players.indexOf(p)],ang=Math.atan2(enemy.y-p.rocket.y,enemy.x-p.rocket.x);p.rocket.x+=Math.cos(ang)*p.rocket.speed*dt;p.rocket.y+=Math.sin(ang)*p.rocket.speed*dt;p.rocket.life-=dt;if(p.rocket.life<=0||p.rocket.x<12||p.rocket.x>OW-12||p.rocket.y<12||p.rocket.y>OH-12||Math.hypot(enemy.x-p.rocket.x,enemy.y-p.rocket.y)<24){if(Math.hypot(enemy.x-p.rocket.x,enemy.y-p.rocket.y)<3*CELL)dealOnlineDamage(enemy,p.rocket.damage,p);p.rocket=null}}}
  onlineState.effects=onlineState.effects.filter(e=>(e.life-=dt)>0);
@@ -208,7 +208,7 @@ function drawOnline(state){
  if(!state)return;octx.clearRect(0,0,OW,OH);octx.fillStyle='#0b1727';octx.fillRect(0,0,OW,OH);
  octx.strokeStyle='#1e3550';octx.lineWidth=1;for(let x=0;x<OW;x+=CELL){octx.beginPath();octx.moveTo(x,0);octx.lineTo(x,OH);octx.stroke()}for(let y=0;y<OH;y+=CELL){octx.beginPath();octx.moveTo(0,y);octx.lineTo(OW,y);octx.stroke()}
  octx.strokeStyle='#56718e';octx.lineWidth=4;octx.strokeRect(8,8,OW-16,OH-16);
- state.players.forEach((p,i)=>{octx.save();octx.translate(p.x,p.y);octx.rotate(p.angle);octx.shadowColor=CHAR[p.character].color;octx.shadowBlur=22;
+ state.players.forEach((p,i)=>{if(p.wolf&&p.wolfHp>0){octx.save();octx.translate(p.x-Math.cos(p.angle)*44,p.y-Math.sin(p.angle)*44);octx.shadowColor='#79cfff';octx.shadowBlur=18;octx.fillStyle='#b9eaff';octx.beginPath();octx.ellipse(0,0,20,9,0,0,Math.PI*2);octx.fill();octx.beginPath();octx.moveTo(14,-2);octx.lineTo(24,-10);octx.lineTo(22,0);octx.lineTo(24,9);octx.lineTo(13,3);octx.fill();octx.restore()}octx.save();octx.translate(p.x,p.y);octx.rotate(p.angle);octx.shadowColor=CHAR[p.character].color;octx.shadowBlur=22;
   if(p.character==='general'){octx.fillStyle='#101b2a';octx.strokeStyle='#55baff';octx.lineWidth=3;octx.fillRect(-15,-18,30,36);octx.strokeRect(-15,-18,30,36);octx.strokeStyle='#9fe8ff';octx.lineWidth=5;octx.beginPath();octx.moveTo(7,0);octx.lineTo(43,0);octx.stroke()}
   else if(p.character==='tendo'){octx.fillStyle='#2869b5';octx.strokeStyle='#9bd4ff';octx.lineWidth=3;octx.fillRect(-15,-18,30,36);octx.strokeRect(-15,-18,30,36);octx.fillStyle='#d9efff';octx.fillRect(8,-3,34,6)}
   else if(p.character==='vincent'){octx.fillStyle='#9a874d';octx.strokeStyle='#ffe79a';octx.lineWidth=3;octx.beginPath();octx.arc(0,0,18,0,Math.PI*2);octx.fill();octx.stroke();octx.fillStyle='#e8dcae';octx.fillRect(9,-5,28,10)}
@@ -219,7 +219,7 @@ function drawOnline(state){
  state.players.forEach(p=>{if(p.rocket){octx.save();octx.translate(p.rocket.x,p.rocket.y);octx.rotate(0);octx.fillStyle='#ffd66f';octx.shadowColor='#ffb84d';octx.shadowBlur=18;octx.beginPath();octx.arc(0,0,9,0,Math.PI*2);octx.fill();octx.restore()}});state.shots.forEach(s=>{octx.fillStyle=s.color;octx.shadowColor=s.color;octx.shadowBlur=14;octx.beginPath();octx.arc(s.x,s.y,s.kind==='egg'?8:6,0,Math.PI*2);octx.fill()});
  state.effects.forEach(e=>{octx.globalAlpha=Math.min(1,e.life/.2);octx.fillStyle=e.color;octx.font='bold 18px Arial';octx.textAlign='center';octx.fillText(e.text,e.x,e.y);octx.globalAlpha=1});
  state.players.forEach((p,i)=>{const hp=p.hp;$(i===0?'p1Hp':'p2Hp').style.width=hp/p.maxHp*100+'%';$(i===0?'p1HpText':'p2HpText').textContent=CHAR[p.character].name+' · '+Math.ceil(hp)+' / '+p.maxHp;$(i===0?'p1Details':'p2Details').textContent='탄약 '+p.ammo+'/'+p.maxAmmo+(p.reload>0?' · 재장전 '+p.reload.toFixed(1)+'초':'')+' · 게이지 '+Math.floor(p.gauge)+' · E '+p.cool.e.toFixed(0)+'s'});
- $('matchStatus').textContent=state.winner?'플레이어 '+state.winner+' 승리!':'E / R / T 스킬 · 게이지 '+Math.floor(state.players[role==='host'?0:1].gauge);
+ const mine=state.players[role==='host'?0:1],skillNames={general:'E 영혼 사슬 · R 영혼 늑대 무리 · T 영혼 절멸자',tendo:'E 공간 도약 · R 충격점 강타 · T 참월',vincent:'E 능동 에너지 필드 · R 자율 탄도 로켓 · T ADX 약물',noh:'E 피아제 시간 삭제 · R 부엉이 바위 · T 봉하 콘서트'};$('matchStatus').textContent=state.winner?'플레이어 '+state.winner+' 승리!':skillNames[mine.character]+' · 게이지 '+Math.floor(mine.gauge);
 }
 $('exitMatch').onclick=()=>{onlineActive=false;cancelAnimationFrame(onlineFrame);location.reload()};
 
