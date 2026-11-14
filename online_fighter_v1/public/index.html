@@ -244,8 +244,8 @@ $('join').onclick=()=>{practiceMode=false;$('exitPractice').disabled=true;if(!ws
 $('copy').onclick=()=>{if(roomCode&&navigator.clipboard)navigator.clipboard.writeText(roomCode).then(()=>net('방 코드 복사 완료')).catch(()=>net('방 코드: '+roomCode))};
 $('rematch').onclick=()=>{if(!peer)return;if(role==='host'){selectedCharacter=$('characterSelect').value;reset();started=true;send({type:'rematch'});say('재대결 시작!')}else{send({type:'input',input:inputForLocal()});send({type:'rematch'})}};
 function pointer(e){const r=canvas.getBoundingClientRect();mouse.x=(e.clientX-r.left)*W/r.width;mouse.y=(e.clientY-r.top)*H/r.height}
-canvas.addEventListener('pointermove',e=>{pointer(e);if(role==='guest'&&started)send({type:'input',input:inputForLocal()})});
-canvas.addEventListener('contextmenu',e=>e.preventDefault());canvas.addEventListener('pointerdown',e=>{unlockAudio();pointer(e);if(e.button===0)mouse.down=true;if(e.button===2){e.preventDefault();mouse.rightDown=true}if(role==='guest'&&started)send({type:'input',input:inputForLocal()});canvas.setPointerCapture(e.pointerId)});
+game3d.addEventListener('pointermove',e=>{pointer(e);if(role==='guest'&&started)send({type:'input',input:inputForLocal()})});
+game3d.addEventListener('contextmenu',e=>e.preventDefault());game3d.addEventListener('pointerdown',e=>{if(e.button!==0&&e.button!==2)return;unlockAudio();pointer(e);if(e.button===0)mouse.down=true;if(e.button===2){e.preventDefault();mouse.rightDown=true}if(role==='guest'&&started)send({type:'input',input:inputForLocal()});try{game3d.setPointerCapture(e.pointerId)}catch{}},true);
 window.addEventListener('pointerup',e=>{if(e.button===0)mouse.down=false;if(e.button===2)mouse.rightDown=false;if(role==='guest'&&started)send({type:'input',input:inputForLocal()})});
 window.addEventListener('keydown',e=>{if(e.key==='F5'){e.preventDefault();e.stopPropagation();setCameraMode(cameraMode==='first'?'third':'first');return;}unlockAudio();const k=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();keys[k]=true;if(role==='guest'&&started)send({type:'input',input:inputForLocal()})},true);
 window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;if(role==='guest'&&started)send({type:'input',input:inputForLocal()})});
@@ -261,7 +261,7 @@ const moveLen=Math.hypot(strafe,forwardMove);if(moveLen>1){strafe/=moveLen;forwa
 const yaw=cameraMode==='first'?fpsYaw:(local.angle||0),fx=Math.cos(yaw),fy=Math.sin(yaw);
 const mx=fx*forwardMove-fy*strafe,my=fy*forwardMove+fx*strafe;
 const aim=cameraMode==='first'?(direction?{aimX:local.x+direction.x*1000,aimY:local.y+direction.y*1000}:{aimX:local.x+Math.cos(fpsYaw)*1000,aimY:local.y+Math.sin(fpsYaw)*1000}):(direction?{aimX:local.x+direction.x*300,aimY:local.y+direction.y*300}:{aimX:local.x+mouse.x-W/2,aimY:local.y+mouse.y-H/2});
-return {x:mx,y:my,...aim,shoot:m.attack.active||mouse.down,skill1:m.skill1.active||!!keys.e,skill2:m.skill2.active||!!keys.r,skill3:m.skill3.active||!!keys.t,skill4:m.skill4.active||!!keys.g,preview1:!!keys.e,preview2:!!keys.r,preview3:!!keys.t,preview4:!!keys.g,character:selectedCharacter}
+return {x:mx,y:my,...aim,shoot:m.attack.active||mouse.down||!!keys[' '],skill1:m.skill1.active||!!keys.e,skill2:m.skill2.active||!!keys.r,skill3:m.skill3.active||!!keys.t,skill4:m.skill4.active||!!keys.g,preview1:!!keys.e,preview2:!!keys.r,preview3:!!keys.t,preview4:!!keys.g,character:selectedCharacter}
 }
 function updateStick(name,e){
 const pad=e.currentTarget,rect=pad.getBoundingClientRect(),radius=Math.min(rect.width,rect.height)/2-12;
