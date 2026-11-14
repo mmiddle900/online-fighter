@@ -28,7 +28,7 @@
  #msg{font-size:11px}
  #mobileControls{touch-action:none}
 }
-#game3d{position:relative;width:100%;aspect-ratio:3/2;overflow:hidden;border-radius:12px;background:linear-gradient(#91b5d1,#d9d5c8);touch-action:none}#game3d>canvas{position:absolute;inset:0;width:100%;height:100%;display:block}#game3d canvas.three-layer{z-index:1;pointer-events:none}#game3d canvas#game{z-index:2;opacity:0;pointer-events:auto}
+#fpsCrosshair{display:none;position:absolute;z-index:5;left:50%;top:50%;transform:translate(-50%,-50%);color:#fff;font:28px/1 Arial;text-shadow:0 1px 5px #000,0 0 8px #000;pointer-events:none}#game3d{position:relative;width:100%;aspect-ratio:3/2;overflow:hidden;border-radius:12px;background:linear-gradient(#91b5d1,#d9d5c8);touch-action:none}#game3d>canvas{position:absolute;inset:0;width:100%;height:100%;display:block}#game3d canvas.three-layer{z-index:1;pointer-events:none}#game3d canvas#game{z-index:2;opacity:0;pointer-events:auto}
 </style>
 </head>
 <body><div class="rotate-notice"><div class="rotate-icon">📱</div><strong>화면을 가로로 돌려주세요</strong><span>ONLINE FIGHTER는 모바일 가로 화면에 최적화되어 있습니다.</span></div><main class="wrap">
@@ -40,7 +40,7 @@
 <section class="panel"><div class="name" style="color:#7fc5ff">PLAYER 2 · 참가자</div><div id="hp2">HP 10000</div><div class="hp"><div id="bar2" class="fill blue"></div></div><div id="super2" class="meter">영혼 사슬 준비 · 게이지 0 / 14400</div></section>
 <section class="panel" id="player3Panel"><div class="name" style="color:#75e2a2">PLAYER 3 · 참가자</div><div id="hp3">HP 10000</div><div class="hp"><div id="bar3" class="fill" style="background:#45b77b"></div></div><div id="super3" class="meter">전투 정보</div></section>
 </div>
-<div id="game3d"><canvas id="game" width="1800" height="1200"></canvas></div>
+<div id="game3d"><div id="fpsCrosshair">+</div><canvas id="game" width="1800" height="1200"></canvas></div>
 <div class="mobile-controls" id="mobileControls" aria-label="모바일 조이스틱 조작">
  <div class="stick-group"><div class="stick move" data-stick="move"><div class="knob"></div></div><span class="stick-label">이동</span><small>방향 조작</small></div>
  <div class="stick-group"><div class="stick" data-stick="attack"><div class="knob"></div></div><span class="stick-label">공격</span><small>밀어서 공격</small></div>
@@ -113,6 +113,7 @@ function render3D(){
  for(const key of [...threeActors.keys()])if(key.startsWith('p')&&Number(key.slice(1))>players().length){threeScene.remove(threeActors.get(key));threeActors.delete(key)}
  const target=new T.Vector3((viewer.x-W/2)/TILE,0,(viewer.y-H/2)/TILE);
  if(cameraMode==='first'){
+   $('fpsCrosshair').style.display='block';threeCamera.fov=82;threeCamera.updateProjectionMatrix();
    threeCamera.position.set(target.x,1.62,target.z);
    const look=target.clone().add(new T.Vector3(forward.x,0,forward.z));threeCamera.lookAt(look.x,1.55,look.z);
    const own=threeActors.get('p'+playerIndex);if(own)own.visible=false;
@@ -135,9 +136,10 @@ function render3D(){
    }
    viewWeapon.visible=true;
  }else{
+   $('fpsCrosshair').style.display='none';threeCamera.fov=62;threeCamera.updateProjectionMatrix();
    for(const [i] of players().entries()){const a=threeActors.get('p'+(i+1));if(a)a.visible=true;}
    if(viewWeapon)viewWeapon.visible=false;
-   const back=forward.clone().multiplyScalar(-8);threeCamera.position.set(target.x+back.x,target.y+8.2,target.z+back.z+3.4);threeCamera.lookAt(target.x,target.y+1.0,target.z);
+   const back=forward.clone().multiplyScalar(-6.5);threeCamera.position.set(target.x+back.x,target.y+4.8,target.z+back.z);threeCamera.lookAt(target.x,target.y+1.0,target.z);
  }
  const old=threeEffects;threeEffects=[];for(const obj of old){threeScene.remove(obj);obj.traverse?.(o=>{o.geometry?.dispose?.();if(Array.isArray(o.material))o.material.forEach(m=>m.dispose?.());else o.material?.dispose?.();});}
  const add=(obj)=>{threeScene.add(obj);threeEffects.push(obj);return obj};
