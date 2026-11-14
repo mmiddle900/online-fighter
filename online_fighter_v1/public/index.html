@@ -16,10 +16,10 @@
 <section id="lobby">
 <section class="panel" id="connectPanel"><h2>온라인 대전</h2><div class="row"><select id="capacity" aria-label="인원 선택"><option value="2">2인 대전</option><option value="3">3인 개인전</option></select><button id="createBtn">방 만들기</button></div><div class="hint">방을 만든 뒤 표시되는 6자리 코드를 친구에게 공유하세요.</div></section>
 <section class="panel" id="joinPanel"><h2>방 참가</h2><div class="row"><input id="roomInput" maxlength="6" placeholder="방 코드 6자리" autocomplete="off"><button id="joinBtn" class="secondary">참가하기</button></div></section>
-<section class="panel hidden" id="roomPanel"><h2 id="roomTitle">대기실</h2><div class="roomcode" id="roomCode">------</div><div class="row" style="justify-content:center;margin:10px 0"><label for="onlineCharacterSelect">내 캐릭터</label><select id="onlineCharacterSelect"><option value="general">제너럴 K</option><option value="tendo">텐도 사츠시</option><option value="vincent">세인트 빈센트</option><option value="noh">노무현</option></select></div><div class="status" id="roomStatus">상대 플레이어를 기다리는 중입니다.</div><div class="slots" id="players"></div><div class="row" style="margin-top:12px"><button id="copyBtn" class="secondary">방 코드 복사</button><button id="leaveBtn" class="secondary">방 나가기</button></div></section>
+<section class="panel hidden" id="roomPanel"><h2 id="roomTitle">대기실</h2><div class="roomcode" id="roomCode">------</div><div class="row" style="justify-content:center;margin:10px 0"><label for="onlineCharacterSelect">내 캐릭터</label><select id="onlineCharacterSelect"><option value="general">제너럴 K</option><option value="noh">노무현</option></select></div><div class="status" id="roomStatus">상대 플레이어를 기다리는 중입니다.</div><div class="slots" id="players"></div><div class="row" style="margin-top:12px"><button id="copyBtn" class="secondary">방 코드 복사</button><button id="leaveBtn" class="secondary">방 나가기</button></div></section>
 <div class="status" id="globalStatus" role="status">서버에 연결하는 중...</div></section>
 <section id="onlineGame" class="panel hidden">
- <div class="row" style="justify-content:space-between;margin-bottom:8px"><label for="matchCharacterSelect">캐릭터 선택</label><select id="matchCharacterSelect"><option value="general">제너럴 K</option><option value="tendo">텐도 사츠시</option><option value="vincent">세인트 빈센트</option><option value="noh">노무현</option></select><span class="muted">WASD 이동 · 마우스 조준/좌클릭 공격 · E/R/T 스킬</span></div><div class="onlineHud">
+ <div class="row" style="justify-content:space-between;margin-bottom:8px"><label for="matchCharacterSelect">캐릭터 선택</label><select id="matchCharacterSelect"><option value="general">제너럴 K</option><option value="noh">노무현</option></select><span class="muted">WASD 이동 · 마우스 조준/좌클릭 공격 · E/R/T 스킬</span></div><div class="onlineHud">
   <div><strong id="p1Label">플레이어 1</strong><div class="fighterBar"><i id="p1Hp" style="width:100%"></i></div><small id="p1HpText">1000 / 1000</small><div class="muted" id="p1Details"></div></div>
   <div style="text-align:right"><strong id="p2Label">플레이어 2</strong><div class="fighterBar enemy"><i id="p2Hp" style="width:100%"></i></div><small id="p2HpText">1000 / 1000</small><div class="muted" id="p2Details"></div></div>
  </div>
@@ -96,8 +96,6 @@ const onlineCanvas=$('onlineCanvas'),octx=onlineCanvas.getContext('2d');
 const OW=onlineCanvas.width,OH=onlineCanvas.height,CELL=42;
 const CHAR={
  general:{name:'제너럴 K',hp:10000,speed:2,color:'#15243a',ammo:3,reload:2},
- tendo:{name:'텐도 사츠시',hp:7000,speed:3,color:'#2873c9',ammo:1,reload:3},
- vincent:{name:'세인트 빈센트',hp:6000,speed:2.5,color:'#b8a45c',ammo:1,reload:1.5},
  noh:{name:'노무현',hp:1500,speed:3.6,color:'#806344',ammo:1,reload:3}
 };
 let onlineActive=false,onlineFrame=0,onlineLast=0,onlineSendClock=0,onlineAttack=false;
