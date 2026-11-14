@@ -75,7 +75,7 @@ function init3D(){
  if(!window.THREE||threeRenderer)return;
  const T=window.THREE;
  threeScene=new T.Scene();threeScene.background=new T.Color(0x9ab9ce);threeScene.fog=new T.Fog(0x9ab9ce,34,76);
- threeCamera=new T.PerspectiveCamera(62,1,.1,160);
+ threeCamera=new T.PerspectiveCamera(72,1,.08,160);threeScene.add(threeCamera);
  threeRenderer=new T.WebGLRenderer({antialias:true,alpha:false});threeRenderer.setPixelRatio(Math.min(devicePixelRatio||1,1.7));threeRenderer.setSize(1800,1200,false);threeRenderer.shadowMap.enabled=true;threeRenderer.shadowMap.type=T.PCFSoftShadowMap;threeRenderer.outputColorSpace=T.SRGBColorSpace;threeRenderer.domElement.className='three-layer';game3d.insertBefore(threeRenderer.domElement,canvas);
  const hemi=new T.HemisphereLight(0xdceeff,0x62513d,2.0);threeScene.add(hemi);
  const sun=new T.DirectionalLight(0xffedcf,3.0);sun.position.set(-14,28,18);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-25;sun.shadow.camera.right=25;sun.shadow.camera.top=25;sun.shadow.camera.bottom=-25;threeScene.add(sun);
@@ -101,7 +101,7 @@ function actorFor(key,color,charId){
 }
 function syncActor(key,p,label){
  const T=window.THREE;let g=threeActors.get(key);if(!g||g.userData.charId!==p.charId){if(g)threeScene.remove(g);g=actorFor(key,p.color,p.charId);g.userData.charId=p.charId}
- g.position.set((p.x-W/2)/TILE,0,(p.y-H/2)/TILE);g.rotation.y=-p.angle;g.scale.setScalar(p.charId==='wanderer'?1.12:1);
+ g.position.set((p.x-W/2)/TILE,0,(p.y-H/2)/TILE);g.rotation.y=-p.angle-Math.PI/2;g.scale.setScalar(p.charId==='wanderer'?1.12:1);
  g.userData.torso.material.color.set(p.flash>0?0xffffff:p.charId==='generalK'?0x202b3a:p.charId==='tendo'?0x9d9ee8:p.charId==='vincent'?0x526c83:0x82745e);
  g.userData.ring.material.color.set(p.guardianTimer>0?0xffd52f:p.color);g.userData.ring.material.opacity=p.guardianTimer>0?.95:.72;
  g.userData.blade.visible=p.rushTimer<=0;
@@ -116,7 +116,23 @@ function render3D(){
    threeCamera.position.set(target.x,1.62,target.z);
    const look=target.clone().add(new T.Vector3(forward.x,0,forward.z));threeCamera.lookAt(look.x,1.55,look.z);
    const own=threeActors.get('p'+playerIndex);if(own)own.visible=false;
-   if(!viewWeapon){viewWeapon=new T.Group();const body=new T.Mesh(new T.BoxGeometry(.18,.16,.72),new T.MeshStandardMaterial({color:0x27384e,metalness:.55,roughness:.35}));body.position.set(.32,-.25,-.55);viewWeapon.add(body);const barrel=new T.Mesh(new T.CylinderGeometry(.045,.055,.48,10),new T.MeshStandardMaterial({color:0x8ba6bf,metalness:.8,roughness:.22}));barrel.rotation.x=Math.PI/2;barrel.position.set(.32,-.2,-.98);viewWeapon.add(barrel);threeCamera.add(viewWeapon);}
+   if(!viewWeapon||viewWeapon.userData.kind!==viewer.charId){
+     if(viewWeapon)threeCamera.remove(viewWeapon);
+     viewWeapon=new T.Group();viewWeapon.userData.kind=viewer.charId;
+     const steel=new T.MeshStandardMaterial({color:viewer.charId==='generalK'?0x43aaff:0xb8c8d8,metalness:.86,roughness:.2});
+     const grip=new T.MeshStandardMaterial({color:0x253449,roughness:.72});
+     if(viewer.charId==='vincent'){
+       const body=new T.Mesh(new T.BoxGeometry(.2,.17,.62),grip);body.position.set(.32,-.25,-.52);viewWeapon.add(body);
+       const barrel=new T.Mesh(new T.CylinderGeometry(.045,.055,.55,10),steel);barrel.rotation.x=Math.PI/2;barrel.position.set(.32,-.2,-.98);viewWeapon.add(barrel);
+       const sight=new T.Mesh(new T.BoxGeometry(.08,.07,.14),steel);sight.position.set(.32,-.13,-.75);viewWeapon.add(sight);
+     }else{
+       const blade=new T.Mesh(new T.BoxGeometry(.09,.055,viewer.charId==='wanderer'?1.05:1.25),steel);blade.position.set(.34,-.2,-.82);blade.rotation.x=-.08;viewWeapon.add(blade);
+       const guard=new T.Mesh(new T.BoxGeometry(.34,.09,.12),grip);guard.position.set(.34,-.2,-.2);viewWeapon.add(guard);
+       const handle=new T.Mesh(new T.CylinderGeometry(.055,.065,.34,8),grip);handle.rotation.x=Math.PI/2;handle.position.set(.34,-.2,-.03);viewWeapon.add(handle);
+       if(viewer.charId==='generalK'){const glow=new T.Mesh(new T.BoxGeometry(.12,.075,1.18),new T.MeshBasicMaterial({color:0x168cff}));glow.position.set(.34,-.16,-.82);viewWeapon.add(glow);}
+     }
+     threeCamera.add(viewWeapon);
+   }
    viewWeapon.visible=true;
  }else{
    for(const [i] of players().entries()){const a=threeActors.get('p'+(i+1));if(a)a.visible=true;}
