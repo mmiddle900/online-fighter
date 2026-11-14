@@ -60,17 +60,18 @@
 (()=>{
 function requestLandscape(){try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(()=>{});}catch(e){}}
 window.addEventListener('pointerdown',requestLandscape,{once:true,passive:true});
-const viewSelect=$('viewMode');
-if(viewSelect)viewSelect.addEventListener('change',()=>{cameraMode=viewSelect.value;const local=playerByIndex(playerIndex)||p1;fpsYaw=local.angle||0;if(cameraMode==='first')say('1인칭 시점 · 화면 클릭 후 마우스로 조준 · WASD 이동');else{if(document.pointerLockElement)document.exitPointerLock();say('3인칭 시점으로 전환했습니다.')}});
-canvas.addEventListener('click',()=>{if(cameraMode==='first'&&canvas.requestPointerLock&&!matchMedia('(hover:none)').matches)canvas.requestPointerLock()});
-document.addEventListener('pointerlockchange',()=>{pointerLocked=document.pointerLockElement===canvas});
-document.addEventListener('mousemove',e=>{if(cameraMode==='first'&&pointerLocked){fpsYaw+=e.movementX*.0024;fpsYaw=Math.atan2(Math.sin(fpsYaw),Math.cos(fpsYaw));}});
+
 
 window.addEventListener('touchstart',requestLandscape,{once:true,passive:true});
 const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d'),W=1800,H=1200,TILE=60;
 const game3d=$('game3d');
 let threeScene=null,threeCamera=null,threeRenderer=null,threeActors=new Map(),threeEffects=[];
 let cameraMode='third',fpsYaw=0,pointerLocked=false,viewWeapon=null;
+const viewSelect=$('viewMode');
+if(viewSelect)viewSelect.addEventListener('change',()=>{cameraMode=viewSelect.value;const local=playerByIndex(playerIndex)||p1;fpsYaw=local.angle||0;if(cameraMode==='first')say('1인칭 시점 · 화면 클릭 후 마우스로 조준 · WASD 이동');else{if(document.pointerLockElement)document.exitPointerLock();say('3인칭 시점으로 전환했습니다.')}});
+canvas.addEventListener('click',()=>{if(cameraMode==='first'&&canvas.requestPointerLock&&!matchMedia('(hover:none)').matches)canvas.requestPointerLock()});
+document.addEventListener('pointerlockchange',()=>{pointerLocked=document.pointerLockElement===canvas});
+document.addEventListener('mousemove',e=>{if(cameraMode==='first'&&pointerLocked){fpsYaw+=e.movementX*.0024;fpsYaw=Math.atan2(Math.sin(fpsYaw),Math.cos(fpsYaw));}});
 function init3D(){
  if(!window.THREE||threeRenderer)return;
  const T=window.THREE;
