@@ -56,7 +56,7 @@ const canvas=$('game'),ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.heigh
 let raf=0,last=0,active=false,keys={},mouse={x:W*.68,y:H*.5,down:false},player,dummy,effects=[],portals=[],wolves=[],eggs=[],audio=null,lastBasic=0,basicMissLockUntil=0,damageTotal=0,cd={chain:0,wolf:0,ult:0,egg:0,blink:0,field:0},ultTime=0,pendingChain=null,character="general",fieldTime=0,stopTime=0,chainEmpowered=false;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 /* Shared training/multiplayer character core */
-const CHARACTER_RULES=Object.freeze({general:{hp:10000,speed:2.8,basic:{cooldown:.5,range:4,halfAngle:Math.PI*2/3,damage:75},skills:{t:{cooldown:10,windup:.5,range:30},f:{cooldown:15,count:3,speed:10,range:30,damage:300},c:{gauge:5000,duration:10,radius:5,tick:30}}},noh:{hp:6000,speed:3.6,basic:{cooldown:1.5,projectileSpeed:30,range:100,damage:250},skills:{t:{cooldown:15,distance:10,projectileAdvance:3},f:{cooldown:20,duration:5,radius:5,slow:.25},c:{gauge:5500,duration:9}}}});
+const CHARACTER_RULES=Object.freeze({general:{hp:10000,speed:2.8,basic:{cooldown:.5,range:4,halfAngle:Math.PI*2/3,damage:75},skills:{t:{cooldown:10,windup:.5,range:30},f:{cooldown:15,count:3,speed:10,range:30,damage:300},c:{gauge:5000,duration:10,radius:5,tick:30}}},noh:{hp:6000,speed:3.6,basic:{cooldown:1,projectileSpeed:30,range:100,damage:250},skills:{t:{cooldown:15,distance:10,projectileAdvance:3},f:{cooldown:20,duration:5,radius:5,slow:.25},c:{gauge:5500,duration:9}}}});
 function characterRules(id){return CHARACTER_RULES[id]||CHARACTER_RULES.general}
 /* One canonical character instance factory for both practice and online modes. */
 function createCharacterState(id,x,y,angle=0){
@@ -143,7 +143,7 @@ ctx.fillStyle='#e6f4ff';ctx.font='13px Arial';ctx.fillText('조준 방향',mouse
 canvas.addEventListener('pointermove',e=>{const r=canvas.getBoundingClientRect();mouse.x=(e.clientX-r.left)/r.width*W;mouse.y=(e.clientY-r.top)/r.height*H});
 canvas.addEventListener('pointerdown',e=>{if(e.button===0){mouse.down=true;attack();canvas.setPointerCapture?.(e.pointerId)}});
 canvas.addEventListener('pointerup',()=>mouse.down=false);canvas.addEventListener('pointercancel',()=>mouse.down=false);canvas.addEventListener('contextmenu',e=>e.preventDefault());
-window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','t','f','c','e','r'].includes(k))e.preventDefault();keys[k]=true;if(onlineActive)return;if(!e.repeat)skill(k)});
+window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','t','f','c','e','r'].includes(k))e.preventDefault();keys[k]=true;if(onlineActive){if(!e.repeat&&['t','f','c'].includes(k))onlineSkillQueued[k]=true;return}if(!e.repeat)skill(k)});
 window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
 $('tBtn').onclick=()=>skill('t');$('fBtn').onclick=()=>skill('f');$('cBtn').onclick=()=>skill('c');$('resetBtn').onclick=resetGame;$('characterSelect').onchange=e=>{character=e.target.value;fresh()};
 
@@ -154,7 +154,7 @@ const CHAR={
  general:{name:'제너럴 K',...characterRules('general'),color:'#15243a',ammo:0,reload:0},
  noh:{name:'노무현',...characterRules('noh'),color:'#806344',ammo:0,reload:0}
 };
-let onlineActive=false,onlineFrame=0,onlineLast=0,onlineSendClock=0,onlineAttack=false,onlineAttackQueued=false,remoteAttackQueued=false,onlineSoundCursor=0;
+let onlineActive=false,onlineFrame=0,onlineLast=0,onlineSendClock=0,onlineAttack=false,onlineAttackQueued=false,remoteAttackQueued=false,onlineSoundCursor=0,onlineSkillQueued={t:false,f:false,c:false};
 let onlineState=null,onlineSnapshot=null,remoteInput={},selectedCharacters=['general','general'];
 let localAimX=OW*.75,localAimY=OH*.5;
 function pickCharacter(ch){return CHAR[ch]?ch:'general'}
@@ -185,12 +185,12 @@ onlineCanvas.addEventListener('pointerup',()=>onlineAttack=false);onlineCanvas.a
 function onlineLoop(now){
  if(!onlineActive)return;const dt=Math.min((now-onlineLast)/1000,.04);onlineLast=now;onlineSendClock+=dt;
  const index=role==='host'?0:1,me=(onlineSnapshot||onlineState)?.players[index];
- const input={dx:(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0),dy:(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0),angle:Math.atan2(localAimY-(me?.y??OH/2),localAimX-(me?.x??OW/2)),aimX:localAimX,aimY:localAimY,attack:(onlineAttack||onlineAttackQueued),t:!!keys.t,f:!!keys.f,c:!!keys.c};
+ const input={dx:(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0),dy:(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0),angle:Math.atan2(localAimY-(me?.y??OH/2),localAimX-(me?.x??OW/2)),aimX:localAimX,aimY:localAimY,attack:(onlineAttack||onlineAttackQueued),t:!!keys.t||onlineSkillQueued.t,f:!!keys.f||onlineSkillQueued.f,c:!!keys.c||onlineSkillQueued.c};
  if(role==='host'){
-  const remoteFrameInput={...remoteInput,attack:!!(remoteInput.attack||remoteAttackQueued)};simulateOnline(dt,input,remoteFrameInput);onlineAttackQueued=false;remoteAttackQueued=false;
+  const remoteFrameInput={...remoteInput,attack:!!(remoteInput.attack||remoteAttackQueued)};simulateOnline(dt,input,remoteFrameInput);onlineAttackQueued=false;remoteAttackQueued=false;onlineSkillQueued={t:false,f:false,c:false};
   if(onlineSendClock>=.05){onlineSendClock=0;send({type:'state',state:onlineState})}
   onlineSnapshot=onlineState;
- }else if(onlineSendClock>=.05){onlineSendClock=0;send({type:'input',input});onlineAttackQueued=false}
+ }else if(onlineSendClock>=.05){onlineSendClock=0;send({type:'input',input});onlineAttackQueued=false;onlineSkillQueued={t:false,f:false,c:false}}
  drawOnline(onlineSnapshot||onlineState);
  onlineFrame=requestAnimationFrame(onlineLoop);
 }
@@ -260,7 +260,7 @@ function simulateOnline(dt,a,b){
  if(onlineState.globalFreeze>0)onlineState.globalFreeze=Math.max(0,onlineState.globalFreeze-dt);onlineState.effects=onlineState.effects.filter(e=>(e.life-=dt)>0);onlineState.soundEvents=onlineState.soundEvents.slice(-40);
 }
 function updateOnlineSkillUi(p){if(!p)return;const g=p.character==='general',names=g?['영혼 사슬','영혼 늑대 무리','영혼 절멸자']:['피아제 시간 삭제','부엉이 바위','봉하 콘서트'];$('onlineTName').textContent=names[0];$('onlineFName').textContent=names[1];$('onlineCName').textContent=names[2];$('onlineTCd').textContent=p.cool.t>0?p.cool.t.toFixed(1)+'초':'준비 완료';$('onlineFCd').textContent=p.cool.f>0?p.cool.f.toFixed(1)+'초':'준비 완료';const need=characterRules(p.character).skills.c.gauge;$('onlineCCd').textContent=p.ultTime>0?p.ultTime.toFixed(1)+'초':p.gauge>=need?'사용 가능':'게이지 '+formatKoreanNumber(Math.floor(p.gauge))+'/'+formatKoreanNumber(need);$('onlineTBtn').disabled=p.cool.t>0||!!p.pendingChain;$('onlineFBtn').disabled=p.cool.f>0;$('onlineCBtn').disabled=p.ultTime>0||p.gauge<need}
-function triggerOnlineSkill(k){if(!onlineActive)return;keys[k]=true;setTimeout(()=>{keys[k]=false},140)}
+function triggerOnlineSkill(k){if(!onlineActive||!['t','f','c'].includes(k))return;onlineSkillQueued[k]=true;keys[k]=true;setTimeout(()=>{keys[k]=false},140)}
 function drawOnline(state){
  if(!state)return;
  if(state.soundEvents){for(const ev of state.soundEvents){if(ev.id>onlineSoundCursor){sound(ev.freq,ev.duration,ev.type,ev.volume,ev.slide);onlineSoundCursor=Math.max(onlineSoundCursor,ev.id)}}}
