@@ -33,7 +33,7 @@ wss.on('connection', ws => {
       if (ws.room) return send(ws, {type:'error', message:'이미 방에 참가 중입니다.'});
       const code = newCode();
       const maxPlayers = Number(msg.maxPlayers) === 3 ? 3 : 2;
-      const room = {code, players:[ws], host:ws, maxPlayers};
+      const room = {code, players:[ws], host:ws, maxPlayers, characters:['general']};
       rooms.set(code, room);
       ws.room = room;
       ws.role = 'host';
@@ -48,10 +48,11 @@ wss.on('connection', ws => {
       if (room.players.length >= room.maxPlayers) return send(ws, {type:'error', message:room.maxPlayers+'인 방이 가득 찼습니다.'});
       const existingPlayers = room.players.slice();
       room.players.push(ws);
+      room.characters[1] = 'general';
       ws.room = room;
       ws.role = 'guest';
       ws.playerIndex = room.players.length;
-      send(ws, {type:'joined', code, role:'guest', playerIndex:ws.playerIndex, maxPlayers:room.maxPlayers, count:room.players.length});
+      send(ws, {type:'joined', code, role:'guest', playerIndex:ws.playerIndex, maxPlayers:room.maxPlayers, count:room.players.length, characters:room.characters});
       for (const player of existingPlayers) send(player, {type:'peer-joined', playerIndex:ws.playerIndex, count:room.players.length, maxPlayers:room.maxPlayers});
       return;
     }
@@ -61,6 +62,14 @@ wss.on('connection', ws => {
     if (msg.type === 'input') {
       if (ws.role === 'host') return;
       return send(room.host, {...msg, playerIndex:ws.playerIndex});
+    }
+    if (msg.type === 'character-select') {
+      const allowed = ['general','tendo','vincent','noh'];
+      const index = ws.role === 'host' ? 0 : 1;
+      if (!allowed.includes(msg.character)) return;
+      room.characters[index] = msg.character;
+      for (const player of room.players) send(player, {type:'character-select', playerIndex:index+1, character:msg.character});
+      return;
     }
     if (['state','rematch'].includes(msg.type)) relay(room, ws, msg);
   });
