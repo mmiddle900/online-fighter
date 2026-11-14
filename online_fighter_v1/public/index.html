@@ -139,11 +139,11 @@ function onlineLoop(now){
 }
 function onlineEffect(e){onlineState.effects.push(e)}
 function onlineSound(freq,duration,type,volume,slide){const id=++onlineState.soundSeq;onlineState.soundEvents.push({id,freq,duration,type,volume,slide});if(onlineState.soundEvents.length>40)onlineState.soundEvents.shift()}
-function dealOnlineDamage(target,amount,source){
+function dealOnlineDamage(target,amount,source,silent=false){
  if(target.invuln>0||target.hp<=0)return;
  const actual=Math.min(target.hp,Math.max(0,amount));target.hp-=actual;target.damageFlash=.16;
  if(source){source.gauge+=actual;source.gauge=Math.min(source.gauge,20000)}
- onlineEffect({kind:'text',x:target.x,y:target.y-24,text:'-'+Math.round(actual),life:.8,max:.8,color:'#fff0a8'});onlineEffect({kind:'hitBurst',x:target.x,y:target.y,life:.35,max:.35,color:'#9de8ff'});onlineSound(155,.12,'triangle',.035,220);
+ onlineEffect({kind:'text',x:target.x,y:target.y-24,text:'-'+Math.round(actual),life:.8,max:.8,color:'#fff0a8'});onlineEffect({kind:'hitBurst',x:target.x,y:target.y,life:.35,max:.35,color:'#9de8ff'});if(!silent)onlineSound(155,.12,'triangle',.035,220);
  if(target.hp<=0){onlineState.winner=onlineState.players.indexOf(source)+1;$('matchStatus').textContent='플레이어 '+onlineState.winner+' 승리!'}
 }
 function projectile(owner,x,y,angle,speed,damage,range,color,kind='bullet'){
@@ -175,12 +175,12 @@ function simulateOnline(dt,a,b){
   if(p.pendingChain){p.pendingChain.time-=dt;if(p.pendingChain.time<=0){const ang=p.pendingChain.angle,ux=Math.cos(ang),uy=Math.sin(ang),dx=enemy.x-p.x,dy=enemy.y-p.y,along=dx*ux+dy*uy,side=Math.abs(-dx*uy+dy*ux);onlineEffect({kind:'chain',x1:p.x,y1:p.y,x2:p.x+ux*30*CELL,y2:p.y+uy*30*CELL,life:.42,max:.42});onlineSound(110,.32,'triangle',.06,500);if(along>=0&&along<=30*CELL&&side<=CELL){enemy.x=clamp(p.x+ux*1.5*CELL,24,OW-24);enemy.y=clamp(p.y+uy*1.5*CELL,24,OH-24);p.chainEmpowered=true;onlineEffect({kind:'chainHit',x:enemy.x,y:enemy.y,life:.5,max:.5});onlineEffect({kind:'text',x:enemy.x,y:enemy.y-38,text:'영혼 사슬 적중',life:.9,max:.9,color:'#80d5ff'})}else{onlineEffect({kind:'text',x:p.x+ux*30*CELL,y:p.y+uy*30*CELL-20,text:'사슬 빗나감',life:.55,max:.55,color:'#a9bdd1'})}p.pendingChain=null}}
   const slow=ps.some((q,j)=>j!==i&&q.character==='noh'&&q.field>0&&Math.hypot(p.x-q.x,p.y-q.y)<=5*CELL),len=Math.hypot(v.dx||0,v.dy||0)||1,spd=p.speed*CELL*(slow?.25:1);
   p.x=clamp(p.x+(v.dx||0)/len*spd*dt,24,OW-24);p.y=clamp(p.y+(v.dy||0)/len*spd*dt,24,OH-24);p.angle=Number.isFinite(v.angle)?v.angle:p.angle;tryBasic(p,i,v);
-  if(p.ultTime>0&&p.character==='general'&&Math.hypot(enemy.x-p.x,enemy.y-p.y)<=5*CELL)dealOnlineDamage(enemy,30*dt,p);
+  if(p.ultTime>0&&p.character==='general'&&Math.hypot(enemy.x-p.x,enemy.y-p.y)<=5*CELL)dealOnlineDamage(enemy,30*dt,p,true);
   if(p.pushTimer>0){const st=Math.min(dt,p.pushTimer);p.x=clamp(p.x+(p.pushVx||0)*st,24,OW-24);p.y=clamp(p.y+(p.pushVy||0)*st,24,OH-24);p.pushTimer=Math.max(0,p.pushTimer-dt)}
  }
- for(const w of onlineState.wolves){if(w.hit)continue;const mag=Math.hypot(w.vx,w.vy)||1,st=Math.min(mag*dt,w.maxTravel-w.travel),ox=w.x,oy=w.y;w.x+=w.vx/mag*st;w.y+=w.vy/mag*st;w.travel+=st;w.life-=dt;const t=ps[1-w.owner],sx=w.x-ox,sy=w.y-oy,den=sx*sx+sy*sy,u=den?clamp(((t.x-ox)*sx+(t.y-oy)*sy)/den,0,1):0;if(Math.hypot(t.x-(ox+sx*u),t.y-(oy+sy*u))<=.9*CELL){w.hit=true;dealOnlineDamage(t,300,ps[w.owner]);t.pushVx=w.vx/mag*70;t.pushVy=w.vy/mag*70;t.pushTimer=.12}}
+ for(const w of onlineState.wolves){if(w.hit)continue;const mag=Math.hypot(w.vx,w.vy)||1,st=Math.min(mag*dt,w.maxTravel-w.travel),ox=w.x,oy=w.y;w.x+=w.vx/mag*st;w.y+=w.vy/mag*st;w.travel+=st;w.life-=dt;const t=ps[1-w.owner],sx=w.x-ox,sy=w.y-oy,den=sx*sx+sy*sy,u=den?clamp(((t.x-ox)*sx+(t.y-oy)*sy)/den,0,1):0;if(Math.hypot(t.x-(ox+sx*u),t.y-(oy+sy*u))<=.9*CELL){w.hit=true;dealOnlineDamage(t,300,ps[w.owner]);onlineSound(160,.18,'triangle',.04,180);t.pushVx=w.vx/mag*70;t.pushVy=w.vy/mag*70;t.pushTimer=.12}}
  onlineState.wolves=onlineState.wolves.filter(w=>!w.hit&&w.life>0&&w.travel<w.maxTravel);
- for(const s of onlineState.shots){if(onlineState.globalFreeze>0)continue;const owner=ps[s.owner],t=ps[1-s.owner],st=Math.hypot(s.vx,s.vy)*dt;s.x+=s.vx*dt;s.y+=s.vy*dt;s.travel+=st;s.life-=dt;if(s.life<=0||s.travel>s.range){s.hit=true;continue}if(Math.hypot(s.x-t.x,s.y-t.y)<22){onlineEffect({kind:'eggHit',x:s.x,y:s.y,life:.3,max:.3});dealOnlineDamage(t,s.damage,owner);t.pending={type:'egg-knock',time:.3,vx:Math.cos(Math.atan2(s.vy,s.vx))*5*CELL,vy:Math.sin(Math.atan2(s.vy,s.vx))*5*CELL};s.hit=true}}
+ for(const s of onlineState.shots){if(onlineState.globalFreeze>0)continue;const owner=ps[s.owner],t=ps[1-s.owner],st=Math.hypot(s.vx,s.vy)*dt;s.x+=s.vx*dt;s.y+=s.vy*dt;s.travel+=st;s.life-=dt;if(s.life<=0||s.travel>s.range){s.hit=true;continue}if(Math.hypot(s.x-t.x,s.y-t.y)<22){onlineEffect({kind:'eggHit',x:s.x,y:s.y,life:.3,max:.3});onlineSound(130,.18,'triangle',.05,-40);dealOnlineDamage(t,s.damage,owner,true);t.pending={type:'egg-knock',time:.3,vx:Math.cos(Math.atan2(s.vy,s.vx))*5*CELL,vy:Math.sin(Math.atan2(s.vy,s.vx))*5*CELL};s.hit=true}}
  onlineState.shots=onlineState.shots.filter(s=>!s.hit);for(const p of ps)if(p.pending?.type==='egg-knock'){p.pending.time-=dt;if(p.pending.time<=0){p.x=clamp(p.x+p.pending.vx*.3,24,OW-24);p.y=clamp(p.y+p.pending.vy*.3,24,OH-24);p.pending=null}}
  if(onlineState.globalFreeze>0)onlineState.globalFreeze=Math.max(0,onlineState.globalFreeze-dt);onlineState.effects=onlineState.effects.filter(e=>(e.life-=dt)>0);onlineState.soundEvents=onlineState.soundEvents.slice(-40);
 }
