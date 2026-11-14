@@ -95,21 +95,21 @@ $('tBtn').onclick=()=>skill('t');$('fBtn').onclick=()=>skill('f');$('cBtn').oncl
 const onlineCanvas=$('onlineCanvas'),octx=onlineCanvas.getContext('2d');
 const OW=onlineCanvas.width,OH=onlineCanvas.height,CELL=42;
 const CHAR={
- general:{name:'제너럴 K',hp:10000,speed:2,color:'#15243a',ammo:3,reload:2},
- noh:{name:'노무현',hp:1500,speed:3.6,color:'#806344',ammo:1,reload:3}
+ general:{name:'제너럴 K',hp:2500,speed:2.8,color:'#15243a',ammo:0,reload:0},
+ noh:{name:'노무현',hp:1500,speed:3.6,color:'#806344',ammo:0,reload:0}
 };
 let onlineActive=false,onlineFrame=0,onlineLast=0,onlineSendClock=0,onlineAttack=false;
 let onlineState=null,onlineSnapshot=null,remoteInput={},selectedCharacters=['general','general'];
 let localAimX=OW*.75,localAimY=OH*.5;
 function pickCharacter(ch){return CHAR[ch]?ch:'general'}
-function makeFighter(ch,x,y,angle){const d=CHAR[pickCharacter(ch)];return {character:pickCharacter(ch),x,y,angle,hp:d.hp,maxHp:d.hp,speed:d.speed,ammo:d.ammo,maxAmmo:d.ammo,reloadTime:d.reload,reload:0,attackCd:0,attackHeld:false,windup:0,windupKind:'',cool:{e:0,r:0,t:0},gauge:0,invuln:0,slow:0,healTime:0,healLeft:0,drug:0,freeze:0,field:0,fieldCd:0,chainEmpowered:false,wolf:false,wolfCd:0,projectiles:[],pending:null,damageOverTime:0,dotTime:0,burstCount:0,burstWait:0,rocket:null,damageFlash:0,pushVx:0,pushVy:0,pushTimer:0}}
+function makeFighter(ch,x,y,angle){const d=CHAR[pickCharacter(ch)];return {character:pickCharacter(ch),x,y,angle,hp:d.hp,maxHp:d.hp,speed:d.speed,ammo:d.ammo,maxAmmo:d.ammo,reloadTime:d.reload,reload:0,attackCd:0,attackHeld:false,windup:0,windupKind:'',cool:{t:0,f:0,c:0},gauge:0,invuln:0,slow:0,healTime:0,healLeft:0,drug:0,freeze:0,field:0,fieldCd:0,chainEmpowered:false,wolf:false,wolfCd:0,projectiles:[],pending:null,damageOverTime:0,dotTime:0,burstCount:0,burstWait:0,rocket:null,damageFlash:0,pushVx:0,pushVy:0,pushTimer:0}}
 function startOnlineMatch(){
  if(onlineActive||maxPlayers!==2||playerCount!==2)return;
  stopGame();onlineActive=true;$('lobby').classList.add('hidden');$('practice').classList.add('hidden');$('onlineGame').classList.remove('hidden');
  $('p1Label').textContent='플레이어 1';$('p2Label').textContent='플레이어 2';
  selectedCharacters[0]=pickCharacter(selectedCharacters[0]);selectedCharacters[1]=pickCharacter(selectedCharacters[1]);
  if(role==='host')selectedCharacters[0]=pickCharacter($('onlineCharacterSelect').value);
- onlineState={players:[makeFighter(selectedCharacters[0],OW*.22,OH*.5,0),makeFighter(selectedCharacters[1],OW*.78,OH*.5,Math.PI)],shots:[],effects:[],winner:0,clock:0};
+ onlineState={players:[makeFighter(selectedCharacters[0],OW*.22,OH*.5,0),makeFighter(selectedCharacters[1],OW*.78,OH*.5,Math.PI)],shots:[],wolves:[],effects:[],winner:0,clock:0};
  onlineSnapshot=JSON.parse(JSON.stringify(onlineState));remoteInput={};onlineLast=performance.now();onlineSendClock=0;
  $('matchCharacterSelect').value=selectedCharacters[role==='host'?0:1];
  $('matchStatus').textContent='전투 시작! 캐릭터를 선택하고 싸워라.';
@@ -128,7 +128,7 @@ onlineCanvas.addEventListener('pointerup',()=>onlineAttack=false);onlineCanvas.a
 function onlineLoop(now){
  if(!onlineActive)return;const dt=Math.min((now-onlineLast)/1000,.04);onlineLast=now;onlineSendClock+=dt;
  const index=role==='host'?0:1,me=(onlineSnapshot||onlineState)?.players[index];
- const input={dx:(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0),dy:(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0),angle:Math.atan2(localAimY-(me?.y??OH/2),localAimX-(me?.x??OW/2)),aimX:localAimX,aimY:localAimY,attack:onlineAttack,e:!!keys.e,r:!!keys.r,t:!!keys.t};
+ const input={dx:(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0),dy:(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0),angle:Math.atan2(localAimY-(me?.y??OH/2),localAimX-(me?.x??OW/2)),aimX:localAimX,aimY:localAimY,attack:onlineAttack,t:!!keys.t,f:!!keys.f,c:!!keys.c};
  if(role==='host'){
   simulateOnline(dt,input,remoteInput);
   if(onlineSendClock>=.05){onlineSendClock=0;send({type:'state',state:onlineState})}
@@ -148,59 +148,39 @@ function projectile(owner,x,y,angle,speed,damage,range,color,kind='bullet'){
  onlineState.shots.push({owner,x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,damage,range,travel:0,color,kind,life:Math.max(1,range/speed),delay:0,hit:false});
 }
 function tryBasic(p,i,v){
- if(!v.attack){p.attackHeld=false;return}if(p.attackHeld||p.hp<=0||onlineState.winner)return;
- p.attackHeld=true;if(p.reload>0||p.ammo<=0||p.attackCd>0)return;
- const target=onlineState.players[1-i],ch=p.character;
- if(ch==='general'&&p.chainEmpowered){p.chainEmpowered=false;p.ammo--;p.attackCd=.45;const enemy=onlineState.players[1-i];enemy.pushVx=Math.cos(p.angle)*20*CELL;enemy.pushVy=Math.sin(p.angle)*20*CELL;enemy.pushTimer=.25;return}if(ch==='general'||ch==='tendo'){p.ammo--;p.attackCd=ch==='general'?.45:.15;p.windup=ch==='general'?.3:.06;p.windupKind='basic';}
- else if(ch==='vincent'){p.ammo--;p.attackCd=.2;p.burstCount=3;p.burstWait=0;}
- else{p.ammo--;p.attackCd=3;projectile(i,p.x,p.y,p.angle,30*CELL,250,100*CELL,'#fff0c7','egg')}
+ if(!v.attack){p.attackHeld=false;return}if(p.attackHeld||p.hp<=0||onlineState.winner)return;p.attackHeld=true;if(p.attackCd>0)return;
+ const target=onlineState.players[1-i];
+ if(p.character==='general'){p.attackCd=1;if(p.chainEmpowered){p.chainEmpowered=false;const a=Math.atan2(target.y-p.y,target.x-p.x);target.pushVx=Math.cos(a)*20*CELL;target.pushVy=Math.sin(a)*20*CELL;target.pushTimer=.25;return}const d=Math.hypot(target.x-p.x,target.y-p.y),a=Math.atan2(target.y-p.y,target.x-p.x),diff=Math.atan2(Math.sin(a-p.angle),Math.cos(a-p.angle));if(d<=4*CELL&&Math.abs(diff)<=Math.PI*2/3)dealOnlineDamage(target,500,p)}
+ else{p.attackCd=3;projectile(i,p.x,p.y,p.angle,30*CELL,250,100*CELL,'#fff0c7','egg')}
 }
 function activateSkill(p,i,key,v){
- if(!v[key]||p._skillHeld?.[key])return;
- p._skillHeld=p._skillHeld||{};p._skillHeld[key]=true;
- const ch=p.character,enemy=onlineState.players[1-i],dx=enemy.x-p.x,dy=enemy.y-p.y,dist=Math.hypot(dx,dy),ang=p.angle;
- if(ch==='general'){
-  if(key==='e'&&p.cool.e<=0){p.cool.e=15;const hit=dist<=30*CELL&&Math.abs(Math.atan2(Math.sin(Math.atan2(dy,dx)-ang),Math.cos(Math.atan2(dy,dx)-ang)))<.16;if(hit)projectile(i,p.x,p.y,ang,10*CELL,1000,30*CELL,'#6bd3ff','chain');}
-  if(key==='r'&&p.gauge>=4800&&!p.wolf){p.gauge-=4800;p.wolf=true;p.wolfHp=5000;p.wolfCd=0;}
-  if(key==='t'&&p.gauge>=14400&&p.drug<=0){p.gauge-=14400;p.drug=10;}
- }else if(ch==='tendo'){
-  if(key==='e'&&p.cool.e<=0){p.cool.e=10;p.pending={type:'blink',time:3,x:clamp(v.aimX??p.x+Math.cos(ang)*5*CELL,25,OW-25),y:clamp(v.aimY??p.y+Math.sin(ang)*5*CELL,25,OH-25)}}
-  if(key==='r'&&p.gauge>=6000&&!p.pending){p.gauge-=6000;p.pending={type:'impact',time:1.5,angle:ang}}
-  if(key==='t'&&p.gauge>=12000&&p.invuln<=0){p.gauge-=12000;p.invuln=6;p.invulnOrigin={x:p.x,y:p.y};}
- }else if(ch==='vincent'){
-  if(key==='e'&&p.cool.e<=0){p.cool.e=25;p.healTime=10;p.healLeft=1500;}
-  if(key==='r'&&p.gauge>=4800&&!p.rocket){p.gauge-=4800;p.rocket={x:p.x,y:p.y,life:10,speed:1.5*CELL,damage:3000}}
-  if(key==='t'&&p.gauge>=9600){p.gauge-=9600;p.drug=5;}
- }else if(ch==='noh'){
-  if(key==='e'&&p.cool.e<=0){p.cool.e=15;p.x=clamp(p.x+Math.cos(ang)*10*CELL,25,OW-25);p.y=clamp(p.y+Math.sin(ang)*10*CELL,25,OH-25);for(const s of onlineState.shots)if(s.owner!==i){s.x+=s.vx*3;s.y+=s.vy*3;s.travel+=Math.hypot(s.vx,s.vy)*3}}
-  if(key==='r'&&p.cool.r<=0){p.cool.r=20;p.field=5}
-  if(key==='t'&&p.gauge>=5500){p.gauge-=5500;enemy.freeze=9;onlineState.globalFreeze=9}
+ if(!v[key]||p._skillHeld?.[key])return;p._skillHeld=p._skillHeld||{};p._skillHeld[key]=true;const enemy=onlineState.players[1-i],ang=p.angle;
+ if(p.character==='general'){
+  if(key==='t'&&p.cool.t<=0&&!p.pendingChain){p.cool.t=10;p.pendingChain={time:1.5,angle:ang}}
+  if(key==='f'&&p.cool.f<=0){p.cool.f=15;const back=ang+Math.PI;for(let n=0;n<3;n++){const off=(n-1)*2*CELL,x=p.x+Math.cos(back)*5*CELL+Math.cos(back+Math.PI/2)*off,y=p.y+Math.sin(back)*5*CELL+Math.sin(back+Math.PI/2)*off;onlineState.wolves.push({owner:i,x,y,vx:Math.cos(ang)*10*CELL,vy:Math.sin(ang)*10*CELL,travel:0,maxTravel:30*CELL,life:4,hit:false})}}
+  if(key==='c'&&p.gauge>=5000&&p.ultTime<=0){p.gauge-=5000;p.ultTime=10}
+ }else{
+  if(key==='t'&&p.cool.t<=0){p.cool.t=15;p.x=clamp(p.x+Math.cos(ang)*10*CELL,24,OW-24);p.y=clamp(p.y+Math.sin(ang)*10*CELL,24,OH-24);for(const s of onlineState.shots)if(s.owner!==i){const jump=Math.hypot(s.vx,s.vy)*3;s.x+=Math.cos(Math.atan2(s.vy,s.vx))*jump;s.y+=Math.sin(Math.atan2(s.vy,s.vx))*jump;s.travel+=jump}}
+  if(key==='f'&&p.cool.f<=0){p.cool.f=20;p.field=5}
+  if(key==='c'&&p.gauge>=5500&&p.ultTime<=0){p.gauge-=5500;p.ultTime=9;enemy.freeze=9;onlineState.globalFreeze=9}
  }
 }
 function simulateOnline(dt,a,b){
- onlineState.clock+=dt;const inputs=[a||{},b||{}],players=onlineState.players;
- for(let i=0;i<2;i++){const p=players[i],v=inputs[i],enemy=players[1-i];p.freeze=Math.max(0,p.freeze-dt);if(p.freeze>0)continue;p._skillHeld=p._skillHeld||{};for(const k of ['e','r','t'])if(!v[k])p._skillHeld[k]=false;
-  for(const k of ['e','r','t'])activateSkill(p,i,k,v);
-  for(const k of Object.keys(p.cool))p.cool[k]=Math.max(0,p.cool[k]-dt);
-  p.attackCd=Math.max(0,p.attackCd-dt);if(p.reload>0){p.reload=Math.max(0,p.reload-dt*(p.character==='vincent'&&p.drug>0?1.5:1));if(p.reload===0)p.ammo=p.maxAmmo}p.invuln=Math.max(0,p.invuln-dt);p.drug=Math.max(0,p.drug-dt);p.field=Math.max(0,p.field-dt);p.slow=Math.max(0,p.slow-dt);
-  if(p.healTime>0){const heal=Math.min(p.healLeft,150*dt);p.hp=Math.min(p.maxHp,p.hp+heal);p.healLeft-=heal;p.healTime=Math.max(0,p.healTime-dt)}
-  if(p.pending){p.pending.time-=dt;if(p.pending.time<=0){if(p.pending.type==='blink'){p.x=p.pending.x;p.y=p.pending.y;onlineState.effects.push({x:p.x,y:p.y,text:'공간 도약',life:.8,color:'#a6d5ff'})}else if(p.pending.type==='impact'){const ang=p.pending.angle,dx=enemy.x-p.x,dy=enemy.y-p.y,along=dx*Math.cos(ang)+dy*Math.sin(ang),side=Math.abs(-dx*Math.sin(ang)+dy*Math.cos(ang));if(along>0&&along<5*CELL&&side<CELL*.5){dealOnlineDamage(enemy,500,p);enemy.damageOverTime=500;enemy.dotTime=5}}p.pending=null}}
-  if(p.damageOverTime>0&&p.dotTime>0){const tick=Math.min(dt,p.dotTime);p.dotTime-=tick;p.damageOverTime-=500*tick;if(p.dotTime<=0)p.damageOverTime=0;dealOnlineDamage(p,500*tick,enemy)}
-  if(p.wolf&&p.wolfHp>0){p.wolfCd+=dt;if(p.wolfCd>=3){p.wolfCd=0;if(Math.hypot(enemy.x-p.x,enemy.y-p.y)<3*CELL)dealOnlineDamage(enemy,1000,p)}}
-  if(p.invuln>0&&p.character==='tendo'){const a=Math.random()*Math.PI*2,r=Math.random()*.5*CELL,o=p.invulnOrigin||{x:p.x,y:p.y};p.x=clamp(o.x+Math.cos(a)*r,24,OW-24);p.y=clamp(o.y+Math.sin(a)*r,24,OH-24)}
-  if(p.field>0&&Math.hypot(enemy.x-p.x,enemy.y-p.y)<5*CELL)enemy.slow=Math.max(enemy.slow,.12);if(p.pushTimer>0){const step=Math.min(dt,p.pushTimer);p.x=clamp(p.x+(p.pushVx||0)*step,24,OW-24);p.y=clamp(p.y+(p.pushVy||0)*step,24,OH-24);p.pushTimer=Math.max(0,p.pushTimer-dt)}
-  const speed=p.speed*CELL*(p.drug>0?1.5:1)*(p.character==='general'&&p.drug>0?1.5:1)*(p.slow>0?.25:1);
-  const len=Math.hypot(v.dx||0,v.dy||0)||1;p.x=clamp(p.x+(v.dx||0)/len*speed*dt,24,OW-24);p.y=clamp(p.y+(v.dy||0)/len*speed*dt,24,OH-24);p.angle=Number.isFinite(v.angle)?v.angle:p.angle;
-  tryBasic(p,i,v);
-  if(p.windup>0){p.windup-=dt;if(p.windup<=0){if(p.character==='general'){const d=Math.hypot(enemy.x-p.x,enemy.y-p.y),a2=Math.atan2(enemy.y-p.y,enemy.x-p.x),diff=Math.atan2(Math.sin(a2-p.angle),Math.cos(a2-p.angle));if(d<=5*CELL&&Math.abs(diff)<=Math.PI*.5)dealOnlineDamage(enemy,2400*(p.drug>0?1.25:1),p)}else if(p.character==='tendo'){const dx=enemy.x-p.x,dy=enemy.y-p.y,along=dx*Math.cos(p.angle)+dy*Math.sin(p.angle),side=Math.abs(-dx*Math.sin(p.angle)+dy*Math.cos(p.angle));if(along>0&&along<=4*CELL&&side<=CELL)dealOnlineDamage(enemy,2000,p)}}}
-  if(p.burstCount>0){p.burstWait-=dt;if(p.burstWait<=0){projectile(i,p.x,p.y,p.angle,20*CELL,800,10*CELL,'#ffe69a','vincent');p.burstCount--;p.burstWait=.1}}
-  if(p.ammo<=0&&p.reload<=0){p.reload=p.reloadTime}
-  if(p.character==='general'&&p.drug>0){/* ultimate buffs are applied by its active timer */}
+ onlineState.clock+=dt;const inputs=[a||{},b||{}],ps=onlineState.players;
+ for(let i=0;i<2;i++){const p=ps[i],v=inputs[i],enemy=ps[1-i];p._skillHeld=p._skillHeld||{};if(p.freeze>0){p.freeze=Math.max(0,p.freeze-dt);continue}
+  for(const k of ['t','f','c'])if(!v[k])p._skillHeld[k]=false;for(const k of ['t','f','c'])activateSkill(p,i,k,v);
+  for(const k of Object.keys(p.cool))p.cool[k]=Math.max(0,p.cool[k]-dt);p.attackCd=Math.max(0,p.attackCd-dt);p.field=Math.max(0,p.field-dt);p.ultTime=Math.max(0,p.ultTime-dt);
+  if(p.pendingChain){p.pendingChain.time-=dt;if(p.pendingChain.time<=0){const ang=p.pendingChain.angle,ux=Math.cos(ang),uy=Math.sin(ang),dx=enemy.x-p.x,dy=enemy.y-p.y,along=dx*ux+dy*uy,side=Math.abs(-dx*uy+dy*ux);if(along>=0&&along<=30*CELL&&side<=CELL){enemy.x=clamp(p.x+ux*1.5*CELL,24,OW-24);enemy.y=clamp(p.y+uy*1.5*CELL,24,OH-24);p.chainEmpowered=true}p.pendingChain=null}}
+  const slow=ps.some((q,j)=>j!==i&&q.character==='noh'&&q.field>0&&Math.hypot(p.x-q.x,p.y-q.y)<=5*CELL),len=Math.hypot(v.dx||0,v.dy||0)||1,spd=p.speed*CELL*(slow?.25:1);
+  p.x=clamp(p.x+(v.dx||0)/len*spd*dt,24,OW-24);p.y=clamp(p.y+(v.dy||0)/len*spd*dt,24,OH-24);p.angle=Number.isFinite(v.angle)?v.angle:p.angle;tryBasic(p,i,v);
+  if(p.ultTime>0&&p.character==='general'&&Math.hypot(enemy.x-p.x,enemy.y-p.y)<=5*CELL)dealOnlineDamage(enemy,30*dt,p);
+  if(p.pushTimer>0){const st=Math.min(dt,p.pushTimer);p.x=clamp(p.x+(p.pushVx||0)*st,24,OW-24);p.y=clamp(p.y+(p.pushVy||0)*st,24,OH-24);p.pushTimer=Math.max(0,p.pushTimer-dt)}
  }
- if(onlineState.globalFreeze>0)onlineState.globalFreeze=Math.max(0,onlineState.globalFreeze-dt);for(const s of onlineState.shots){if(onlineState.globalFreeze>0)continue;const owner=players[s.owner],target=players[1-s.owner],step=Math.hypot(s.vx,s.vy)*dt;s.x+=s.vx*dt;s.y+=s.vy*dt;s.travel+=step;s.life-=dt;if(s.life<=0||s.travel>s.range){s.hit=true;continue}if(Math.hypot(s.x-target.x,s.y-target.y)<22){if(s.kind==='egg'){dealOnlineDamage(target,s.damage,owner);target.pending={type:'egg-knock',time:.3,vx:Math.cos(Math.atan2(s.vy,s.vx))*5*CELL,vy:Math.sin(Math.atan2(s.vy,s.vx))*5*CELL}}else if(s.kind==='chain'){dealOnlineDamage(target,s.damage,owner);target.x=clamp(owner.x+Math.cos(owner.angle)*1.5*CELL,24,OW-24);target.y=clamp(owner.y+Math.sin(owner.angle)*1.5*CELL,24,OH-24);owner.chainEmpowered=true}else dealOnlineDamage(target,s.damage,owner);s.hit=true}}
- onlineState.shots=onlineState.shots.filter(s=>!s.hit);
- for(const p of players){if(p.pending?.type==='egg-knock'){p.pending.time-=dt;if(p.pending.time<=0){p.x=clamp(p.x+p.pending.vx*.3,24,OW-24);p.y=clamp(p.y+p.pending.vy*.3,24,OH-24);p.pending=null}}if(p.rocket){const enemy=players[1-players.indexOf(p)],ang=Math.atan2(enemy.y-p.rocket.y,enemy.x-p.rocket.x);p.rocket.x+=Math.cos(ang)*p.rocket.speed*dt;p.rocket.y+=Math.sin(ang)*p.rocket.speed*dt;p.rocket.life-=dt;if(p.rocket.life<=0||p.rocket.x<12||p.rocket.x>OW-12||p.rocket.y<12||p.rocket.y>OH-12||Math.hypot(enemy.x-p.rocket.x,enemy.y-p.rocket.y)<24){if(Math.hypot(enemy.x-p.rocket.x,enemy.y-p.rocket.y)<3*CELL)dealOnlineDamage(enemy,p.rocket.damage,p);p.rocket=null}}}
- onlineState.effects=onlineState.effects.filter(e=>(e.life-=dt)>0);
+ for(const w of onlineState.wolves){if(w.hit)continue;const mag=Math.hypot(w.vx,w.vy)||1,st=Math.min(mag*dt,w.maxTravel-w.travel),ox=w.x,oy=w.y;w.x+=w.vx/mag*st;w.y+=w.vy/mag*st;w.travel+=st;w.life-=dt;const t=ps[1-w.owner],sx=w.x-ox,sy=w.y-oy,den=sx*sx+sy*sy,u=den?clamp(((t.x-ox)*sx+(t.y-oy)*sy)/den,0,1):0;if(Math.hypot(t.x-(ox+sx*u),t.y-(oy+sy*u))<=.9*CELL){w.hit=true;dealOnlineDamage(t,300,ps[w.owner]);t.pushVx=w.vx/mag*70;t.pushVy=w.vy/mag*70;t.pushTimer=.12}}
+ onlineState.wolves=onlineState.wolves.filter(w=>!w.hit&&w.life>0&&w.travel<w.maxTravel);
+ for(const s of onlineState.shots){if(onlineState.globalFreeze>0)continue;const owner=ps[s.owner],t=ps[1-s.owner],st=Math.hypot(s.vx,s.vy)*dt;s.x+=s.vx*dt;s.y+=s.vy*dt;s.travel+=st;s.life-=dt;if(s.life<=0||s.travel>s.range){s.hit=true;continue}if(Math.hypot(s.x-t.x,s.y-t.y)<22){dealOnlineDamage(t,s.damage,owner);t.pending={type:'egg-knock',time:.3,vx:Math.cos(Math.atan2(s.vy,s.vx))*5*CELL,vy:Math.sin(Math.atan2(s.vy,s.vx))*5*CELL};s.hit=true}}
+ onlineState.shots=onlineState.shots.filter(s=>!s.hit);for(const p of ps)if(p.pending?.type==='egg-knock'){p.pending.time-=dt;if(p.pending.time<=0){p.x=clamp(p.x+p.pending.vx*.3,24,OW-24);p.y=clamp(p.y+p.pending.vy*.3,24,OH-24);p.pending=null}}
+ if(onlineState.globalFreeze>0)onlineState.globalFreeze=Math.max(0,onlineState.globalFreeze-dt);onlineState.effects=onlineState.effects.filter(e=>(e.life-=dt)>0);
 }
 function drawOnline(state){
  if(!state)return;octx.clearRect(0,0,OW,OH);octx.fillStyle='#0b1727';octx.fillRect(0,0,OW,OH);
