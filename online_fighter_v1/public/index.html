@@ -204,7 +204,7 @@ function projectile(owner,x,y,angle,speed,damage,range,color,kind='bullet'){
  onlineState.shots.push({owner,x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,damage,range,travel:0,color,kind,life:Math.max(1,range/speed),delay:0,hit:false});
 }
 function tryBasic(p,i,v){
- if(!v.attack){p.attackHeld=false;return}if(p.attackHeld||p.hp<=0||onlineState.winner)return;p.attackHeld=true;const comboReady=p.basicComboTimer>0&&(p.basicComboStage===1||p.basicComboStage===2);if(p.basicMissCd>0||(!comboReady&&p.attackCd>0))return;
+ if(!v.attack){p.attackHeld=false;return}if(p.attackHeld||p.hp<=0||onlineState.winner)return;const comboReady=p.basicComboTimer>0&&(p.basicComboStage===1||p.basicComboStage===2);if(p.basicMissCd>0||(!comboReady&&p.attackCd>0))return;p.attackHeld=true;
  const target=onlineState.players[1-i],r=characterRules(p.character).basic;
  if(p.character==='general'){
   p.attackCd=r.cooldown;const empowered=!!p.chainEmpowered;p.chainEmpowered=false;
