@@ -100,7 +100,7 @@ function attack(){
  if(player.basicComboTimer<=0)player.basicComboStage=0;
  if(player.basicComboStage===1){
   effects.push({kind:'thrust',x:player.x,y:player.y,angle:player.angle,life:.22,max:.22,r:5*S});sound(155,.16,'sawtooth',.05,380);
-  if(inThrustBox(player,dummy,S)){addDamage(r.damage);shoveToSixMeters(player,dummy,S,W,H,30);dummy.moveLock=.1;burst(dummy.x,dummy.y,'#9ceaff',20,150);player.basicComboStage=2;player.basicComboTimer=.4;lastBasic=performance.now()-r.cooldown*1000;effects.push({kind:'text',x:dummy.x,y:dummy.y-48,text:'2연계 적중 · 밀쳐내기',life:.65,max:.65,color:'#a8eaff'})}
+  if(inThrustBox(player,dummy,S)){addDamage(r.damage);shoveToSixMeters(player,dummy,S,W,H,30);dummy.moveLock=.1;burst(dummy.x,dummy.y,'#9ceaff',20,150);player.basicComboStage=2;player.basicComboTimer=.6;lastBasic=performance.now()-r.cooldown*1000;effects.push({kind:'text',x:dummy.x,y:dummy.y-48,text:'2연계 적중 · 밀쳐내기',life:.65,max:.65,color:'#a8eaff'})}
   else{player.basicComboStage=0;player.basicComboTimer=0;effects.push({kind:'text',x:player.x+Math.cos(player.angle)*S*3,y:player.y+Math.sin(player.angle)*S*3,text:'찌르기 빗나감',life:.45,max:.45,color:'#a9bdd1'})}return;
  }
  if(player.basicComboStage===2){
@@ -209,7 +209,7 @@ function tryBasic(p,i,v){
   if(p.basicComboTimer<=0)p.basicComboStage=0;
   if(p.basicComboStage===1){
    onlineEffect({kind:'thrust',x:p.x,y:p.y,angle:p.angle,r:5*CELL,life:.22,max:.22,owner:i});onlineSound(155,.16,'sawtooth',.05,380);
-   if(inThrustBox(p,target,CELL)){dealOnlineDamage(target,r.damage,p);shoveToSixMeters(p,target,CELL,OW,OH,24);target.moveLock=.1;target.stun=0;onlineEffect({kind:'knock',x:target.x,y:target.y,angle:p.angle,life:.3,max:.3});onlineEffect({kind:'hitBurst',x:target.x,y:target.y,life:.35,max:.35,color:'#9ceaff'});p.basicComboStage=2;p.basicComboTimer=.4;p.attackCd=0;onlineEffect({kind:'text',x:target.x,y:target.y-38,text:'2연계 적중 · 밀쳐내기',life:.65,max:.65,color:'#a8eaff'})}
+   if(inThrustBox(p,target,CELL)){dealOnlineDamage(target,r.damage,p);shoveToSixMeters(p,target,CELL,OW,OH,24);target.moveLock=.1;target.stun=0;onlineEffect({kind:'knock',x:target.x,y:target.y,angle:p.angle,life:.3,max:.3});onlineEffect({kind:'hitBurst',x:target.x,y:target.y,life:.35,max:.35,color:'#9ceaff'});p.basicComboStage=2;p.basicComboTimer=.6;p.attackCd=0;onlineEffect({kind:'text',x:target.x,y:target.y-38,text:'2연계 적중 · 밀쳐내기',life:.65,max:.65,color:'#a8eaff'})}
    else{p.basicComboStage=0;p.basicComboTimer=0;onlineEffect({kind:'text',x:p.x+Math.cos(p.angle)*3*CELL,y:p.y+Math.sin(p.angle)*3*CELL,text:'찌르기 빗나감',life:.45,max:.45,color:'#a9bdd1'})}return;
   }
   if(p.basicComboStage===2){
