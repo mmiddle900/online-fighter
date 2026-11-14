@@ -51,7 +51,7 @@ showRoom();connect();
 
 /* GENERAL K PRACTICE PROTOTYPE */
 const canvas=$('game'),ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height,S=42;
-let raf=0,last=0,active=false,keys={},mouse={x:W*.68,y:H*.5,down:false},player,dummy,effects=[],portals=[],wolves=[],eggs=[],audio=null,lastBasic=0,damageTotal=0,cd={chain:0,wolf:0,ult:0,egg:0,blink:0,field:0},ultTime=0,pendingChain=null,character="general",fieldTime=0,stopTime=0,chainEmpowered=false;
+let raf=0,last=0,active=false,keys={},mouse={x:W*.68,y:H*.5,down:false},player,dummy,effects=[],portals=[],wolves=[],eggs=[],audio=null,lastBasic=0,basicMissLockUntil=0,damageTotal=0,cd={chain:0,wolf:0,ult:0,egg:0,blink:0,field:0},ultTime=0,pendingChain=null,character="general",fieldTime=0,stopTime=0,chainEmpowered=false;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 /* Shared training/multiplayer character core */
 const CHARACTER_RULES=Object.freeze({general:{hp:2500,speed:2.8,basic:{cooldown:.5,range:4,halfAngle:Math.PI*2/3,damage:500},skills:{t:{cooldown:10,windup:.5,range:30},f:{cooldown:15,count:3,speed:10,range:30,damage:300},c:{gauge:5000,duration:10,radius:5,tick:30}}},noh:{hp:1500,speed:3.6,basic:{cooldown:1.5,projectileSpeed:30,range:100,damage:250},skills:{t:{cooldown:15,distance:10,projectileAdvance:3},f:{cooldown:20,duration:5,radius:5,slow:.25},c:{gauge:5500,duration:9}}}});
@@ -82,7 +82,7 @@ function drawSharedEffect(g,e,u=1){const a=Math.max(0,e.life/(e.max||1));g.save(
 function drawSharedEgg(g,x,y,vx,vy,u=1){g.save();g.translate(x,y);g.rotate(Math.atan2(vy,vx));g.fillStyle='#fff0c7';g.strokeStyle='#c6ad79';g.lineWidth=2*u;g.beginPath();g.ellipse(0,0,12*u,8*u,0,0,Math.PI*2);g.fill();g.stroke();g.restore()}
 function drawSharedWolf(g,w,u=1){g.save();g.translate(w.x,w.y);g.rotate(Math.atan2(w.vy,w.vx));g.shadowColor='#82d8ff';g.shadowBlur=28*u;g.globalAlpha=.9;g.fillStyle='#b4eaff';g.beginPath();g.ellipse(0,0,42*u,15*u,0,0,Math.PI*2);g.fill();g.fillStyle='#e8faff';g.beginPath();g.moveTo(43*u,0);g.lineTo(22*u,-13*u);g.lineTo(25*u,-3*u);g.lineTo(8*u,-7*u);g.lineTo(15*u,0);g.lineTo(8*u,7*u);g.lineTo(25*u,3*u);g.lineTo(22*u,13*u);g.closePath();g.fill();g.strokeStyle='#6bcaff';g.lineWidth=5*u;g.beginPath();g.moveTo(-24*u,0);g.lineTo(-58*u,0);g.stroke();g.restore()}
 
-function fresh(){const noh=character==="noh";player=createCharacterState(character,W*.36,H*.52,0);dummy={x:W*.7,y:H*.5,hp:10000,max:10000,knock:0,pushTimer:0,pushVx:0,pushVy:0,stun:0,moveLock:0};effects=[];portals=[];wolves=[];eggs=[];pendingChain=null;chainEmpowered=false;damageTotal=0;cd={chain:0,wolf:0,ult:0,egg:0,blink:0,field:0};ultTime=0;fieldTime=0;stopTime=0;lastBasic=0;$("characterStats").textContent=noh?"체력 1,500 · 이동속도 3.6m/s":"체력 2,500 · 이동속도 2.8m/s";$("tBtn").querySelector("small").textContent=noh?"피아제 시간 삭제":"영혼 사슬";$("fBtn").querySelector("small").textContent=noh?"부엉이 바위":"영혼 늑대 무리";$("cBtn").querySelector("small").textContent=noh?"봉하 콘서트":"영혼 절멸자";updateHud()}
+function fresh(){const noh=character==="noh";player=createCharacterState(character,W*.36,H*.52,0);dummy={x:W*.7,y:H*.5,hp:10000,max:10000,knock:0,pushTimer:0,pushVx:0,pushVy:0,stun:0,moveLock:0};effects=[];portals=[];wolves=[];eggs=[];pendingChain=null;chainEmpowered=false;damageTotal=0;cd={chain:0,wolf:0,ult:0,egg:0,blink:0,field:0};ultTime=0;fieldTime=0;stopTime=0;lastBasic=0;basicMissLockUntil=0;$("characterStats").textContent=noh?"체력 1,500 · 이동속도 3.6m/s":"체력 2,500 · 이동속도 2.8m/s";$("tBtn").querySelector("small").textContent=noh?"피아제 시간 삭제":"영혼 사슬";$("fBtn").querySelector("small").textContent=noh?"부엉이 바위":"영혼 늑대 무리";$("cBtn").querySelector("small").textContent=noh?"봉하 콘서트":"영혼 절멸자";updateHud()}
 function sound(freq=240,duration=.12,type='sine',volume=.035,slide=0){try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(freq,audio.currentTime);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,freq+slide),audio.currentTime+duration);g.gain.setValueAtTime(volume,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+duration)}catch{}}
 function burst(x,y,color,n=16,power=180){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,v=power*(.25+Math.random()*.75);effects.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.35+Math.random()*.65,max:.9,color,size:2+Math.random()*5})}}
 function addDamage(amount){if(dummy.hp<=0)return;const d=Math.min(amount,dummy.hp);dummy.hp-=d;damageTotal+=d;dummy.knock=1;burst(dummy.x,dummy.y,'#7bcaff',9,90);effects.push({kind:'text',x:dummy.x,y:dummy.y-35,text:'-'+Math.round(d),life:.8,max:.8,color:'#d8f4ff'});if(dummy.hp<=0){dummy.hp=0;effects.push({kind:'text',x:dummy.x,y:dummy.y-65,text:'더미 격파!',life:1.3,max:1.3,color:'#ffe38a'});sound(150,.45,'sawtooth',.05,-100);setTimeout(()=>{if(active){dummy.hp=dummy.max;dummy.x=W*.7+(Math.random()-.5)*100;dummy.y=H*.5+(Math.random()-.5)*100;dummy.knock=0;updateHud()}},1300)}updateHud()}
@@ -92,7 +92,7 @@ function stopGame(){active=false;cancelAnimationFrame(raf);mouse.down=false}
 function resetGame(){fresh();sound(330,.08)}
 function getAim(){return Math.atan2(mouse.y-player.y,mouse.x-player.x)}
 function attack(){
- if(!active||!player||performance.now()-lastBasic<characterRules(character).basic.cooldown*1000)return;
+ if(!active||!player||performance.now()<basicMissLockUntil||performance.now()-lastBasic<characterRules(character).basic.cooldown*1000)return;
  lastBasic=performance.now();player.angle=getAim();
  if(character==='noh'){eggs.push({x:player.x+Math.cos(player.angle)*24,y:player.y+Math.sin(player.angle)*24,vx:Math.cos(player.angle)*30*S,vy:Math.sin(player.angle)*30*S,travel:0,maxTravel:100*S,hit:false,delay:0});sound(260,.13,'triangle',.04,180);return}
  const r=characterRules('general').basic,d=dist(player,dummy),a=Math.atan2(dummy.y-player.y,dummy.x-player.x),diff=Math.atan2(Math.sin(a-player.angle),Math.cos(a-player.angle));
@@ -101,7 +101,7 @@ function attack(){
  if(player.basicComboStage===1){
   effects.push({kind:'thrust',x:player.x,y:player.y,angle:player.angle,life:.22,max:.22,r:5*S});sound(155,.16,'sawtooth',.05,380);
   if(inThrustBox(player,dummy,S)){addDamage(r.damage);shoveToSixMeters(player,dummy,S,W,H,30);dummy.moveLock=.1;burst(dummy.x,dummy.y,'#9ceaff',20,150);player.basicComboStage=2;player.basicComboTimer=.6;lastBasic=performance.now()-r.cooldown*1000;effects.push({kind:'text',x:dummy.x,y:dummy.y-48,text:'2연계 적중 · 밀쳐내기',life:.65,max:.65,color:'#a8eaff'})}
-  else{player.basicComboStage=0;player.basicComboTimer=0;lastBasic=performance.now()+(1-r.cooldown)*1000;effects.push({kind:'text',x:player.x+Math.cos(player.angle)*S*3,y:player.y+Math.sin(player.angle)*S*3,text:'찌르기 빗나감',life:.45,max:.45,color:'#a9bdd1'})}return;
+  else{player.basicComboStage=0;player.basicComboTimer=0;basicMissLockUntil=performance.now()+1000;lastBasic=performance.now();effects.push({kind:'text',x:player.x+Math.cos(player.angle)*S*3,y:player.y+Math.sin(player.angle)*S*3,text:'찌르기 빗나감',life:.45,max:.45,color:'#a9bdd1'})}return;
  }
  if(player.basicComboStage===2){
   effects.push({kind:'comboCleave',x:player.x,y:player.y,angle:player.angle,r:2*S,life:.24,max:.24});sound(135,.2,'sawtooth',.05,500);
@@ -153,7 +153,7 @@ let onlineActive=false,onlineFrame=0,onlineLast=0,onlineSendClock=0,onlineAttack
 let onlineState=null,onlineSnapshot=null,remoteInput={},selectedCharacters=['general','general'];
 let localAimX=OW*.75,localAimY=OH*.5;
 function pickCharacter(ch){return CHAR[ch]?ch:'general'}
-function makeFighter(ch,x,y,angle){const key=pickCharacter(ch),d=CHAR[key],base=createCharacterState(key,x,y,angle);return {...base,ammo:d.ammo,maxAmmo:d.ammo,reloadTime:d.reload,reload:0,attackCd:0,attackHeld:false,basicComboStage:0,basicComboTimer:0,stun:0,moveLock:0,windup:0,windupKind:'',cool:{t:0,f:0,c:0},gauge:0,invuln:0,slow:0,healTime:0,healLeft:0,drug:0,freeze:0,field:0,fieldCd:0,wolf:false,wolfCd:0,projectiles:[],pending:null,damageOverTime:0,dotTime:0,burstCount:0,burstWait:0,rocket:null,damageFlash:0,pushVx:0,pushVy:0,pushTimer:0}}
+function makeFighter(ch,x,y,angle){const key=pickCharacter(ch),d=CHAR[key],base=createCharacterState(key,x,y,angle);return {...base,ammo:d.ammo,maxAmmo:d.ammo,reloadTime:d.reload,reload:0,attackCd:0,attackHeld:false,basicComboStage:0,basicComboTimer:0,basicMissCd:0,stun:0,moveLock:0,windup:0,windupKind:'',cool:{t:0,f:0,c:0},gauge:0,invuln:0,slow:0,healTime:0,healLeft:0,drug:0,freeze:0,field:0,fieldCd:0,wolf:false,wolfCd:0,projectiles:[],pending:null,damageOverTime:0,dotTime:0,burstCount:0,burstWait:0,rocket:null,damageFlash:0,pushVx:0,pushVy:0,pushTimer:0}}
 function startOnlineMatch(){
  if(onlineActive||maxPlayers!==2||playerCount!==2)return;
  stopGame();onlineActive=true;$('lobby').classList.add('hidden');$('practice').classList.add('hidden');$('onlineGame').classList.remove('hidden');
@@ -201,7 +201,7 @@ function projectile(owner,x,y,angle,speed,damage,range,color,kind='bullet'){
  onlineState.shots.push({owner,x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,damage,range,travel:0,color,kind,life:Math.max(1,range/speed),delay:0,hit:false});
 }
 function tryBasic(p,i,v){
- if(!v.attack){p.attackHeld=false;return}if(p.attackHeld||p.hp<=0||onlineState.winner)return;p.attackHeld=true;if(p.attackCd>0)return;
+ if(!v.attack){p.attackHeld=false;return}if(p.attackHeld||p.hp<=0||onlineState.winner)return;p.attackHeld=true;if(p.attackCd>0||p.basicMissCd>0)return;
  const target=onlineState.players[1-i],r=characterRules(p.character).basic;
  if(p.character==='general'){
   p.attackCd=r.cooldown;const empowered=!!p.chainEmpowered;p.chainEmpowered=false;
@@ -210,7 +210,7 @@ function tryBasic(p,i,v){
   if(p.basicComboStage===1){
    onlineEffect({kind:'thrust',x:p.x,y:p.y,angle:p.angle,r:5*CELL,life:.22,max:.22,owner:i});onlineSound(155,.16,'sawtooth',.05,380);
    if(inThrustBox(p,target,CELL)){dealOnlineDamage(target,r.damage,p);shoveToSixMeters(p,target,CELL,OW,OH,24);target.moveLock=.1;target.stun=0;onlineEffect({kind:'knock',x:target.x,y:target.y,angle:p.angle,life:.3,max:.3});onlineEffect({kind:'hitBurst',x:target.x,y:target.y,life:.35,max:.35,color:'#9ceaff'});p.basicComboStage=2;p.basicComboTimer=.6;p.attackCd=0;onlineEffect({kind:'text',x:target.x,y:target.y-38,text:'2연계 적중 · 밀쳐내기',life:.65,max:.65,color:'#a8eaff'})}
-   else{p.basicComboStage=0;p.basicComboTimer=0;p.attackCd=1;onlineEffect({kind:'text',x:p.x+Math.cos(p.angle)*3*CELL,y:p.y+Math.sin(p.angle)*3*CELL,text:'찌르기 빗나감',life:.45,max:.45,color:'#a9bdd1'})}return;
+   else{p.basicComboStage=0;p.basicComboTimer=0;p.attackCd=0;p.basicMissCd=1;onlineEffect({kind:'text',x:p.x+Math.cos(p.angle)*3*CELL,y:p.y+Math.sin(p.angle)*3*CELL,text:'찌르기 빗나감',life:.45,max:.45,color:'#a9bdd1'})}return;
   }
   if(p.basicComboStage===2){
    onlineEffect({kind:'comboCleave',x:p.x,y:p.y,angle:p.angle,r:2*CELL,life:.24,max:.24,owner:i});onlineSound(135,.2,'sawtooth',.05,500);
@@ -240,7 +240,7 @@ function simulateOnline(dt,a,b){
  onlineState.clock+=dt;const inputs=[a||{},b||{}],ps=onlineState.players;
  for(let i=0;i<2;i++){const p=ps[i],v=inputs[i],enemy=ps[1-i];p._frameStartX=p.x;p._frameStartY=p.y;p._skillHeld=p._skillHeld||{};p.basicComboTimer=Math.max(0,(p.basicComboTimer||0)-dt);if(p.basicComboTimer<=0)p.basicComboStage=0;p.stun=Math.max(0,(p.stun||0)-dt);p.moveLock=Math.max(0,(p.moveLock||0)-dt);if(p.freeze>0){p.freeze=Math.max(0,p.freeze-dt);continue}
   for(const k of ['t','f','c'])if(!v[k])p._skillHeld[k]=false;for(const k of ['t','f','c'])activateSkill(p,i,k,v);
-  for(const k of Object.keys(p.cool))p.cool[k]=Math.max(0,p.cool[k]-dt);p.attackCd=Math.max(0,p.attackCd-dt);p.field=Math.max(0,p.field-dt);p.ultTime=Math.max(0,p.ultTime-dt);
+  for(const k of Object.keys(p.cool))p.cool[k]=Math.max(0,p.cool[k]-dt);p.attackCd=Math.max(0,p.attackCd-dt);p.basicMissCd=Math.max(0,(p.basicMissCd||0)-dt);p.field=Math.max(0,p.field-dt);p.ultTime=Math.max(0,p.ultTime-dt);
   if(p.pendingChain){p.pendingChain.time-=dt;if(p.pendingChain.time<=0){const ang=p.pendingChain.angle,ux=Math.cos(ang),uy=Math.sin(ang),dx=enemy.x-p.x,dy=enemy.y-p.y,along=dx*ux+dy*uy,side=Math.abs(-dx*uy+dy*ux);onlineEffect({kind:'chain',x1:p.x,y1:p.y,x2:p.x+ux*30*CELL,y2:p.y+uy*30*CELL,life:.42,max:.42});onlineSound(110,.32,'triangle',.06,500);if(chainIntersects(p,enemy,ang,CELL).hit){enemy.x=clamp(p.x+ux*1.5*CELL,24,OW-24);enemy.y=clamp(p.y+uy*1.5*CELL,24,OH-24);p.chainEmpowered=true;onlineEffect({kind:'chainHit',x:enemy.x,y:enemy.y,life:.5,max:.5});onlineEffect({kind:'text',x:enemy.x,y:enemy.y-38,text:'영혼 사슬 적중',life:.9,max:.9,color:'#80d5ff'})}else{onlineEffect({kind:'text',x:p.x+ux*30*CELL,y:p.y+uy*30*CELL-20,text:'사슬 빗나감',life:.55,max:.55,color:'#a9bdd1'})}p.pendingChain=null}}
   const slow=ps.some((q,j)=>j!==i&&q.character==='noh'&&q.field>0&&Math.hypot(p.x-q.x,p.y-q.y)<=5*CELL),len=Math.hypot(v.dx||0,v.dy||0)||1,spd=p.speed*CELL*(slow?.25:1);
   if(p.stun<=0&&p.moveLock<=0){p.x=clamp(p.x+(v.dx||0)/len*spd*dt,24,OW-24);p.y=clamp(p.y+(v.dy||0)/len*spd*dt,24,OH-24)}p.angle=Number.isFinite(v.angle)?v.angle:p.angle;tryBasic(p,i,v);
