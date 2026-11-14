@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NEW GAME — 제너럴 K 훈련장</title>
 <style>
-:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#09111e;color:#edf5ff;font-family:Arial,sans-serif;padding:18px}.wrap{width:min(1120px,100%);margin:auto}header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}h1{margin:0;font-size:clamp(24px,4vw,36px)}.muted{color:#9eb2ca;font-size:13px}.panel{background:#14243a;border:1px solid #344c69;border-radius:13px;padding:14px;margin:12px 0}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}button,input,select{font:inherit;border:1px solid #617995;border-radius:8px;padding:10px}button{background:#315d8e;color:#fff;font-weight:bold;cursor:pointer}button:disabled{opacity:.38;cursor:not-allowed}.secondary{background:#263a53}canvas{display:block;width:100%;aspect-ratio:16/9;background:#101c2b;border-radius:10px;cursor:crosshair;touch-action:none}.gamewrap{position:relative}.hud{position:absolute;left:12px;top:12px;display:flex;gap:8px;flex-wrap:wrap;pointer-events:none}.pill{background:#081321dd;border:1px solid #58718f;border-radius:8px;padding:7px 10px;font-size:13px}.skills{position:absolute;right:12px;bottom:12px;display:flex;gap:8px}.skill{min-width:85px;background:#122b49eF;border:1px solid #6c94c1;padding:9px 10px;text-align:center}.skill strong{display:block;font-size:17px}.skill small{display:block;color:#b9cee6;font-size:11px}.skill:disabled{filter:grayscale(1)}.bar{height:8px;background:#25374c;border-radius:9px;overflow:hidden;margin-top:5px}.bar>i{display:block;height:100%;background:#54a8ff;width:100%}.hidden{display:none!important}.status{background:#0b1727;border-radius:8px;padding:10px;color:#b9cce2;font-size:13px}.roomcode{font-size:30px;letter-spacing:6px;text-align:center}.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.slot{padding:10px;background:#0b1727;border-radius:8px;text-align:center;color:#8da6c2}.slot.active{color:#a6f0c4;border:1px solid #4c9d7b}.hint{font-size:12px;color:#94a9c2;line-height:1.6;margin-top:9px}@media(max-width:620px){body{padding:8px}.skills{right:5px;bottom:5px;gap:4px}.skill{min-width:65px;padding:6px 5px}.skill strong{font-size:14px}.skill small{font-size:9px}.hud{left:5px;top:5px;gap:4px}.pill{font-size:10px;padding:5px}}
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#09111e;color:#edf5ff;font-family:Arial,sans-serif;padding:18px}.wrap{width:min(1120px,100%);margin:auto}header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}h1{margin:0;font-size:clamp(24px,4vw,36px)}.muted{color:#9eb2ca;font-size:13px}.panel{background:#14243a;border:1px solid #344c69;border-radius:13px;padding:14px;margin:12px 0}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}button,input,select{font:inherit;border:1px solid #617995;border-radius:8px;padding:10px}button{background:#315d8e;color:#fff;font-weight:bold;cursor:pointer}button:disabled{opacity:.38;cursor:not-allowed}.secondary{background:#263a53}canvas{display:block;width:100%;aspect-ratio:16/9;background:#101c2b;border-radius:10px;cursor:crosshair;touch-action:none}.onlineCanvas{aspect-ratio:16/9;background:#0b1727;border:1px solid #45617f}.onlineHud{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}.fighterBar{height:12px;background:#26374b;border-radius:9px;overflow:hidden;width:min(38vw,360px)}.fighterBar i{display:block;height:100%;background:#5bd39a}.fighterBar.enemy i{background:#f07878}.gamewrap{position:relative}.hud{position:absolute;left:12px;top:12px;display:flex;gap:8px;flex-wrap:wrap;pointer-events:none}.pill{background:#081321dd;border:1px solid #58718f;border-radius:8px;padding:7px 10px;font-size:13px}.skills{position:absolute;right:12px;bottom:12px;display:flex;gap:8px}.skill{min-width:85px;background:#122b49eF;border:1px solid #6c94c1;padding:9px 10px;text-align:center}.skill strong{display:block;font-size:17px}.skill small{display:block;color:#b9cee6;font-size:11px}.skill:disabled{filter:grayscale(1)}.bar{height:8px;background:#25374c;border-radius:9px;overflow:hidden;margin-top:5px}.bar>i{display:block;height:100%;background:#54a8ff;width:100%}.hidden{display:none!important}.status{background:#0b1727;border-radius:8px;padding:10px;color:#b9cce2;font-size:13px}.roomcode{font-size:30px;letter-spacing:6px;text-align:center}.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.slot{padding:10px;background:#0b1727;border-radius:8px;text-align:center;color:#8da6c2}.slot.active{color:#a6f0c4;border:1px solid #4c9d7b}.hint{font-size:12px;color:#94a9c2;line-height:1.6;margin-top:9px}@media(max-width:620px){body{padding:8px}.skills{right:5px;bottom:5px;gap:4px}.skill{min-width:65px;padding:6px 5px}.skill strong{font-size:14px}.skill small{font-size:9px}.hud{left:5px;top:5px;gap:4px}.pill{font-size:10px;padding:5px}}
 </style></head><body><main class="wrap">
 <header><div><h1>NEW GAME</h1><div class="muted">멀티플레이 로비 + 제너럴 K 실험 훈련장</div></div><div class="row"><button id="practiceBtn">훈련장 입장</button><button id="lobbyBtn" class="secondary">온라인 로비</button></div></header>
 <section id="practice" class="panel hidden">
@@ -18,6 +18,15 @@
 <section class="panel" id="joinPanel"><h2>방 참가</h2><div class="row"><input id="roomInput" maxlength="6" placeholder="방 코드 6자리" autocomplete="off"><button id="joinBtn" class="secondary">참가하기</button></div></section>
 <section class="panel hidden" id="roomPanel"><h2 id="roomTitle">대기실</h2><div class="roomcode" id="roomCode">------</div><div class="status" id="roomStatus">상대 플레이어를 기다리는 중입니다.</div><div class="slots" id="players"></div><div class="row" style="margin-top:12px"><button id="copyBtn" class="secondary">방 코드 복사</button><button id="leaveBtn" class="secondary">방 나가기</button></div></section>
 <div class="status" id="globalStatus" role="status">서버에 연결하는 중...</div></section>
+<section id="onlineGame" class="panel hidden">
+ <div class="onlineHud">
+  <div><strong id="p1Label">플레이어 1</strong><div class="fighterBar"><i id="p1Hp" style="width:100%"></i></div><small id="p1HpText">1000 / 1000</small></div>
+  <div style="text-align:right"><strong id="p2Label">플레이어 2</strong><div class="fighterBar enemy"><i id="p2Hp" style="width:100%"></i></div><small id="p2HpText">1000 / 1000</small></div>
+ </div>
+ <canvas id="onlineCanvas" class="onlineCanvas" width="960" height="540"></canvas>
+ <div class="hint">1대1 조작: WASD 또는 방향키 이동 · 마우스 조준 · 마우스 왼쪽 클릭 공격. 공격 투사체가 적중하면 100 피해를 줍니다.</div>
+ <div class="row" style="margin-top:10px"><strong id="matchStatus">상대 플레이어 연결됨</strong><button id="exitMatch" class="secondary">대전 나가기</button></div>
+</section>
 </main>
 <script>
 (()=>{
@@ -29,7 +38,7 @@ function setRoomStatus(message,kind=''){const el=$('roomStatus');el.textContent=
 function showRoom(){ $('connectPanel').classList.toggle('hidden',inRoom);$('joinPanel').classList.toggle('hidden',inRoom);$('roomPanel').classList.toggle('hidden',!inRoom)}
 function drawPlayers(){const root=$('players');root.replaceChildren();for(let i=1;i<=maxPlayers;i++){const slot=document.createElement('div');slot.className='slot'+(i<=playerCount?' active':'');slot.textContent=i<=playerCount?'플레이어 '+i+' · 참가 중':'플레이어 '+i+' · 대기 중';root.appendChild(slot)}}
 function send(data){if(socket&&socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify(data));else setStatus('서버 연결이 끊어졌습니다. 페이지를 새로고침해 주세요.','bad')}
-function handleMessage(msg){if(msg.type==='created'||msg.type==='joined'){inRoom=true;roomCode=msg.code;role=msg.role;maxPlayers=msg.maxPlayers||2;playerCount=msg.count||1;$('roomCode').textContent=roomCode;$('roomTitle').textContent=role==='host'?'방장 대기실':'참가자 대기실';drawPlayers();setRoomStatus('상대 플레이어를 기다리는 중입니다.','good');showRoom();setStatus('온라인 방에 연결되었습니다.','good')}else if(msg.type==='peer-joined'){playerCount=msg.count||Math.min(maxPlayers,playerCount+1);drawPlayers();setRoomStatus('모든 플레이어가 참가했습니다.','good')}else if(msg.type==='peer-left'){inRoom=false;roomCode='';playerCount=0;showRoom();setStatus(msg.message||'상대방 연결이 종료되었습니다.','bad')}else if(msg.type==='error')setStatus(msg.message||'요청을 처리하지 못했습니다.','bad')}
+function handleMessage(msg){if(msg.type==='state'&&onlineActive&&role!=='host'){onlineSnapshot=msg.state;return}if(msg.type==='input'&&onlineActive&&role==='host'){if(msg.playerIndex===2)remoteInput=msg.input||{};return}if(msg.type==='created'||msg.type==='joined'){inRoom=true;roomCode=msg.code;role=msg.role;maxPlayers=msg.maxPlayers||2;playerCount=msg.count||1;$('roomCode').textContent=roomCode;$('roomTitle').textContent=role==='host'?'방장 대기실':'참가자 대기실';drawPlayers();setRoomStatus('상대 플레이어를 기다리는 중입니다.','good');showRoom();setStatus('온라인 방에 연결되었습니다.','good');if(maxPlayers===2&&playerCount===2)startOnlineMatch()}else if(msg.type==='peer-joined'){playerCount=msg.count||Math.min(maxPlayers,playerCount+1);drawPlayers();setRoomStatus('모든 플레이어가 참가했습니다.','good');if(maxPlayers===2&&playerCount===2)startOnlineMatch()}else if(msg.type==='peer-left'){inRoom=false;roomCode='';playerCount=0;showRoom();setStatus(msg.message||'상대방 연결이 종료되었습니다.','bad')}else if(msg.type==='error')setStatus(msg.message||'요청을 처리하지 못했습니다.','bad')}
 function connect(){const scheme=location.protocol==='https:'?'wss:':'ws:';socket=new WebSocket(scheme+'//'+location.host);socket.addEventListener('open',()=>{connected=true;setStatus('서버에 연결되었습니다. 방을 만들거나 참가하세요.','good')});socket.addEventListener('message',e=>{try{handleMessage(JSON.parse(e.data))}catch{setStatus('서버 응답 오류','bad')}});socket.addEventListener('close',()=>{connected=false;inRoom=false;showRoom();setStatus('서버 연결이 종료되었습니다. 새로고침해 다시 연결하세요.','bad')});socket.addEventListener('error',()=>setStatus('서버에 연결할 수 없습니다.','bad'))}
 $('createBtn').onclick=()=>connected?send({type:'create',maxPlayers:Number($('capacity').value)}):setStatus('서버 연결을 기다려 주세요.','bad');
 $('joinBtn').onclick=()=>{const code=$('roomInput').value.trim().toUpperCase();if(!connected)return setStatus('서버 연결을 기다려 주세요.','bad');if(!/^[A-Z0-9]{6}$/.test(code))return setStatus('방 코드는 영문과 숫자 6자리입니다.','bad');send({type:'join',code})};
@@ -81,5 +90,70 @@ canvas.addEventListener('pointerup',()=>mouse.down=false);canvas.addEventListene
 window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','t','f','c'].includes(k))e.preventDefault();keys[k]=true;if(!e.repeat)skill(k)});
 window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
 $('tBtn').onclick=()=>skill('t');$('fBtn').onclick=()=>skill('f');$('cBtn').onclick=()=>skill('c');$('resetBtn').onclick=resetGame;$('characterSelect').onchange=e=>{character=e.target.value;fresh()};
+
+/* REAL-TIME 1v1 MATCH */
+const onlineCanvas=$('onlineCanvas'),octx=onlineCanvas.getContext('2d');
+let onlineActive=false,onlineFrame=0,onlineLast=0,onlineSendClock=0,onlineAttack=false;
+let onlineState=null,onlineSnapshot=null,remoteInput={},localInput={};
+const OW=onlineCanvas.width,OH=onlineCanvas.height;
+function startOnlineMatch(){
+ if(onlineActive||maxPlayers!==2||playerCount!==2)return;
+ stopGame();onlineActive=true;$('lobby').classList.add('hidden');$('practice').classList.add('hidden');$('onlineGame').classList.remove('hidden');
+ $('p1Label').textContent=role==='host'?'나 (플레이어 1)':'상대 (플레이어 1)';
+ $('p2Label').textContent=role==='host'?'상대 (플레이어 2)':'나 (플레이어 2)';
+ onlineState={players:[{x:OW*.25,y:OH*.5,hp:1000,angle:0,cd:0,color:'#55baff'},{x:OW*.75,y:OH*.5,hp:1000,angle:Math.PI,cd:0,color:'#ff7777'}],shots:[],winner:0};
+ onlineSnapshot=JSON.parse(JSON.stringify(onlineState));remoteInput={};localInput={};onlineLast=performance.now();onlineSendClock=0;
+ $('matchStatus').textContent='전투 시작!';onlineFrame=requestAnimationFrame(onlineLoop);
+}
+function readLocalInput(){
+ const dx=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0);
+ const dy=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0);
+ const r=onlineCanvas.getBoundingClientRect();
+ return {dx,dy,angle:Math.atan2(localAimY-localAimX*0,localAimX),attack:onlineAttack};
+}
+let localAimX=OW*.75,localAimY=OH*.5;
+onlineCanvas.addEventListener('pointermove',e=>{const r=onlineCanvas.getBoundingClientRect();localAimX=(e.clientX-r.left)/r.width*OW;localAimY=(e.clientY-r.top)/r.height*OH});
+onlineCanvas.addEventListener('pointerdown',e=>{if(e.button===0){onlineAttack=true;onlineCanvas.setPointerCapture?.(e.pointerId)}});
+onlineCanvas.addEventListener('pointerup',()=>onlineAttack=false);onlineCanvas.addEventListener('pointercancel',()=>onlineAttack=false);
+function onlineLoop(now){
+ if(!onlineActive)return;const dt=Math.min((now-onlineLast)/1000,.04);onlineLast=now;onlineSendClock+=dt;
+ const r=onlineCanvas.getBoundingClientRect();const aim=Math.atan2(localAimY-(OH/2),localAimX-(OW/2));
+ const input={dx:(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0),dy:(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0),angle:aim,attack:onlineAttack};
+ if(role==='host'){
+  simulateOnline(dt,input,remoteInput);
+  if(onlineSendClock>=.05){onlineSendClock=0;send({type:'state',state:onlineState})}
+  onlineSnapshot=onlineState;
+ }else{
+  if(onlineSendClock>=.05){onlineSendClock=0;send({type:'input',input})}
+ }
+ drawOnline(onlineSnapshot||onlineState);
+ onlineFrame=requestAnimationFrame(onlineLoop);
+}
+function simulateOnline(dt,a,b){
+ const inputs=[a||{},b||{}];
+ for(let i=0;i<2;i++){
+  const p=onlineState.players[i],v=inputs[i],len=Math.hypot(v.dx||0,v.dy||0)||1;
+  p.x=Math.max(24,Math.min(OW-24,p.x+(v.dx||0)/len*190*dt));
+  p.y=Math.max(24,Math.min(OH-24,p.y+(v.dy||0)/len*190*dt));
+  p.angle=Number.isFinite(v.angle)?v.angle:p.angle;p.cd=Math.max(0,p.cd-dt);
+  if(v.attack&&p.cd<=0&&onlineState.winner===0){p.cd=.55;onlineState.shots.push({x:p.x+Math.cos(p.angle)*22,y:p.y+Math.sin(p.angle)*22,vx:Math.cos(p.angle)*560,vy:Math.sin(p.angle)*560,owner:i,life:1.8})}
+ }
+ for(const s of onlineState.shots){
+  s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;const target=onlineState.players[1-s.owner];
+  if(s.life>0&&Math.hypot(s.x-target.x,s.y-target.y)<23){target.hp=Math.max(0,target.hp-100);s.life=0;if(target.hp<=0){onlineState.winner=s.owner+1}}
+ }
+ onlineState.shots=onlineState.shots.filter(s=>s.life>0&&s.x>-10&&s.x<OW+10&&s.y>-10&&s.y<OH+10);
+ if(onlineState.winner){$('matchStatus').textContent='플레이어 '+onlineState.winner+' 승리!';}
+}
+function drawOnline(state){
+ if(!state)return;octx.clearRect(0,0,OW,OH);octx.fillStyle='#0b1727';octx.fillRect(0,0,OW,OH);
+ octx.strokeStyle='#1e3550';octx.lineWidth=1;for(let x=0;x<OW;x+=40){octx.beginPath();octx.moveTo(x,0);octx.lineTo(x,OH);octx.stroke()}for(let y=0;y<OH;y+=40){octx.beginPath();octx.moveTo(0,y);octx.lineTo(OW,y);octx.stroke()}
+ octx.strokeStyle='#56718e';octx.lineWidth=4;octx.strokeRect(8,8,OW-16,OH-16);
+ state.players.forEach((p,i)=>{octx.save();octx.translate(p.x,p.y);octx.rotate(p.angle);octx.shadowColor=p.color;octx.shadowBlur=22;octx.fillStyle=p.color;octx.beginPath();octx.arc(0,0,19,0,Math.PI*2);octx.fill();octx.fillStyle='#eaf7ff';octx.fillRect(7,-5,23,10);octx.restore();octx.fillStyle='#dcecff';octx.font='bold 13px Arial';octx.textAlign='center';octx.fillText('P'+(i+1),p.x,p.y-30)});
+ state.shots.forEach(s=>{octx.fillStyle=s.owner===0?'#8bdcff':'#ffb0a7';octx.shadowColor=octx.fillStyle;octx.shadowBlur=14;octx.beginPath();octx.arc(s.x,s.y,7,0,Math.PI*2);octx.fill()});
+ $('p1Hp').style.width=state.players[0].hp/10+'%';$('p2Hp').style.width=state.players[1].hp/10+'%';$('p1HpText').textContent=state.players[0].hp+' / 1000';$('p2HpText').textContent=state.players[1].hp+' / 1000';
+}
+$('exitMatch').onclick=()=>{onlineActive=false;cancelAnimationFrame(onlineFrame);location.reload()};
+
 })();
 </script></body></html>
