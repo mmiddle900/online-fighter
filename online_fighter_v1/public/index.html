@@ -92,8 +92,11 @@ function stopGame(){active=false;cancelAnimationFrame(raf);mouse.down=false}
 function resetGame(){fresh();sound(330,.08)}
 function getAim(){return Math.atan2(mouse.y-player.y,mouse.x-player.x)}
 function attack(){
- if(!active||!player||performance.now()<basicMissLockUntil||performance.now()-lastBasic<characterRules(character).basic.cooldown*1000)return;
- lastBasic=performance.now();player.angle=getAim();
+ const now=performance.now();
+ if(!active||!player||now<basicMissLockUntil)return;
+ const comboReady=player.basicComboTimer>0&&(player.basicComboStage===1||player.basicComboStage===2);
+ if(!comboReady&&now-lastBasic<characterRules(character).basic.cooldown*1000)return;
+ lastBasic=now;player.angle=getAim();
  if(character==='noh'){eggs.push({x:player.x+Math.cos(player.angle)*24,y:player.y+Math.sin(player.angle)*24,vx:Math.cos(player.angle)*30*S,vy:Math.sin(player.angle)*30*S,travel:0,maxTravel:100*S,hit:false,delay:0});sound(260,.13,'triangle',.04,180);return}
  const r=characterRules('general').basic,d=dist(player,dummy),a=Math.atan2(dummy.y-player.y,dummy.x-player.x),diff=Math.atan2(Math.sin(a-player.angle),Math.cos(a-player.angle));
  if(chainEmpowered){chainEmpowered=false;effects.push({kind:'empoweredSlash',x:player.x,y:player.y,angle:player.angle,life:.35,max:.35,r:4*S});sound(120,.25,'sawtooth',.055,520);if(d<=4*S&&Math.abs(diff)<=Math.PI*2/3){addDamage(r.damage);const away=Math.atan2(dummy.y-player.y,dummy.x-player.x);dummy.pushVx=Math.cos(away)*20*S;dummy.pushVy=Math.sin(away)*20*S;dummy.pushTimer=.25;burst(dummy.x,dummy.y,'#76d8ff',25,180);effects.push({kind:'text',x:dummy.x,y:dummy.y-48,text:'영혼 사슬 연계 · 밀쳐내기',life:.9,max:.9,color:'#a8eaff'})}else effects.push({kind:'text',x:player.x+Math.cos(player.angle)*S*3,y:player.y+Math.sin(player.angle)*S*3,text:'연계 공격 빗나감',life:.5,max:.5,color:'#a9bdd1'});return}
@@ -201,7 +204,7 @@ function projectile(owner,x,y,angle,speed,damage,range,color,kind='bullet'){
  onlineState.shots.push({owner,x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,damage,range,travel:0,color,kind,life:Math.max(1,range/speed),delay:0,hit:false});
 }
 function tryBasic(p,i,v){
- if(!v.attack){p.attackHeld=false;return}if(p.attackHeld||p.hp<=0||onlineState.winner)return;p.attackHeld=true;if(p.attackCd>0||p.basicMissCd>0)return;
+ if(!v.attack){p.attackHeld=false;return}if(p.attackHeld||p.hp<=0||onlineState.winner)return;p.attackHeld=true;const comboReady=p.basicComboTimer>0&&(p.basicComboStage===1||p.basicComboStage===2);if(p.basicMissCd>0||(!comboReady&&p.attackCd>0))return;
  const target=onlineState.players[1-i],r=characterRules(p.character).basic;
  if(p.character==='general'){
   p.attackCd=r.cooldown;const empowered=!!p.chainEmpowered;p.chainEmpowered=false;
