@@ -64,11 +64,13 @@ wss.on('connection', ws => {
       return send(room.host, {...msg, playerIndex:ws.playerIndex});
     }
     if (msg.type === 'character-select') {
-      const allowed = ['general','tendo','vincent','noh'];
+      // 서버는 캐릭터 목록을 하드코딩하지 않는다. 클라이언트에 구현·등록된 캐릭터 ID를
+      // 그대로 동기화하므로 새 캐릭터를 추가할 때 서버 허용 목록을 수정할 필요가 없다.
+      const characterId = String(msg.character || '');
+      if (!/^[a-z0-9_-]{1,32}$/.test(characterId)) return;
       const index = ws.role === 'host' ? 0 : 1;
-      if (!allowed.includes(msg.character)) return;
-      room.characters[index] = msg.character;
-      for (const player of room.players) send(player, {type:'character-select', playerIndex:index+1, character:msg.character});
+      room.characters[index] = characterId;
+      for (const player of room.players) send(player, {type:'character-select', playerIndex:index+1, character:characterId});
       return;
     }
     if (['state','rematch'].includes(msg.type)) relay(room, ws, msg);
