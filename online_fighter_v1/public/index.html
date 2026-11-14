@@ -109,7 +109,7 @@ function syncActor(key,p,label){
 }
 function render3D(){
  if(!window.THREE){canvas.style.opacity='1';return;}if(!threeRenderer){init3D();if(!threeRenderer)return;}canvas.style.opacity='0';
- const T=window.THREE,viewer=playerByIndex(playerIndex)||p1,forward=new T.Vector3(Math.cos(viewer.angle),0,Math.sin(viewer.angle));
+ const T=window.THREE,viewer=playerByIndex(playerIndex)||p1,viewYaw=cameraMode==='first'?fpsYaw:viewer.angle,forward=new T.Vector3(Math.cos(viewYaw),0,Math.sin(viewYaw));
  for(const [i,p] of players().entries())syncActor('p'+(i+1),p);
  for(const key of [...threeActors.keys()])if(key.startsWith('p')&&Number(key.slice(1))>players().length){threeScene.remove(threeActors.get(key));threeActors.delete(key)}
  const target=new T.Vector3((viewer.x-W/2)/TILE,0,(viewer.y-H/2)/TILE);
@@ -212,8 +212,14 @@ function inputForLocal(){
 const m=mobileSticks,move=m.move.active?{x:m.move.x,y:m.move.y}:null;
 const direction=m.skill4.active?m.skill4:m.skill3.active?m.skill3:m.skill2.active?m.skill2:m.skill1.active?m.skill1:m.attack.active?m.attack:null;
 const local=playerByIndex(playerIndex);
+const key=(...names)=>names.some(name=>!!keys[name]);
+let strafe=move?move.x:(key('d','arrowright')?1:0)-(key('a','arrowleft')?1:0);
+let forwardMove=move?-move.y:(key('w','arrowup')?1:0)-(key('s','arrowdown')?1:0);
+const moveLen=Math.hypot(strafe,forwardMove);if(moveLen>1){strafe/=moveLen;forwardMove/=moveLen;}
+const yaw=cameraMode==='first'?fpsYaw:(local.angle||0),fx=Math.cos(yaw),fy=Math.sin(yaw);
+const mx=fx*forwardMove-fy*strafe,my=fy*forwardMove+fx*strafe;
 const aim=cameraMode==='first'?(direction?{aimX:local.x+direction.x*1000,aimY:local.y+direction.y*1000}:{aimX:local.x+Math.cos(fpsYaw)*1000,aimY:local.y+Math.sin(fpsYaw)*1000}):(direction?{aimX:local.x+direction.x*300,aimY:local.y+direction.y*300}:{aimX:local.x+mouse.x-W/2,aimY:local.y+mouse.y-H/2});
-return {x:move?move.x:(keys.d?1:0)-(keys.a?1:0),y:move?move.y:(keys.s?1:0)-(keys.w?1:0),...aim,shoot:m.attack.active||mouse.down,skill1:m.skill1.active||!!keys.e&&mouse.rightDown,skill2:m.skill2.active||!!keys.r&&mouse.rightDown,skill3:m.skill3.active||!!keys.t&&mouse.rightDown,skill4:m.skill4.active||!!keys.g&&mouse.rightDown,preview1:!!keys.e,preview2:!!keys.r,preview3:!!keys.t,preview4:!!keys.g,character:selectedCharacter}
+return {x:mx,y:my,...aim,shoot:m.attack.active||mouse.down,skill1:m.skill1.active||!!keys.e&&mouse.rightDown,skill2:m.skill2.active||!!keys.r&&mouse.rightDown,skill3:m.skill3.active||!!keys.t&&mouse.rightDown,skill4:m.skill4.active||!!keys.g&&mouse.rightDown,preview1:!!keys.e,preview2:!!keys.r,preview3:!!keys.t,preview4:!!keys.g,character:selectedCharacter}
 }
 function updateStick(name,e){
 const pad=e.currentTarget,rect=pad.getBoundingClientRect(),radius=Math.min(rect.width,rect.height)/2-12;
@@ -281,7 +287,7 @@ for(const [p,owner] of players().map((p,i)=>[p,i+1]))if(p.pullOwner){const sourc
 for(const [p,owner] of players().map((p,i)=>[p,i+1]))if(p.wolf){const target=nearestEnemy(p);const w=p.wolf,dx=target.x-w.x,dy=target.y-w.y,d=Math.hypot(dx,dy);if(d>110){const speed=4.5*TILE,nx=w.x+dx/d*speed*dt,ny=w.y+dy/d*speed*dt;if(canMove(nx,ny,17)){w.x=nx;w.y=ny}else{const sx=w.x-dy/d*speed*dt,sy=w.y+dx/d*speed*dt;if(canMove(sx,sy,17)){w.x=sx;w.y=sy}}}w.attackTimer-=dt;if(d<=3*TILE&&w.attackTimer<=0&&!segmentHitsObstacle(w.x,w.y,target.x,target.y)){damage(target,1000);w.attackTimer=2.5;sfx('wolf')}}
 /* 모든 공격 판정이 끝난 뒤 회복 처리: 이번 프레임에 피해를 받으면 damage()가 combatIdle을 0으로 초기화하므로 회복되지 않는다. */for(const p of players()){p.combatIdle+=dt;if(p.combatIdle>=3&&p.hp<p.maxHp){const before=p.hp;p.hp=Math.min(p.maxHp,p.hp+p.maxHp*.13);if(p.hp>before){p.regenFlash=.65;hitNumbers.push({x:p.x,y:p.y-48,value:Math.round(p.hp-before),life:.85,heal:true});}p.combatIdle=0;}p.regenFlash=Math.max(0,(p.regenFlash||0)-dt);}for(const z of darkZones)z.life-=dt;darkZones=darkZones.filter(z=>z.life>0);for(const z of impactZones)z.life-=dt;impactZones=impactZones.filter(z=>z.life>0);for(let i=0;i<slashEffects.length;i++)slashEffects[i].timer-=dt;slashEffects=slashEffects.filter(s=>s.timer>0);for(const n of hitNumbers){n.life-=dt;n.y-=22*dt}hitNumbers=hitNumbers.filter(n=>n.life>0);
 hud()}
-function predictGuest(dt){const p=playerByIndex(playerIndex),mx=(keys.d?1:0)-(keys.a?1:0),my=(keys.s?1:0)-(keys.w?1:0),len=Math.hypot(mx,my)||1,nx=p.x+(mx/Math.max(1,len))*(p.charId==='wanderer'?1.5:p.charId==='tendo'?3:p.charId==='vincent'?2.5:2)*TILE*dt,ny=p.y+(my/Math.max(1,len))*(p.charId==='wanderer'?1.5:p.charId==='tendo'?3:2)*TILE*dt;if(canMove(nx,p.y,p.r))p.x=nx;if(canMove(p.x,ny,p.r))p.y=ny;p.angle=Math.atan2(mouse.y-H/2,mouse.x-W/2);if(serverP2){const blend=Math.min(1,dt*7);p.x+=(serverP2.x-p.x)*blend;p.y+=(serverP2.y-p.y)*blend}}
+function predictGuest(dt){const p=playerByIndex(playerIndex),input=inputForLocal(),mx=input.x||0,my=input.y||0,len=Math.hypot(mx,my)||1,speed=(p.charId==='wanderer'?1.5:p.charId==='tendo'?3:p.charId==='vincent'?2.5:2)*TILE,nx=p.x+(mx/Math.max(1,len))*speed*dt,ny=p.y+(my/Math.max(1,len))*speed*dt;if(canMove(nx,p.y,p.r))p.x=nx;if(canMove(p.x,ny,p.r))p.y=ny;p.angle=Math.atan2(input.aimY-p.y,input.aimX-p.x);if(serverP2){const blend=Math.min(1,dt*7);p.x+=(serverP2.x-p.x)*blend;p.y+=(serverP2.y-p.y)*blend}}
 function drawArena(){ctx.fillStyle='#9b7653';ctx.fillRect(0,0,W,H);ctx.fillStyle='#896746';for(let y=30;y<H;y+=40)for(let x=30;x<W;x+=40){ctx.beginPath();ctx.arc(x,y,1.4,0,Math.PI*2);ctx.fill()}for(const o of obstacles){ctx.fillStyle='rgba(20,25,30,.22)';ctx.fillRect(o.x+5,o.y+7,o.w,o.h);ctx.fillStyle='#65584d';ctx.fillRect(o.x,o.y,o.w,o.h);ctx.fillStyle='#a9957e';ctx.fillRect(o.x+7,o.y+7,o.w-14,8)}ctx.strokeStyle='#594332';ctx.lineWidth=8;ctx.strokeRect(4,4,W-8,H-8)}
 function drawWolf(w,target){ctx.save();ctx.translate(w.x,w.y);ctx.fillStyle='#10264b';ctx.beginPath();ctx.ellipse(0,0,23,15,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#1677d8';ctx.beginPath();ctx.ellipse(0,0,18,10,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#d7f4ff';ctx.beginPath();ctx.arc(8,-4,3,0,Math.PI*2);ctx.fill();ctx.fillStyle='#1a2a42';ctx.fillRect(-18,-29,36,5);ctx.fillStyle='#37bfff';ctx.fillRect(-18,-29,36*Math.max(0,w.hp/w.maxHp),5);ctx.fillStyle='#fff';ctx.font='10px Arial';ctx.textAlign='center';ctx.fillText('늑대 HP '+Math.ceil(w.hp),0,-35);ctx.fillStyle='#ffd66b';ctx.fillRect(-18,-39,36*Math.max(0,1-w.attackTimer/2.5),3);ctx.restore();if(target&&w.attackTimer<.55&&Math.hypot(target.x-w.x,target.y-w.y)<=3*TILE){ctx.save();ctx.translate(target.x,target.y);ctx.rotate(-.25);ctx.fillStyle='rgba(45,145,255,.38)';for(let i=0;i<3;i++){ctx.beginPath();ctx.ellipse((i-1)*13,0,7,34,0,0,Math.PI*2);ctx.fill()}ctx.restore()}}
 function drawPlayer(p,label){
