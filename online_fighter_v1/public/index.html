@@ -156,7 +156,7 @@ let onlineActive=false,onlineFrame=0,onlineLast=0,onlineSendClock=0,onlineAttack
 let onlineState=null,onlineSnapshot=null,remoteInput={},selectedCharacters=['general','general'];
 let localAimX=OW*.75,localAimY=OH*.5;
 function pickCharacter(ch){return CHAR[ch]?ch:'general'}
-function makeFighter(ch,x,y,angle){const key=pickCharacter(ch),d=CHAR[key],base=createCharacterState(key,x,y,angle);return {...base,ammo:d.ammo,maxAmmo:d.ammo,reloadTime:d.reload,reload:0,attackCd:0,attackHeld:false,basicComboStage:0,basicComboTimer:0,basicMissCd:0,stun:0,moveLock:0,windup:0,windupKind:'',cool:{t:0,f:0,c:0},gauge:0,invuln:0,slow:0,healTime:0,healLeft:0,drug:0,freeze:0,field:0,fieldCd:0,wolf:false,wolfCd:0,projectiles:[],pending:null,damageOverTime:0,dotTime:0,burstCount:0,burstWait:0,rocket:null,damageFlash:0,pushVx:0,pushVy:0,pushTimer:0}}
+function makeFighter(ch,x,y,angle){const key=pickCharacter(ch),d=CHAR[key],base=createCharacterState(key,x,y,angle);return {...base,ammo:d.ammo,maxAmmo:d.ammo,reloadTime:d.reload,reload:0,attackCd:0,attackHeld:false,basicComboStage:0,basicComboTimer:0,basicMissCd:0,basicMissLockUntil:0,stun:0,moveLock:0,windup:0,windupKind:'',cool:{t:0,f:0,c:0},gauge:0,invuln:0,slow:0,healTime:0,healLeft:0,drug:0,freeze:0,field:0,fieldCd:0,wolf:false,wolfCd:0,projectiles:[],pending:null,damageOverTime:0,dotTime:0,burstCount:0,burstWait:0,rocket:null,damageFlash:0,pushVx:0,pushVy:0,pushTimer:0}}
 function startOnlineMatch(){
  if(onlineActive||maxPlayers!==2||playerCount!==2)return;
  stopGame();onlineActive=true;$('lobby').classList.add('hidden');$('practice').classList.add('hidden');$('onlineGame').classList.remove('hidden');
@@ -204,7 +204,7 @@ function projectile(owner,x,y,angle,speed,damage,range,color,kind='bullet'){
  onlineState.shots.push({owner,x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,damage,range,travel:0,color,kind,life:Math.max(1,range/speed),delay:0,hit:false});
 }
 function tryBasic(p,i,v){
- if(!v.attack){p.attackHeld=false;return}if(p.attackHeld||p.hp<=0||onlineState.winner)return;const comboReady=p.basicComboTimer>0&&(p.basicComboStage===1||p.basicComboStage===2);if(p.basicMissCd>0||(!comboReady&&p.attackCd>0))return;p.attackHeld=true;
+ if(!v.attack){p.attackHeld=false;return}if(p.attackHeld||p.hp<=0||onlineState.winner)return;if(onlineState.clock<(p.basicMissLockUntil||0))return;const comboReady=p.basicComboTimer>0&&(p.basicComboStage===1||p.basicComboStage===2);if(!comboReady&&p.attackCd>0)return;p.attackHeld=true;
  const target=onlineState.players[1-i],r=characterRules(p.character).basic;
  if(p.character==='general'){
   p.attackCd=r.cooldown;const empowered=!!p.chainEmpowered;p.chainEmpowered=false;
@@ -213,7 +213,7 @@ function tryBasic(p,i,v){
   if(p.basicComboStage===1){
    onlineEffect({kind:'thrust',x:p.x,y:p.y,angle:p.angle,r:5*CELL,life:.22,max:.22,owner:i});onlineSound(155,.16,'sawtooth',.05,380);
    if(inThrustBox(p,target,CELL)){dealOnlineDamage(target,r.damage,p);shoveToSixMeters(p,target,CELL,OW,OH,24);target.moveLock=.1;target.stun=0;onlineEffect({kind:'knock',x:target.x,y:target.y,angle:p.angle,life:.3,max:.3});onlineEffect({kind:'hitBurst',x:target.x,y:target.y,life:.35,max:.35,color:'#9ceaff'});p.basicComboStage=2;p.basicComboTimer=.6;p.attackCd=0;onlineEffect({kind:'text',x:target.x,y:target.y-38,text:'2연계 적중 · 밀쳐내기',life:.65,max:.65,color:'#a8eaff'})}
-   else{p.basicComboStage=0;p.basicComboTimer=0;p.attackCd=0;p.basicMissCd=1.5;onlineEffect({kind:'text',x:p.x+Math.cos(p.angle)*3*CELL,y:p.y+Math.sin(p.angle)*3*CELL,text:'찌르기 빗나감',life:.45,max:.45,color:'#a9bdd1'})}return;
+   else{p.basicComboStage=0;p.basicComboTimer=0;p.attackCd=0;p.basicMissCd=0;p.basicMissLockUntil=onlineState.clock+1.5;onlineEffect({kind:'text',x:p.x+Math.cos(p.angle)*3*CELL,y:p.y+Math.sin(p.angle)*3*CELL,text:'찌르기 빗나감',life:.45,max:.45,color:'#a9bdd1'})}return;
   }
   if(p.basicComboStage===2){
    onlineEffect({kind:'comboCleave',x:p.x,y:p.y,angle:p.angle,r:2*CELL,life:.24,max:.24,owner:i});onlineSound(135,.2,'sawtooth',.05,500);
