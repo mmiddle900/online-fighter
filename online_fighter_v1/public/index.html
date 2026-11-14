@@ -33,7 +33,7 @@
 </head>
 <body><div class="rotate-notice"><div class="rotate-icon">📱</div><strong>화면을 가로로 돌려주세요</strong><span>ONLINE FIGHTER는 모바일 가로 화면에 최적화되어 있습니다.</span></div><main class="wrap">
 <h1>⚔ ONLINE FIGHTER</h1><div class="sub">TOP-DOWN ARENA · 실시간 온라인 2인 / 3인 개인전</div>
-<section class="panel"><b>게임 모드</b><div class="row" style="margin-top:10px"><button id="aiFight">🤖 AI와 대전</button><label>AI 캐릭터 <select id="aiCharacterSelect" style="padding:9px;border-radius:8px"><option value="generalK">제너럴 K</option><option value="tendo">텐도 사츠시</option><option value="vincent">세인트 빈센트</option><option value="wanderer">방랑자</option></select></label><button id="practice">훈련 더미 테스트</button><button id="exitPractice" disabled>모드 종료</button><button id="soundOn">🔊 소리 켜기</button><label>내 캐릭터 <select id="characterSelect" style="padding:9px;border-radius:8px"><option value="generalK">제너럴 K</option><option value="tendo">텐도 사츠시</option><option value="vincent">세인트 빈센트</option><option value="wanderer">방랑자</option></select></label><span class="muted">대전 시작 전에 선택하세요.</span><span id="soundStatus" class="muted">소리 활성화 전</span><span class="muted">체력이 무한인 훈련용 더미를 공격해 볼 수 있습니다.</span></div></section>
+<section class="panel"><b>게임 모드</b><div class="row" style="margin-top:10px"><button id="aiFight">🤖 AI와 대전</button><label>AI 캐릭터 <select id="aiCharacterSelect" style="padding:9px;border-radius:8px"><option value="generalK">제너럴 K</option><option value="tendo">텐도 사츠시</option><option value="vincent">세인트 빈센트</option><option value="wanderer">방랑자</option></select></label><button id="practice">훈련 더미 테스트</button><button id="exitPractice" disabled>모드 종료</button><button id="soundOn">🔊 소리 켜기</button><label>시점 <select id="viewMode" style="padding:9px;border-radius:8px"><option value="third">3인칭</option><option value="first">1인칭</option></select></label><label>내 캐릭터 <select id="characterSelect" style="padding:9px;border-radius:8px"><option value="generalK">제너럴 K</option><option value="tendo">텐도 사츠시</option><option value="vincent">세인트 빈센트</option><option value="wanderer">방랑자</option></select></label><span class="muted">대전 시작 전에 선택하세요.</span><span id="soundStatus" class="muted">소리 활성화 전</span><span class="muted">체력이 무한인 훈련용 더미를 공격해 볼 수 있습니다.</span></div></section>
 <section class="panel"><b>온라인 대전 방 (최대 3명)</b><div class="row" style="margin-top:10px"><label>대전 인원 <select id="modeSelect" style="padding:9px;border-radius:8px"><option value="2">2인 대전</option><option value="3">3인 개인전</option></select></label><button id="create">방 만들기</button><input id="code" maxlength="6" placeholder="친구의 6자리 코드"><button id="join">참가하기</button></div><div class="row" style="margin-top:10px"><span>내 방 코드</span><span id="mycode" class="code">------</span><button id="copy">코드 복사</button></div><div id="net" class="muted" style="margin-top:8px">서버 연결 중...</div></section>
 <div class="hud">
 <section class="panel"><div class="name" style="color:#ff8792">PLAYER 1 · 방장</div><div id="hp1">HP 10000</div><div class="hp"><div id="bar1" class="fill"></div></div><div id="super1" class="meter">영혼 사슬 준비 · 게이지 0 / 14400</div></section>
@@ -60,10 +60,17 @@
 (()=>{
 function requestLandscape(){try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(()=>{});}catch(e){}}
 window.addEventListener('pointerdown',requestLandscape,{once:true,passive:true});
+const viewSelect=$('viewMode');
+if(viewSelect)viewSelect.addEventListener('change',()=>{cameraMode=viewSelect.value;const local=playerByIndex(playerIndex)||p1;fpsYaw=local.angle||0;if(cameraMode==='first')say('1인칭 시점 · 화면 클릭 후 마우스로 조준 · WASD 이동');else{if(document.pointerLockElement)document.exitPointerLock();say('3인칭 시점으로 전환했습니다.')}});
+canvas.addEventListener('click',()=>{if(cameraMode==='first'&&canvas.requestPointerLock&&!matchMedia('(hover:none)').matches)canvas.requestPointerLock()});
+document.addEventListener('pointerlockchange',()=>{pointerLocked=document.pointerLockElement===canvas});
+document.addEventListener('mousemove',e=>{if(cameraMode==='first'&&pointerLocked){fpsYaw+=e.movementX*.0024;fpsYaw=Math.atan2(Math.sin(fpsYaw),Math.cos(fpsYaw));}});
+
 window.addEventListener('touchstart',requestLandscape,{once:true,passive:true});
 const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d'),W=1800,H=1200,TILE=60;
 const game3d=$('game3d');
 let threeScene=null,threeCamera=null,threeRenderer=null,threeActors=new Map(),threeEffects=[];
+let cameraMode='third',fpsYaw=0,pointerLocked=false,viewWeapon=null;
 function init3D(){
  if(!window.THREE||threeRenderer)return;
  const T=window.THREE;
@@ -100,17 +107,46 @@ function syncActor(key,p,label){
  g.userData.blade.visible=p.rushTimer<=0;
 }
 function render3D(){
- if(!window.THREE){canvas.style.opacity='1';return;}if(!threeRenderer){init3D();if(!threeRenderer)return;}canvas.style.opacity='0';const T=window.THREE,viewer=playerByIndex(playerIndex)||p1;
+ if(!window.THREE){canvas.style.opacity='1';return;}if(!threeRenderer){init3D();if(!threeRenderer)return;}canvas.style.opacity='0';
+ const T=window.THREE,viewer=playerByIndex(playerIndex)||p1,forward=new T.Vector3(Math.cos(viewer.angle),0,Math.sin(viewer.angle));
  for(const [i,p] of players().entries())syncActor('p'+(i+1),p);
  for(const key of [...threeActors.keys()])if(key.startsWith('p')&&Number(key.slice(1))>players().length){threeScene.remove(threeActors.get(key));threeActors.delete(key)}
- const target=new T.Vector3((viewer.x-W/2)/TILE,0,(viewer.y-H/2)/TILE),back= new T.Vector3(Math.sin(viewer.angle)*8,0,Math.cos(viewer.angle)*8);
- threeCamera.position.set(target.x+back.x,target.y+9.2,target.z+back.z+5.2);threeCamera.lookAt(target.x,target.y+1.0,target.z);
- const old=threeEffects;threeEffects=[];for(const obj of old)threeScene.remove(obj);
- const mat=(color,emissive=color)=>new T.MeshStandardMaterial({color,emissive,emissiveIntensity:.45});
- for(const c of chains){const owner=playerByIndex(c.owner);if(!owner)continue;const a=new T.Vector3((owner.x-W/2)/TILE,1.15,(owner.y-H/2)/TILE),b=new T.Vector3((c.x-W/2)/TILE,1.15,(c.y-H/2)/TILE);const line=new T.Mesh(new T.CylinderGeometry(.035,.035,a.distanceTo(b),7),mat(0x38aaff));line.position.copy(a).add(b).multiplyScalar(.5);line.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),b.sub(a).normalize());threeScene.add(line);threeEffects.push(line)}
- for(const b of bullets){const m=new T.Mesh(new T.SphereGeometry(.12,8,8),new T.MeshBasicMaterial({color:0xffe58a}));m.position.set((b.x-W/2)/TILE,1.25,(b.y-H/2)/TILE);threeScene.add(m);threeEffects.push(m)}
- for(const r of rockets){const m=new T.Mesh(new T.ConeGeometry(.16,.55,8),mat(0xff8738));m.position.set((r.x-W/2)/TILE,1.25,(r.y-H/2)/TILE);m.rotation.z=Math.PI/2-r.angle;threeScene.add(m);threeEffects.push(m)}
- for(const p of players())if(p.wolf&&p.wolf.hp>0){const w=p.wolf;const m=new T.Mesh(new T.CapsuleGeometry(.25,.58,4,8),mat(0x176ac1));m.position.set((w.x-W/2)/TILE,.42,(w.y-H/2)/TILE);m.scale.set(1.4,.8,.8);threeScene.add(m);threeEffects.push(m)}
+ const target=new T.Vector3((viewer.x-W/2)/TILE,0,(viewer.y-H/2)/TILE);
+ if(cameraMode==='first'){
+   threeCamera.position.set(target.x,1.62,target.z);
+   const look=target.clone().add(new T.Vector3(forward.x,0,forward.z));threeCamera.lookAt(look.x,1.55,look.z);
+   const own=threeActors.get('p'+playerIndex);if(own)own.visible=false;
+   if(!viewWeapon){viewWeapon=new T.Group();const body=new T.Mesh(new T.BoxGeometry(.18,.16,.72),new T.MeshStandardMaterial({color:0x27384e,metalness:.55,roughness:.35}));body.position.set(.32,-.25,-.55);viewWeapon.add(body);const barrel=new T.Mesh(new T.CylinderGeometry(.045,.055,.48,10),new T.MeshStandardMaterial({color:0x8ba6bf,metalness:.8,roughness:.22}));barrel.rotation.x=Math.PI/2;barrel.position.set(.32,-.2,-.98);viewWeapon.add(barrel);threeCamera.add(viewWeapon);}
+   viewWeapon.visible=true;
+ }else{
+   for(const [i] of players().entries()){const a=threeActors.get('p'+(i+1));if(a)a.visible=true;}
+   if(viewWeapon)viewWeapon.visible=false;
+   const back=forward.clone().multiplyScalar(-8);threeCamera.position.set(target.x+back.x,target.y+8.2,target.z+back.z+3.4);threeCamera.lookAt(target.x,target.y+1.0,target.z);
+ }
+ const old=threeEffects;threeEffects=[];for(const obj of old){threeScene.remove(obj);obj.traverse?.(o=>{o.geometry?.dispose?.();if(Array.isArray(o.material))o.material.forEach(m=>m.dispose?.());else o.material?.dispose?.();});}
+ const add=(obj)=>{threeScene.add(obj);threeEffects.push(obj);return obj};
+ const mat=(color,emissive=color,opacity=1)=>new T.MeshStandardMaterial({color,emissive,emissiveIntensity:.7,transparent:opacity<1,opacity,depthWrite:opacity>=1,side:T.DoubleSide});
+ const pos=(x,y,h=.12)=>new T.Vector3((x-W/2)/TILE,h,(y-H/2)/TILE);
+ const groundDisc=(x,y,r,color,opacity=.3)=>{const m=new T.Mesh(new T.CircleGeometry(r/TILE,48),mat(color,color,opacity));m.rotation.x=-Math.PI/2;m.position.copy(pos(x,y,.035));return add(m)};
+ const beam=(x1,y1,x2,y2,r,color)=>{const a=pos(x1,y1,1.1),b=pos(x2,y2,1.1),d=b.clone().sub(a),m=new T.Mesh(new T.CylinderGeometry(r,r,d.length(),8),mat(color));m.position.copy(a).add(b).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d.normalize());return add(m)};
+ for(const c of chains){const owner=playerByIndex(c.owner);if(owner)beam(owner.x,owner.y,c.x,c.y,.045,0x38aaff);const head=new T.Mesh(new T.IcosahedronGeometry(.16,1),mat(0xa9e5ff));head.position.copy(pos(c.x,c.y,1.12));add(head)}
+ for(const b of bullets){const m=new T.Mesh(new T.SphereGeometry(.105,10,8),new T.MeshBasicMaterial({color:0xffe58a}));m.position.copy(pos(b.x,b.y,1.3));add(m);beam(b.x-Math.cos(b.angle)*12,b.y-Math.sin(b.angle)*12,b.x,b.y,.025,0xffa82e)}
+ for(const r of rockets){const m=new T.Mesh(new T.ConeGeometry(.17,.6,9),mat(0xff8738,0xff4d12));m.position.copy(pos(r.x,r.y,1.2));m.rotation.z=Math.PI/2-r.angle;add(m);beam(r.x-Math.cos(r.angle)*25,r.y-Math.sin(r.angle)*25,r.x,r.y,.07,0xff8a28)}
+ for(const b of rushShots){const m=new T.Mesh(new T.SphereGeometry(.12,10,8),mat(0xc98b55));m.position.copy(pos(b.x,b.y,1.0));add(m)}
+ for(const z of darkZones){const m=groundDisc(z.x+Math.cos(z.angle)*z.length*.5,z.y+Math.sin(z.angle)*z.length*.5,Math.max(z.width,z.length)*.45,0x15131a,.48);m.scale.set(z.length/TILE/Math.max(z.width,z.length)*1.9,1,z.width/TILE/Math.max(z.width,z.length)*1.9);m.rotation.z=-z.angle}
+ for(const z of impactZones){const centerX=z.x+Math.cos(z.angle)*z.length*.5,centerY=z.y+Math.sin(z.angle)*z.length*.5;const area=new T.Mesh(new T.BoxGeometry(z.length/TILE,.035,z.width/TILE),mat(0x57caff,0x1b8fff,.28));area.position.copy(pos(centerX,centerY,.07));area.rotation.y=-z.angle;add(area);const line=new T.Mesh(new T.BoxGeometry(z.length/TILE,.04,.045),mat(0xc9f5ff,0x38bfff));line.position.copy(pos(centerX,centerY,.1));line.rotation.y=-z.angle;add(line)}
+ for(const s of slashEffects){const arc=new T.Mesh(new T.TorusGeometry((s.red?3:5),.055,8,48,Math.PI),mat(s.red?0xff3b2f:0x55bdff,s.red?0xff261b:0x168cff,.9));arc.rotation.x=Math.PI/2;arc.rotation.z=s.angle-Math.PI/2;arc.position.copy(pos(s.x,s.y,.22));add(arc)}
+ for(const s of pendingSlashes){const arc=new T.Mesh(new T.CircleGeometry(5,48,s.angle-Math.PI/2,Math.PI),mat(0x277cff,0x277cff,.25));arc.rotation.x=-Math.PI/2;arc.position.copy(pos(s.x,s.y,.12));add(arc)}
+ for(const p of players()){
+   if(p.teleport){const ring=new T.Mesh(new T.TorusGeometry(.65,.045,8,40),mat(0x8ce5ff,0x279fff,.9));ring.rotation.x=Math.PI/2;ring.position.copy(pos(p.teleport.x,p.teleport.y,.12));add(ring);groundDisc(p.teleport.x,p.teleport.y,50,0x279fff,.18)}
+   if(p.impactPrep){const z=p.impactPrep,length=5*TILE,centerX=z.x+Math.cos(z.angle)*length/2,centerY=z.y+Math.sin(z.angle)*length/2;const m=new T.Mesh(new T.BoxGeometry(length/TILE,.06,1),mat(0xdaf7ff,0x8bdcff,.35));m.position.copy(pos(centerX,centerY,.12));m.rotation.y=-z.angle;add(m)}
+   if(p.energyTimer>0){groundDisc(p.x,p.y,5*TILE,0x22bfff,.16);const ring=new T.Mesh(new T.TorusGeometry(1.25,.06,8,48),mat(0x42caff,0x168cff));ring.rotation.x=Math.PI/2;ring.position.copy(pos(p.x,p.y,.28));add(ring)}
+   if(p.adxTimer>0){groundDisc(p.x,p.y,1.1*TILE,0x256cff,.18);const ring=new T.Mesh(new T.TorusGeometry(.9,.06,8,48),mat(0xffd84a,0xffb800));ring.rotation.x=Math.PI/2;ring.position.copy(pos(p.x,p.y,.3));add(ring)}
+   if(p.shieldTimer>0||p.guardianTimer>0){const shield=new T.Mesh(new T.SphereGeometry(.78,24,16),new T.MeshStandardMaterial({color:p.guardianTimer>0?0xffdc37:0xf0d45c,emissive:p.guardianTimer>0?0xffbd12:0x9b852b,transparent:true,opacity:.2,wireframe:true}));shield.position.copy(pos(p.x,p.y,1));add(shield)}
+   if(p.wolf&&p.wolf.hp>0){const w=p.wolf,m=new T.Mesh(new T.CapsuleGeometry(.25,.58,4,8),mat(0x176ac1,0x1256ad));m.position.copy(pos(w.x,w.y,.55));m.scale.set(1.4,.8,.8);add(m);const bar=new T.Mesh(new T.BoxGeometry(.9,.06,.04),mat(0x31caff));bar.position.copy(pos(w.x,w.y,1.25));add(bar);if(w.attackTimer<.55){for(let k=-1;k<=1;k++){const slash=new T.Mesh(new T.BoxGeometry(.08,1.2,.08),mat(0x49aaff,0x147bff,.65));slash.position.copy(pos(w.x+k*.18,w.y,1.05));slash.rotation.y=.2;add(slash)}}}
+ }
+ for(const d of drones){const body=new T.Mesh(new T.BoxGeometry(.55,.18,.55),mat(0x8c9fb5,0x3e85b8));body.position.copy(pos(d.x,d.y,2.2));add(body);for(const x of [-.38,.38])for(const z of [-.28,.28]){const rotor=new T.Mesh(new T.CylinderGeometry(.13,.13,.035,12),mat(0xe4d05b,0xb99b20));rotor.position.copy(pos(d.x+x*TILE,d.y+z*TILE,2.25));add(rotor)}groundDisc(d.x,d.y,5*TILE,0xe5c83c,.09)}
+ for(const p of players())if(p.attackAnim>0){const radius=p.charId==='generalK'?1.45:p.charId==='wanderer'?3:1.05;const arc=new T.Mesh(new T.TorusGeometry(radius,.07,8,36,Math.PI),mat(p.charId==='wanderer'?0xff493b:0x7bd8ff,p.charId==='wanderer'?0xff1e12:0x178fff,.9));arc.rotation.x=Math.PI/2;arc.rotation.z=p.angle-Math.PI/2;arc.position.copy(pos(p.x,p.y,.65));add(arc)}
  threeRenderer.render(threeScene,threeCamera);
 }
 
@@ -157,7 +193,7 @@ function inputForLocal(){
 const m=mobileSticks,move=m.move.active?{x:m.move.x,y:m.move.y}:null;
 const direction=m.skill4.active?m.skill4:m.skill3.active?m.skill3:m.skill2.active?m.skill2:m.skill1.active?m.skill1:m.attack.active?m.attack:null;
 const local=playerByIndex(playerIndex);
-const aim=direction?{aimX:local.x+direction.x*300,aimY:local.y+direction.y*300}:{aimX:local.x+mouse.x-W/2,aimY:local.y+mouse.y-H/2};
+const aim=cameraMode==='first'?(direction?{aimX:local.x+direction.x*1000,aimY:local.y+direction.y*1000}:{aimX:local.x+Math.cos(fpsYaw)*1000,aimY:local.y+Math.sin(fpsYaw)*1000}):(direction?{aimX:local.x+direction.x*300,aimY:local.y+direction.y*300}:{aimX:local.x+mouse.x-W/2,aimY:local.y+mouse.y-H/2});
 return {x:move?move.x:(keys.d?1:0)-(keys.a?1:0),y:move?move.y:(keys.s?1:0)-(keys.w?1:0),...aim,shoot:m.attack.active||mouse.down,skill1:m.skill1.active||!!keys.e&&mouse.rightDown,skill2:m.skill2.active||!!keys.r&&mouse.rightDown,skill3:m.skill3.active||!!keys.t&&mouse.rightDown,skill4:m.skill4.active||!!keys.g&&mouse.rightDown,preview1:!!keys.e,preview2:!!keys.r,preview3:!!keys.t,preview4:!!keys.g,character:selectedCharacter}
 }
 function updateStick(name,e){
