@@ -232,50 +232,49 @@
         ctx.fillText('훈련 완료!', enemyScreenX, groundScreenY - 24);
       }
 
-      // Natural right-facing side-profile General K, drawn directly in canvas.
-      const attackActive=!!activeAttack&&now<attackUntil, attackProgress=attackActive?1-(attackUntil-now)/260:0;
+      // Pixel-art General K based on the supplied reference proportions, facing right.
+      const attackActive=!!activeAttack&&now<attackUntil,attackProgress=attackActive?1-(attackUntil-now)/260:0;
       const motion=attackActive?(activeAttack==='잽'?'jab':activeAttack==='훅'?'hook':'upper'):jumpHeight>0?'jump':dx?'walk':'idle';
-      const phase=now/145,stride=motion==='walk'?Math.sin(phase):0,bob=motion==='walk'?Math.abs(stride)*1.8:motion==='idle'?Math.sin(now/260):0;
-      const punch=attackActive?Math.sin(Math.min(1,attackProgress)*Math.PI):0,ground=groundScreenY-jumpHeight,by=ground-71-bob;
-      ctx.save();ctx.translate(screenX,0); // deliberately never mirror: face right
-      ctx.fillStyle='rgba(2,8,23,.35)';ctx.beginPath();ctx.ellipse(0,groundScreenY+2,21,5,0,0,Math.PI*2);ctx.fill();
-      const limb=(p,w,col)=>{ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#070d1a';ctx.lineWidth=w+3;ctx.beginPath();ctx.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)ctx.lineTo(p[i],p[i+1]);ctx.stroke();ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)ctx.lineTo(p[i],p[i+1]);ctx.stroke();};
-      // cape trailing behind
-      const wave=Math.sin(now/190)*(motion==='walk'?3:1),cape=ctx.createLinearGradient(-38,by-36,-5,by+34);cape.addColorStop(0,'#405987');cape.addColorStop(.5,'#1a2b4e');cape.addColorStop(1,'#080f20');
-      ctx.fillStyle=cape;ctx.strokeStyle='#526f9f';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-8,by-34);ctx.quadraticCurveTo(-29,by-39,-39,by-12+wave);ctx.quadraticCurveTo(-43,by+10,-30,by+27);ctx.quadraticCurveTo(-26,by+13,-19,by+12);ctx.quadraticCurveTo(-15,by+29,-6,by+31);ctx.quadraticCurveTo(-10,by+8,-2,by-5);ctx.closePath();ctx.fill();ctx.stroke();
-      const back=motion==='walk'?stride*6:motion==='jump'?-5:0,front=motion==='walk'?-stride*6:motion==='jump'?-7:0;
-      // far leg and boot
-      limb([-7,by+4,-12+back*.4,by+22,-16+back,ground-6],8,'#26395f');
-      ctx.fillStyle='#091326';ctx.strokeStyle='#627eae';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-24+back,ground-9);ctx.quadraticCurveTo(-14+back,ground-12,-8+back,ground-5);ctx.lineTo(-7+back,ground);ctx.lineTo(-27+back,ground);ctx.closePath();ctx.fill();ctx.stroke();
-      // fitted torso armor, broad shoulders and tapered waist
-      const armor=ctx.createLinearGradient(-14,by-35,15,by+14);armor.addColorStop(0,'#526b99');armor.addColorStop(.4,'#293f68');armor.addColorStop(1,'#101a30');
-      ctx.fillStyle=armor;ctx.strokeStyle='#8198c1';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(-8,by-37);ctx.quadraticCurveTo(3,by-43,12,by-32);ctx.quadraticCurveTo(17,by-17,14,by-5);ctx.quadraticCurveTo(12,by+7,7,by+13);ctx.lineTo(-8,by+12);ctx.quadraticCurveTo(-14,by-3,-13,by-20);ctx.closePath();ctx.fill();ctx.stroke();
-      ctx.fillStyle='#111f3b';ctx.beginPath();ctx.moveTo(-4,by-26);ctx.quadraticCurveTo(5,by-31,10,by-24);ctx.lineTo(8,by-6);ctx.lineTo(-5,by-7);ctx.closePath();ctx.fill();
-      ctx.strokeStyle='#4fc7f0';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-1,by-18);ctx.lineTo(9,by-16);ctx.stroke();
-      ctx.fillStyle='#0a1428';ctx.fillRect(-9,by+5,20,4);ctx.fillStyle='#8299c4';ctx.fillRect(4,by+5,5,4);
-      // near leg, knee and boot pointing forward
-      limb([6,by+8,11+front*.35,by+25,16+front,ground-8],9,'#344d7a');
-      ctx.fillStyle='#0a1324';ctx.strokeStyle='#718ab8';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(8+front,ground-10);ctx.quadraticCurveTo(19+front,ground-13,26+front,ground-7);ctx.lineTo(30+front,ground-2);ctx.quadraticCurveTo(30+front,ground,23+front,ground);ctx.lineTo(8+front,ground);ctx.closePath();ctx.fill();ctx.stroke();
-      // rear arm behind torso
-      limb([-8,by-28,-16,by-16,-12,by-5],6,'#283d67');
-      // forward arm, with distinct attack poses
-      let ex=14,ey=by-17,hx=24,hy=by-9;
-      if(motion==='jab'){ex=19+8*punch;ey=by-18;hx=33+34*punch;hy=by-16;}
-      if(motion==='hook'){ex=19+5*punch;ey=by-29;hx=29+13*punch;hy=by-34-7*punch;}
-      if(motion==='upper'){ex=16;ey=by-30-5*punch;hx=24+5*punch;hy=by-46-12*punch;}
-      if(motion==='jump'){ey=by-29;hy=by-39;}
-      limb([7,by-29,ex,ey,hx,hy],7,'#405a88');
-      ctx.fillStyle='#101e39';ctx.strokeStyle='#829bc7';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(hx,hy,5.2,0,Math.PI*2);ctx.fill();ctx.stroke();
-      // neck and hood in clear side profile; visor and nose point right
-      ctx.fillStyle='#111d35';ctx.fillRect(-1,by-49,10,14);
-      const hood=ctx.createLinearGradient(-10,by-87,20,by-47);hood.addColorStop(0,'#526d9c');hood.addColorStop(.5,'#2b426c');hood.addColorStop(1,'#101a31');
-      ctx.fillStyle=hood;ctx.strokeStyle='#91a7cf';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(-10,by-64);ctx.quadraticCurveTo(-12,by-87,5,by-87);ctx.quadraticCurveTo(20,by-86,20,by-71);ctx.quadraticCurveTo(25,by-65,19,by-58);ctx.lineTo(11,by-48);ctx.lineTo(-5,by-49);ctx.closePath();ctx.fill();ctx.stroke();
-      ctx.fillStyle='#070e1d';ctx.beginPath();ctx.moveTo(4,by-67);ctx.lineTo(20,by-66);ctx.lineTo(27,by-61);ctx.lineTo(17,by-56);ctx.lineTo(5,by-58);ctx.closePath();ctx.fill();
-      ctx.fillStyle='#55dcff';ctx.shadowColor='#159dff';ctx.shadowBlur=8;ctx.beginPath();ctx.moveTo(8,by-66);ctx.lineTo(20,by-65);ctx.lineTo(25,by-62);ctx.lineTo(10,by-62);ctx.closePath();ctx.fill();ctx.shadowBlur=0;
-      ctx.strokeStyle='#a6bce4';ctx.lineWidth=2;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-3,by-82);ctx.quadraticCurveTo(-12,by-92,-18,by-90);ctx.moveTo(5,by-85);ctx.quadraticCurveTo(1,by-94,-5,by-96);ctx.stroke();
+      const phase=now/145,stride=motion==='walk'?Math.sin(phase):0,bob=motion==='walk'?Math.abs(stride)*1.5:motion==='idle'?Math.sin(now/260):0;
+      const punch=attackActive?Math.sin(Math.min(1,attackProgress)*Math.PI):0,ground=groundScreenY-jumpHeight,base=ground-bob;
+      ctx.save();ctx.translate(screenX,0);
+      ctx.fillStyle='rgba(2,8,23,.3)';ctx.beginPath();ctx.ellipse(-1,groundScreenY+2,25,5,0,0,Math.PI*2);ctx.fill();
+      const poly=(p,f,s='#111827',w=1)=>{ctx.beginPath();ctx.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)ctx.lineTo(p[i],p[i+1]);ctx.closePath();ctx.fillStyle=f;ctx.fill();if(s){ctx.strokeStyle=s;ctx.lineWidth=w;ctx.stroke();}};
+      const seg=(p,w,col)=>{ctx.lineCap='square';ctx.lineJoin='miter';ctx.strokeStyle='#101522';ctx.lineWidth=w+2;ctx.beginPath();ctx.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)ctx.lineTo(p[i],p[i+1]);ctx.stroke();ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)ctx.lineTo(p[i],p[i+1]);ctx.stroke();};
+      // scarf and cape trail behind the character
+      poly([-8,base-70,-27,base-63,-48,base-42,-40,base-39,-52,base-18,-31,base-27,-25,base-8,-11,base-34],'#172747','#405b8c');
+      const rear=motion==='walk'?stride*7:motion==='jump'?-5:0,front=motion==='walk'?-stride*7:motion==='jump'?-6:0;
+      // long rear leg and short armored boot
+      seg([-7,base-36,-20+rear,base-19,-42+rear,base+4],9,'#263d68');
+      poly([-50+rear,base+1,-34+rear,base-4,-27+rear,base+1,-31+rear,base+7,-51+rear,base+7],'#0a1427','#5875a8');
+      // bent front leg
+      seg([2,base-37,15+front,base-20,22+front,base-4],10,'#354f7e');
+      poly([14+front,base-8,28+front,base-8,33+front,base-3,31+front,base+2,12+front,base+2,9+front,base-2],'#172b4e','#7893c4');
+      // compact forward-leaning torso and narrow waist
+      poly([-13,base-76,2,base-79,15,base-69,12,base-48,2,base-36,-12,base-39,-19,base-54],'#263f70','#8197c1',1.2);
+      poly([-7,base-70,5,base-71,10,base-56,-2,base-48,-12,base-56],'#101d37','#4d6c9f');
+      poly([-12,base-42,11,base-46,14,base-39,-11,base-34],'#0b1428','#526d9c');
+      // rear arm tucked behind; front arm reaches right
+      seg([-11,base-69,-25,base-57,-21,base-47],7,'#344e7b');
+      let ex=15,ey=base-63,hx=31,hy=base-55;
+      if(motion==='jab'){ex=23+8*punch;ey=base-62;hx=39+37*punch;hy=base-63;}
+      if(motion==='hook'){ex=24+5*punch;ey=base-72;hx=38+13*punch;hy=base-78-5*punch;}
+      if(motion==='upper'){ex=17;ey=base-76-4*punch;hx=28+5*punch;hy=base-91-8*punch;}
+      if(motion==='jump'){ey=base-76;hy=base-83;}
+      seg([7,base-69,ex,ey,hx,hy],8,'#3e5b8d');
+      poly([hx-4,hy-4,hx+4,hy-4,hx+6,hy+2,hx+1,hy+6,hx-5,hy+3],'#0b1428','#8aa3d2');
+      // compact hood and face mask in right-facing side profile
+      poly([-3,base-84,9,base-83,11,base-74,-1,base-73],'#111d35','#34496f');
+      poly([-13,base-104,-4,base-111,9,base-108,17,base-98,18,base-88,11,base-80,-5,base-82,-14,base-91],'#263e6d','#91a8d2',1.2);
+      poly([4,base-99,16,base-98,23,base-93,16,base-88,5,base-90],'#080f20','#182b4b');
+      poly([8,base-98,18,base-97,22,base-94,10,base-94],'#54d9ff',null);
+      poly([-10,base-104,-3,base-110,8,base-108,1,base-103],'#405b8b',null);
+      poly([-6,base-108,-15,base-116,-12,base-105],'#506d9e',null);
+      poly([1,base-109,-2,base-117,7,base-108],'#506d9e',null);
+      ctx.fillStyle='#7fa0d6';ctx.fillRect(-8,base-66,5,2);ctx.fillRect(4,base-57,7,2);
       ctx.restore();
-      // visual-only blue attack trail; hitbox and damage remain unchanged
-      if(attackActive){ctx.save();ctx.globalAlpha=.82*Math.sin(Math.min(1,attackProgress)*Math.PI);ctx.translate(screenX+36,by-12);ctx.strokeStyle='#55caff';ctx.shadowColor='#168bff';ctx.shadowBlur=12;ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();if(motion==='jab'){ctx.moveTo(-4,0);ctx.quadraticCurveTo(20,-12,48,-3);}else if(motion==='hook'){ctx.arc(0,0,29,-1.2,.65);}else{ctx.moveTo(-5,17);ctx.quadraticCurveTo(26,-9,22,-43);}ctx.stroke();ctx.restore();}
+      // purely visual blue attack trail; hitbox and damage remain unchanged
+      if(attackActive){ctx.save();ctx.globalAlpha=.8*Math.sin(Math.min(1,attackProgress)*Math.PI);ctx.translate(screenX+42,base-60);ctx.strokeStyle='#55caff';ctx.shadowColor='#168bff';ctx.shadowBlur=10;ctx.lineWidth=3;ctx.lineCap='round';ctx.beginPath();if(motion==='jab'){ctx.moveTo(-4,0);ctx.quadraticCurveTo(20,-10,43,-2);}else if(motion==='hook'){ctx.arc(0,0,25,-1.15,.6);}else{ctx.moveTo(-4,13);ctx.quadraticCurveTo(22,-9,19,-34);}ctx.stroke();ctx.restore();}
       ctx.fillStyle = '#bfdbfe';
       ctx.font = '12px system-ui';
       ctx.textAlign = 'center';
