@@ -22,6 +22,11 @@
     .arena strong{display:block;font-size:clamp(18px,3vw,26px);margin-bottom:8px}
     .arena span{color:#8fa1b8}
     .arena-content{position:relative;z-index:1;padding:10px 14px;border-radius:10px;background:rgba(10,17,29,.82)}
+    #battle-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+    .arena.crosshair-on:after{z-index:2}
+    .hud{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:10px;color:#cbd5e1;font-size:14px}
+    .key{display:inline-block;min-width:25px;padding:2px 6px;margin:0 2px;border:1px solid #64748b;border-radius:5px;background:#1e293b;text-align:center;font-weight:700;color:#fff}
+    .attack-log{color:#93c5fd}
     footer{margin-top:12px;color:#718198;font-size:13px}
   </style>
 </head>
@@ -35,15 +40,111 @@
       <span class="grid-label">격자 간격: 1칸 = 1m</span>
       <button id="crosshair-toggle" class="toggle" type="button" aria-pressed="true">십자선 표시: ON</button>
     </div>
-    <section class="arena crosshair-on" aria-label="1미터 단위 격자가 표시된 게임 화면">
-      <div class="arena-content">
-        <strong>전투 시스템 초기화 완료</strong>
-        <span>1m 단위 격자 · 십자선 표시 설정 가능</span>
-      </div>
+    <section class="arena crosshair-on" aria-label="더미 캐릭터 훈련장">
+      <canvas id="battle-canvas" aria-label="더미 캐릭터 게임 화면"></canvas>
     </section>
+    <div class="hud">
+      <span>캐릭터: <strong>더미</strong> · 좌표: <strong id="position-readout">x: 0, y: -4</strong></span>
+      <span class="attack-log" id="action-readout">대기 중</span>
+    </div>
+    <div class="hud">
+      <span>이동 <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span></span>
+      <span>약공격 <span class="key">G</span> · 중공격 <span class="key">H</span> · 강공격 <span class="key">J</span></span>
+    </div>
     <footer>프로젝트 기반 버전 0.1.0</footer>
   </main>
   <script>
+    // 더미 캐릭터 기본 조작
+    const canvas = document.querySelector('#battle-canvas');
+    const ctx = canvas.getContext('2d');
+    const positionReadout = document.querySelector('#position-readout');
+    const actionReadout = document.querySelector('#action-readout');
+    const dummy = { name: '더미', x: 0, y: -4, speed: 4, facing: { x: 0, y: 1 } };
+    const pressedKeys = new Set();
+    let activeAttack = null;
+    let attackUntil = 0;
+    let lastFrame = 0;
+
+    function resizeBattleCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.round(rect.width * dpr));
+      canvas.height = Math.max(1, Math.round(rect.height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener('resize', resizeBattleCanvas);
+    resizeBattleCanvas();
+
+    function triggerDummyAttack(type) {
+      const labels = { g: '약공격', h: '중공격', j: '강공격' };
+      activeAttack = labels[type];
+      attackUntil = performance.now() + 220;
+      actionReadout.textContent = activeAttack + ' 입력';
+    }
+
+    window.addEventListener('keydown', event => {
+      const key = event.key.toLowerCase();
+      if (['w','a','s','d','g','h','j'].includes(key)) event.preventDefault();
+      if (['w','a','s','d'].includes(key)) pressedKeys.add(key);
+      if (!event.repeat && ['g','h','j'].includes(key)) triggerDummyAttack(key);
+    });
+    window.addEventListener('keyup', event => pressedKeys.delete(event.key.toLowerCase()));
+    window.addEventListener('blur', () => pressedKeys.clear());
+
+    function drawBattle(now) {
+      const rect = canvas.getBoundingClientRect();
+      const width = rect.width, height = rect.height;
+      const dt = lastFrame ? Math.min((now - lastFrame) / 1000, 0.05) : 0;
+      lastFrame = now;
+      const dx = (pressedKeys.has('d') ? 1 : 0) - (pressedKeys.has('a') ? 1 : 0);
+      const dy = (pressedKeys.has('w') ? 1 : 0) - (pressedKeys.has('s') ? 1 : 0);
+      if (dx || dy) {
+        const length = Math.hypot(dx, dy);
+        dummy.x += dx / length * dummy.speed * dt;
+        dummy.y += dy / length * dummy.speed * dt;
+        dummy.facing = { x: dx / length, y: dy / length };
+      }
+      const unit = 40;
+      const screenX = width / 2 + dummy.x * unit;
+      const screenY = height / 2 - (dummy.y - (-4)) * unit;
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#0a111d';
+      ctx.fillRect(0, 0, width, height);
+      ctx.strokeStyle = 'rgba(148,163,184,.22)';
+      ctx.lineWidth = 1;
+      for (let x = ((width / 2) % unit); x < width; x += unit) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+      }
+      for (let y = ((height / 2) % unit); y < height; y += unit) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+      }
+      // 좌표 원점 표시
+      ctx.fillStyle = 'rgba(148,163,184,.65)';
+      ctx.font = '11px system-ui';
+      ctx.fillText('y = -4 바닥 기준', 10, height - 12);
+      // 더미 캐릭터
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath(); ctx.arc(screenX, screenY, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#e0f2fe'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.strokeStyle = '#082f49'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(screenX, screenY);
+      ctx.lineTo(screenX + dummy.facing.x * 21, screenY - dummy.facing.y * 21); ctx.stroke();
+      ctx.fillStyle = '#e0f2fe'; ctx.font = '12px system-ui'; ctx.textAlign = 'center';
+      ctx.fillText('더미', screenX, screenY - 23);
+      if (activeAttack && now < attackUntil) {
+        ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(screenX + dummy.facing.x * 20, screenY - dummy.facing.y * 20, 22, -Math.PI * .75, Math.PI * .75);
+        ctx.stroke();
+      } else if (activeAttack) {
+        activeAttack = null;
+        actionReadout.textContent = '대기 중';
+      }
+      positionReadout.textContent = 'x: ' + dummy.x.toFixed(1) + ', y: ' + dummy.y.toFixed(1);
+      requestAnimationFrame(drawBattle);
+    }
+    requestAnimationFrame(drawBattle);
+
     // 월드 좌표 규칙: y = -4가 캐릭터가 서는 바닥 높이입니다.
     const FightWorld = Object.freeze({
       groundY: -4,
