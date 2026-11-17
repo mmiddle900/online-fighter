@@ -192,6 +192,10 @@
       }
 
         // 업로드된 더미 스프라이트 시트의 실제 프레임 애니메이션
+      const attackActive = !!activeAttack && now < attackUntil;
+      const attackProgress = attackActive ? 1 - (attackUntil - now) / 260 : 0;
+      const isJab = activeAttack === '잽';
+      const isHook = activeAttack === '훅';
       const spriteFrame = (() => {
         if (attackActive) {
           const kind = isJab ? 'jab' : isHook ? 'hook' : 'upper';
@@ -203,9 +207,9 @@
       })();
       const spriteIndex = {
         idle:[0,0], walk:[1,0], run:[2,0], jump:[3,0],
-        jabReady:[0,1], jabHit:[1,1],
-        hookReady:[2,1], hookHit:[3,1],
-        upperReady:[4,1], upperHit:[0,2]
+        jabReady:[4,0], jabHit:[0,1],
+        hookReady:[1,1], hookHit:[2,1],
+        upperReady:[3,1], upperHit:[4,1]
       }[spriteFrame];
       if (dummySprite.complete && dummySprite.naturalWidth) {
         ctx.save();
