@@ -49,7 +49,7 @@
     </div>
     <div class="hud">
       <span>이동 <span class="key">A</span><span class="key">D</span> · 점프 <span class="key">W</span></span>
-      <span>약공격 <span class="key">G</span> · 중공격 <span class="key">H</span> · 강공격 <span class="key">J</span></span>
+      <span>잽 <span class="key">G</span> · 훅 <span class="key">H</span> · 어퍼컷 <span class="key">J</span></span>
     </div>
     <footer>프로젝트 기반 버전 0.1.0</footer>
   </main>
@@ -80,7 +80,7 @@
     resizeBattleCanvas();
 
     function triggerDummyAttack(type) {
-      const labels = { g: '약공격', h: '중공격', j: '강공격' };
+      const labels = { g: '잽', h: '훅', j: '어퍼컷' };
       activeAttack = labels[type];
       attackUntil = performance.now() + 220;
       actionReadout.textContent = activeAttack + ' 입력';
@@ -142,6 +142,12 @@
       const walkPhase = moving ? Math.sin(now / 75) : 0;
       const attackActive = activeAttack && now < attackUntil;
       const attackProgress = attackActive ? 1 - (attackUntil - now) / 220 : 0;
+      const attackPower = Math.sin(Math.min(1, attackProgress) * Math.PI);
+      const isJab = activeAttack === '잽';
+      const isHook = activeAttack === '훅';
+      const isUppercut = activeAttack === '어퍼컷';
+      const bodyLean = attackActive ? (isJab ? facing * 3 * attackPower : isHook ? facing * 6 * attackPower : 0) : 0;
+      const bodyLift = attackActive && isUppercut ? -7 * attackPower : 0;
       const armSwing = moving ? walkPhase * 8 : 0;
       const skin = '#f1c7a5', suit = '#38bdf8', dark = '#075985';
       ctx.lineCap = 'round';
@@ -164,30 +170,43 @@
       // 몸통
       ctx.fillStyle = suit;
       ctx.beginPath();
-      ctx.roundRect(screenX - 11, screenY - 57, 22, 34, 7);
+      ctx.roundRect(screenX - 11 + bodyLean, screenY - 57 + bodyLift, 22, 34, 7);
       ctx.fill();
       ctx.strokeStyle = '#bae6fd'; ctx.lineWidth = 2; ctx.stroke();
       ctx.fillStyle = dark;
-      ctx.fillRect(screenX - 11, screenY - 29, 22, 5);
+      ctx.fillRect(screenX - 11 + bodyLean, screenY - 29 + bodyLift, 22, 5);
 
-      // 팔: 공격 중에는 바라보는 방향으로 뻗습니다.
-      const shoulderY = screenY - 51;
+      // 팔: 잽은 직선, 훅은 수평 회전, 어퍼컷은 아래에서 위로 올립니다.
+      const shoulderY = screenY - 51 + bodyLift;
       ctx.strokeStyle = skin; ctx.lineWidth = 8;
-      ctx.beginPath(); ctx.moveTo(screenX - 10, shoulderY);
-      ctx.lineTo(screenX - 18, shoulderY + 12 + armSwing * .25);
-      ctx.lineTo(screenX - 14, screenY - 28 + armSwing * .2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(screenX + 10, shoulderY);
-      if (attackActive) {
-        const reach = 17 + Math.sin(attackProgress * Math.PI) * (activeAttack === '강공격' ? 23 : activeAttack === '중공격' ? 15 : 8);
-        ctx.lineTo(screenX + facing * 13, shoulderY + 8);
-        ctx.lineTo(screenX + facing * reach, shoulderY + 5);
+      ctx.beginPath(); ctx.moveTo(screenX - 10 + bodyLean, shoulderY);
+      ctx.lineTo(screenX - 18 + bodyLean, shoulderY + 12 + armSwing * .25);
+      ctx.lineTo(screenX - 14 + bodyLean, screenY - 28 + armSwing * .2); ctx.stroke();
+      let fistX = screenX + 14, fistY = screenY - 28;
+      ctx.beginPath(); ctx.moveTo(screenX + 10 + bodyLean, shoulderY);
+      if (attackActive && isJab) {
+        const reach = 17 + 32 * attackPower;
+        ctx.lineTo(screenX + facing * 17 + bodyLean, shoulderY + 4);
+        ctx.lineTo(screenX + facing * reach + bodyLean, shoulderY + 3);
+        fistX = screenX + facing * (reach + 4) + bodyLean; fistY = shoulderY + 3;
+      } else if (attackActive && isHook) {
+        const sweep = Math.sin(attackProgress * Math.PI) * 1;
+        ctx.lineTo(screenX + facing * 18 + bodyLean, shoulderY + 7);
+        ctx.quadraticCurveTo(screenX + facing * 39, shoulderY - 10 - 12 * sweep, screenX + facing * 43 * sweep, shoulderY + 13);
+        fistX = screenX + facing * (22 + 22 * sweep); fistY = shoulderY + 13;
+      } else if (attackActive && isUppercut) {
+        const rise = 30 * attackPower;
+        ctx.lineTo(screenX + facing * 12 + bodyLean, shoulderY + 12);
+        ctx.quadraticCurveTo(screenX + facing * 29, screenY - 30 - rise, screenX + facing * 24, screenY - 83 - rise);
+        fistX = screenX + facing * 24; fistY = screenY - 83 - rise;
       } else {
         ctx.lineTo(screenX + 18, shoulderY + 12 - armSwing * .25);
         ctx.lineTo(screenX + 14, screenY - 28 - armSwing * .2);
       }
       ctx.stroke();
       ctx.fillStyle = skin;
-      ctx.beginPath(); ctx.arc(attackActive ? screenX + facing * (activeAttack === '강공격' ? 40 : activeAttack === '중공격' ? 32 : 25) : screenX + 14, attackActive ? shoulderY + 5 : screenY - 28, 4.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(fistX, fistY, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#111827'; ctx.beginPath(); ctx.arc(fistX, fistY, 3.4, 0, Math.PI * 2); ctx.fill();
 
       // 목과 얼굴
       ctx.fillStyle = skin;
@@ -208,13 +227,20 @@
       ctx.fillStyle = '#e0f2fe'; ctx.font = '12px system-ui'; ctx.textAlign = 'center';
       ctx.fillText('더미', screenX, screenY - 94);
       if (attackActive) {
-        ctx.strokeStyle = activeAttack === '강공격' ? '#fb7185' : activeAttack === '중공격' ? '#fbbf24' : '#86efac';
-        ctx.lineWidth = activeAttack === '강공격' ? 5 : 3;
+        ctx.save();
+        ctx.strokeStyle = '#38bdf8'; ctx.shadowColor = '#38bdf8'; ctx.shadowBlur = 14;
+        ctx.lineWidth = isUppercut ? 5 : 3;
         ctx.beginPath();
-        const reach = activeAttack === '강공격' ? 48 : activeAttack === '중공격' ? 37 : 29;
-        ctx.moveTo(screenX + facing * 15, shoulderY + 5);
-        ctx.lineTo(screenX + facing * reach, shoulderY + 5);
-        ctx.stroke();
+        if (isJab) {
+          ctx.moveTo(screenX + facing * 17, shoulderY + 3);
+          ctx.lineTo(screenX + facing * 54, shoulderY + 3);
+        } else if (isHook) {
+          ctx.arc(screenX + facing * 8, shoulderY + 10, 32, facing < 0 ? Math.PI * 1.35 : Math.PI * 1.65, facing < 0 ? Math.PI * .65 : Math.PI * .35, facing < 0);
+        } else {
+          ctx.moveTo(screenX + facing * 12, screenY - 28);
+          ctx.quadraticCurveTo(screenX + facing * 48, screenY - 55, screenX + facing * 27, screenY - 100);
+        }
+        ctx.stroke(); ctx.restore();
       } else if (activeAttack) {
         activeAttack = null;
         actionReadout.textContent = '대기 중';
