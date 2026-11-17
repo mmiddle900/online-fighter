@@ -60,8 +60,8 @@
     const ctx = canvas.getContext('2d');
     // 제너럴 K 전용 64×64 저해상도 픽셀 캔버스
     const characterPixelCanvas = document.createElement('canvas');
-    characterPixelCanvas.width = 128;
-    characterPixelCanvas.height = 128;
+    characterPixelCanvas.width = 256;
+    characterPixelCanvas.height = 256;
     const characterPixelCtx = characterPixelCanvas.getContext('2d');
     const positionReadout = document.querySelector('#position-readout');
     const actionReadout = document.querySelector('#action-readout');
@@ -244,37 +244,66 @@
       const stride=motion==='walk'?Math.round(Math.sin(now/110)*3):0;
       const punch=attackActive?Math.sin(Math.min(1,attackProgress)*Math.PI):0;
       const pc=characterPixelCtx;
-      pc.clearRect(0,0,128,128);
-      pc.save(); pc.scale(2,2);
+      pc.clearRect(0,0,256,256);
+      // 256x256 네이티브 픽셀 아트: 오른쪽을 향한 명확한 측면 인체 실루엣
       const px=(x,y,w,h,color)=>{pc.fillStyle=color;pc.fillRect(Math.round(x),Math.round(y),Math.max(1,Math.round(w)),Math.max(1,Math.round(h)));};
-      // 망토: 캐릭터의 뒤쪽(왼쪽)으로 흐르는 실루엣
-      px(10,20,9,24,'#172747');px(5,25,8,17,'#203963');px(1,35,12,5,'#304c7b');px(4,42,9,4,'#172747');
-      // 뒤쪽 다리와 부츠
-      px(19,42,8,8,'#263f70');px(17+stride,49,7,8,'#344f80');px(13+stride,56,13,4,'#0b1428');px(12+stride,59,15,2,'#7893c4');
-      // 앞쪽 다리: 걷기 때 무릎과 발이 교대로 움직임
-      px(29,41,8,9,'#354f7e');px(31-stride,48,7,8,'#405b8b');px(32-stride,55,13,4,'#172b4e');px(34-stride,59,13,2,'#8aa3d2');
-      // 허리와 짧은 상체
-      px(19,34,18,10,'#101d37');px(17,24,22,15,'#263f70');px(20,26,15,11,'#355486');px(18,36,19,4,'#0b1428');px(21,37,14,2,'#7893c4');
-      // 등 뒤 팔
-      px(16,26,5,11,'#344e7b');px(13,34,6,7,'#263f70');px(12,39,7,3,'#8aa3d2');
-      // 오른쪽을 향하는 앞팔: 공격 종류에 따라 자세만 변경
-      let armX=34,armY=28,handX=40,handY=29;
-      if(motion==='jab'){armX=37+Math.round(8*punch);armY=27;handX=43+Math.round(13*punch);handY=27;}
-      if(motion==='hook'){armX=36+Math.round(4*punch);armY=24;handX=43+Math.round(7*punch);handY=20-Math.round(3*punch);}
-      if(motion==='upper'){armX=34;armY=22-Math.round(3*punch);handX=39+Math.round(4*punch);handY=14-Math.round(5*punch);}
-      if(motion==='jump'){armY=23;handY=18;}
-      px(31,25,7,6,'#405b8b');px(armX,armY,7,5,'#49699e');px(handX,handY,6,6,'#0b1428');px(handX+1,handY+1,4,2,'#8aa3d2');
-      // 후드와 작은 옆얼굴, 청록색 바이저
-      px(20,7,14,3,'#405b8b');px(17,10,19,11,'#263e6d');px(19,8,13,4,'#506d9e');px(31,12,8,7,'#111d35');px(35,15,8,4,'#080f20');px(36,15,7,2,'#54d9ff');px(21,19,15,4,'#172747');
-      // 목과 어깨 연결부
-      px(25,19,8,5,'#172747');px(18,21,20,5,'#263f70');px(17,24,4,5,'#8197c1');
-      // 작은 하이라이트로 갑옷 면 분리
-      px(21,27,3,2,'#8aa3d2');px(29,31,4,2,'#7fa0d6');px(22,40,5,2,'#7893c4');
-      // 관절·갑옷 분리선을 추가해 사람다운 팔다리 형태를 또렷하게 표현
-      px(19,31,4,3,'#7893c4'); px(31,39,4,3,'#7893c4');
-      px(22,46,5,3,'#172747'); px(30,46,5,3,'#172747');
-      px(16,34,3,4,'#8aa3d2'); px(37,26,3,3,'#8aa3d2');
-      // 128×128 네이티브 픽셀 캔버스
+      const shade={outline:'#080f1d',deep:'#111d34',dark:'#1b2d4d',mid:'#29436b',light:'#426493',edge:'#7896c5',shine:'#a8c1e8',cyan:'#54d9ff',skin:'#b8c8dc',skinShade:'#7186a8'};
+      pc.save();
+      // 망토와 등 라인
+      px(75,76,28,112,shade.outline);px(58,91,27,79,shade.deep);px(48,112,24,53,shade.dark);
+      px(64,157,27,22,shade.mid);px(54,174,23,12,shade.light);px(68,187,20,9,shade.deep);
+      // 뒤쪽 다리
+      px(111,166,45,29,shade.outline);px(119,181,34,33,shade.dark);px(115+stride*2,204,31,26,shade.mid);
+      px(108+stride*2,226,39,13,shade.deep);px(101+stride*2,237,53,10,shade.outline);
+      px(119+stride*2,208,8,19,shade.light);px(109+stride*2,232,29,4,shade.edge);
+      // 앞쪽 다리
+      px(143,164,47,35,shade.outline);px(151,174,38,34,shade.mid);px(158-stride*2,201,34,31,shade.dark);
+      px(155-stride*2,228,40,12,shade.deep);px(148-stride*2,238,59,10,shade.outline);
+      px(160-stride*2,183,13,19,shade.light);px(164-stride*2,207,8,18,shade.edge);px(158-stride*2,232,31,4,shade.light);
+      // 골반과 허리 벨트
+      px(111,143,75,39,shade.outline);px(119,148,61,31,shade.dark);px(125,151,45,21,shade.mid);
+      px(115,174,64,10,shade.deep);px(119,175,56,4,shade.edge);px(151,169,15,9,shade.cyan);
+      // 몸통: 어깨에서 허리로 좁아지는 옆면 갑옷
+      px(104,82,83,79,shade.outline);px(111,88,69,65,shade.dark);px(120,91,49,57,shade.mid);
+      px(115,96,15,48,shade.light);px(132,101,10,42,shade.deep);px(147,94,21,49,shade.light);
+      px(119,145,49,9,shade.deep);px(125,148,37,4,shade.edge);
+      px(102,92,30,28,shade.outline);px(108,96,24,21,shade.light);px(111,100,15,9,shade.shine);
+      px(157,88,33,33,shade.outline);px(164,93,25,22,shade.mid);px(170,96,15,6,shade.edge);
+      // 목과 보호대
+      px(132,64,35,30,shade.outline);px(139,68,25,26,shade.skinShade);px(141,70,17,21,shade.deep);
+      px(129,82,44,16,shade.outline);px(135,85,35,9,shade.light);px(139,88,27,4,shade.cyan);
+      // 몸 뒤쪽 팔
+      px(91,96,30,47,shade.outline);px(94,103,23,34,shade.dark);px(87,133,25,25,shade.mid);
+      px(83,153,31,19,shade.outline);px(89,158,22,11,shade.light);
+      // 앞쪽 팔의 어깨-상완-팔꿈치-전완-주먹
+      let elbowX=171,elbowY=119,foreX=177,foreY=137,fistX=190,fistY=151;
+      if(motion==='jab'){elbowX=180+Math.round(16*punch);elbowY=112;foreX=194+Math.round(22*punch);foreY=119;fistX=218+Math.round(20*punch);fistY=118;}
+      if(motion==='hook'){elbowX=180+Math.round(8*punch);elbowY=105-Math.round(8*punch);foreX=192+Math.round(8*punch);foreY=111-Math.round(12*punch);fistX=207+Math.round(7*punch);fistY=103-Math.round(17*punch);}
+      if(motion==='upper'){elbowX=171;elbowY=105-Math.round(12*punch);foreX=181;foreY=87-Math.round(18*punch);fistX=191;fistY=70-Math.round(24*punch);}
+      if(motion==='jump'){elbowY=107;foreY=91;fistY=77;}
+      px(157,91,39,39,shade.outline);px(164,96,31,28,shade.light);px(172,100,17,16,shade.shine);
+      px(elbowX,elbowY,22,24,shade.outline);px(elbowX+5,elbowY+5,14,15,shade.mid);
+      px(foreX,foreY,27,19,shade.outline);px(foreX+5,foreY+4,18,11,shade.light);
+      px(fistX,fistY,26,23,shade.outline);px(fistX+5,fistY+4,17,14,shade.dark);px(fistX+8,fistY+5,11,5,shade.edge);
+      // 머리의 측면 윤곽: 뒤통수, 이마, 코, 턱
+      px(102,18,69,65,shade.outline);px(110,12,55,72,shade.deep);
+      px(116,18,43,57,shade.mid);px(122,22,31,46,shade.light);
+      // 후드 뒤쪽과 상단
+      px(99,25,22,48,shade.outline);px(105,30,15,38,shade.dark);px(111,17,49,12,shade.light);
+      px(120,11,35,8,shade.edge);px(128,7,25,6,shade.deep);
+      // 오른쪽을 향한 얼굴과 돌출된 코
+      px(145,34,26,34,shade.outline);px(151,39,22,25,shade.skinShade);
+      px(161,43,18,9,shade.deep);px(174,47,13,8,shade.outline);px(184,51,9,7,shade.skin);
+      px(174,59,13,9,shade.skinShade);px(162,65,22,8,shade.outline);
+      px(151,58,17,7,shade.deep);px(157,47,18,5,shade.cyan);px(173,48,9,3,shade.shine);
+      // 얼굴 마스크와 턱선
+      px(143,62,38,14,shade.outline);px(151,65,29,7,shade.dark);px(173,64,10,4,shade.edge);
+      // 헬멧 측면 패널과 발광 장식
+      px(112,29,11,27,shade.edge);px(117,34,7,18,shade.deep);px(121,38,8,5,shade.cyan);
+      px(130,20,23,5,shade.shine);px(134,26,20,4,shade.light);
+      // 갑옷 이음새와 하이라이트
+      px(166,125,10,5,shade.edge);px(184,145,7,4,shade.shine);px(122,187,11,5,shade.edge);
+      px(166,193,12,5,shade.edge);px(132,156,20,4,shade.shine);
       pc.restore();
       ctx.save();
       ctx.imageSmoothingEnabled=false;
