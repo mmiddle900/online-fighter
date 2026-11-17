@@ -189,110 +189,77 @@
         ctx.fillText('훈련 완료!', enemyScreenX, groundScreenY - 24);
       }
 
-      // MUGEN 스타일 2D 격투 캐릭터: 머리/얼굴, 몸통, 양팔, 양다리를 관절로 그립니다.
-      const facing = dummy.facing.x < 0 ? -1 : 1;
-      const moving = dx !== 0 || dy !== 0;
-      const walkPhase = moving ? Math.sin(now / 75) : 0;
+      // 자연스러운 오른쪽 측면 실루엣
+      const walkPhase = dx ? Math.sin(now / 85) : 0;
       const attackActive = activeAttack && now < attackUntil;
-      const attackProgress = attackActive ? 1 - (attackUntil - now) / 220 : 0;
+      const attackProgress = attackActive ? 1 - (attackUntil - now) / 260 : 0;
       const attackPower = Math.sin(Math.min(1, attackProgress) * Math.PI);
-      const isJab = activeAttack === '잽';
-      const isHook = activeAttack === '훅';
-      const isUppercut = activeAttack === '어퍼컷';
-      const bodyLean = attackActive ? (isJab ? facing * 3 * attackPower : isHook ? facing * 6 * attackPower : 0) : 0;
-      const bodyLift = attackActive && isUppercut ? -7 * attackPower : 0;
-      const armSwing = moving ? walkPhase * 8 : 0;
-      const skin = '#f1c7a5', suit = '#38bdf8', dark = '#075985';
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-
-      // 그림자와 푸른 영혼 오라
-      ctx.fillStyle = 'rgba(0,0,0,.35)';
-      ctx.beginPath(); ctx.ellipse(screenX, groundScreenY + 3, 20, 6, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.save(); ctx.globalAlpha = .32 + Math.sin(now / 180) * .08;
-      ctx.strokeStyle = '#168bff'; ctx.shadowColor = '#168bff'; ctx.shadowBlur = 15; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.ellipse(screenX, screenY - 42, 24, 48, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
-      // 등 뒤의 망토와 교차된 검집
-      ctx.fillStyle = '#111827'; ctx.strokeStyle = '#475569'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(screenX - 8, screenY - 53); ctx.lineTo(screenX - 25, screenY - 39); ctx.lineTo(screenX - 22, screenY - 5); ctx.lineTo(screenX - 5, screenY - 22); ctx.closePath(); ctx.fill(); ctx.stroke();
-      ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 7;
-      ctx.beginPath(); ctx.moveTo(screenX - 13, screenY - 75); ctx.lineTo(screenX + 15, screenY - 37); ctx.moveTo(screenX + 1, screenY - 80); ctx.lineTo(screenX + 23, screenY - 43); ctx.stroke();
-      ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(screenX - 13, screenY - 75); ctx.lineTo(screenX + 15, screenY - 37); ctx.moveTo(screenX + 1, screenY - 80); ctx.lineTo(screenX + 23, screenY - 43); ctx.stroke();
-
-      // 다리와 발
-      const hipY = screenY - 25;
-      const legStride = armSwing * .7;
-      ctx.strokeStyle = dark; ctx.lineWidth = 9;
-      ctx.beginPath(); ctx.moveTo(screenX - 5, hipY); ctx.lineTo(screenX - 8 - legStride, screenY - 9); ctx.lineTo(screenX - 10 - legStride, screenY - 2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(screenX + 5, hipY); ctx.lineTo(screenX + 8 + legStride, screenY - 9); ctx.lineTo(screenX + 10 + legStride, screenY - 2); ctx.stroke();
-      ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 7;
-      ctx.beginPath(); ctx.moveTo(screenX - 10 - legStride, screenY - 2); ctx.lineTo(screenX - 16 - legStride, screenY - 2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(screenX + 10 + legStride, screenY - 2); ctx.lineTo(screenX + 16 + legStride, screenY - 2); ctx.stroke();
-
-      // 몸통
-      ctx.fillStyle = suit;
-      ctx.beginPath();
-      ctx.roundRect(screenX - 11 + bodyLean, screenY - 57 + bodyLift, 22, 34, 7);
-      ctx.fill();
-      ctx.strokeStyle = '#bae6fd'; ctx.lineWidth = 2; ctx.stroke();
-      ctx.fillStyle = dark;
-      ctx.fillRect(screenX - 11 + bodyLean, screenY - 29 + bodyLift, 22, 5);
-      // 전술 조끼와 파우치, 어깨 보호대
-      ctx.fillStyle = '#1e293b'; ctx.fillRect(screenX - 8 + bodyLean, screenY - 52 + bodyLift, 16, 23);
-      ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(screenX - 8 + bodyLean, screenY - 53 + bodyLift); ctx.lineTo(screenX + 7 + bodyLean, screenY - 29 + bodyLift); ctx.stroke();
-      ctx.fillStyle = '#64748b'; ctx.fillRect(screenX - 7 + bodyLean, screenY - 39 + bodyLift, 5, 8); ctx.fillRect(screenX + 2 + bodyLean, screenY - 39 + bodyLift, 5, 8);
-      ctx.fillStyle = '#334155'; ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.ellipse(screenX - 12 + bodyLean, screenY - 52 + bodyLift, 8, 6, -.25, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.ellipse(screenX + 12 + bodyLean, screenY - 52 + bodyLift, 8, 6, .25, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-
-      // 팔: 잽은 직선, 훅은 수평 회전, 어퍼컷은 아래에서 위로 올립니다.
-      const shoulderY = screenY - 51 + bodyLift;
-      ctx.strokeStyle = skin; ctx.lineWidth = 8;
-      ctx.beginPath(); ctx.moveTo(screenX - 10 + bodyLean, shoulderY);
-      ctx.lineTo(screenX - 18 + bodyLean, shoulderY + 12 + armSwing * .25);
-      ctx.lineTo(screenX - 14 + bodyLean, screenY - 28 + armSwing * .2); ctx.stroke();
-      let fistX = screenX + 14, fistY = screenY - 28;
-      ctx.beginPath(); ctx.moveTo(screenX + 10 + bodyLean, shoulderY);
+      const isJab = activeAttack === '잽', isHook = activeAttack === '훅', isUppercut = activeAttack === '어퍼컷';
+      const skin = '#d9a783', suit = '#263746', trim = '#6b8797';
+      const lean = attackActive ? (isJab ? 3 * attackPower : isHook ? 5 * attackPower : 0) : 0;
+      const bob = jumpHeight > 0 ? 0 : Math.abs(walkPhase) * 2;
+      const Y = v => screenY + v + bob;
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.fillStyle = 'rgba(0,0,0,.32)';
+      ctx.beginPath(); ctx.ellipse(screenX, groundScreenY + 3, 20, 5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.save(); ctx.globalAlpha = .18 + Math.sin(now / 220) * .04;
+      ctx.strokeStyle = '#38bdf8'; ctx.shadowColor = '#38bdf8'; ctx.shadowBlur = 9; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(screenX, screenY - 40, 19, 43, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+      // 짧은 망토
+      ctx.fillStyle = '#172431'; ctx.strokeStyle = '#405568'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(screenX - 7, Y(-57)); ctx.quadraticCurveTo(screenX - 22, Y(-43), screenX - 17, Y(-9)); ctx.lineTo(screenX - 4, Y(-22)); ctx.closePath(); ctx.fill(); ctx.stroke();
+      // 다리 관절과 부츠
+      const stride = walkPhase * 5;
+      ctx.strokeStyle = '#1c2934'; ctx.lineWidth = 9;
+      ctx.beginPath(); ctx.moveTo(screenX - 4, Y(-25)); ctx.lineTo(screenX - 7 - stride, Y(-12)); ctx.lineTo(screenX - 8 - stride, Y(-3)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(screenX + 4, Y(-25)); ctx.lineTo(screenX + 7 + stride, Y(-12)); ctx.lineTo(screenX + 8 + stride, Y(-3)); ctx.stroke();
+      ctx.fillStyle = '#111c27';
+      ctx.beginPath(); ctx.roundRect(screenX - 17 - stride, Y(-6), 15, 5, 2); ctx.fill();
+      ctx.beginPath(); ctx.roundRect(screenX + 2 + stride, Y(-6), 15, 5, 2); ctx.fill();
+      // 몸통과 조끼
+      ctx.save(); ctx.translate(lean, 0);
+      ctx.fillStyle = suit; ctx.strokeStyle = '#526b7b'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(screenX - 10, Y(-57)); ctx.quadraticCurveTo(screenX + 1, Y(-62), screenX + 12, Y(-55)); ctx.lineTo(screenX + 11, Y(-29)); ctx.quadraticCurveTo(screenX, Y(-24), screenX - 11, Y(-29)); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#172431'; ctx.beginPath(); ctx.moveTo(screenX - 6, Y(-54)); ctx.lineTo(screenX + 8, Y(-53)); ctx.lineTo(screenX + 7, Y(-31)); ctx.lineTo(screenX - 7, Y(-31)); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = trim; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(screenX - 4, Y(-52)); ctx.lineTo(screenX + 4, Y(-32)); ctx.stroke();
+      ctx.fillStyle = '#718899'; ctx.fillRect(screenX - 8, Y(-35), 16, 4);
+      ctx.fillStyle = '#405767'; ctx.beginPath(); ctx.ellipse(screenX + 9, Y(-53), 7, 5, .2, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      // 뒤쪽 팔은 몸통 가까이 접음
+      ctx.strokeStyle = '#9d725b'; ctx.lineWidth = 7;
+      ctx.beginPath(); ctx.moveTo(screenX - 7, Y(-51)); ctx.lineTo(screenX - 14, Y(-41)); ctx.lineTo(screenX - 4, Y(-34)); ctx.stroke();
+      // 앞쪽 팔의 공격별 관절 궤적
+      const shoulderX = screenX + 8 + lean, shoulderY = Y(-51);
+      let fistX = screenX + 15, fistY = Y(-34);
+      ctx.strokeStyle = skin; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(shoulderX, shoulderY);
       if (attackActive && isJab) {
-        const reach = 17 + 32 * attackPower;
-        ctx.lineTo(screenX + facing * 17 + bodyLean, shoulderY + 4);
-        ctx.lineTo(screenX + facing * reach + bodyLean, shoulderY + 3);
-        fistX = screenX + facing * (reach + 4) + bodyLean; fistY = shoulderY + 3;
+        fistX = screenX + 12 + 39 * attackPower; fistY = Y(-48);
+        ctx.lineTo(screenX + 17, Y(-48)); ctx.lineTo(fistX, fistY);
       } else if (attackActive && isHook) {
-        const sweep = Math.sin(attackProgress * Math.PI) * 1;
-        ctx.lineTo(screenX + facing * 18 + bodyLean, shoulderY + 7);
-        ctx.quadraticCurveTo(screenX + facing * 39, shoulderY - 10 - 12 * sweep, screenX + facing * 43 * sweep, shoulderY + 13);
-        fistX = screenX + facing * (22 + 22 * sweep); fistY = shoulderY + 13;
+        fistX = screenX + 9 + 31 * attackPower; fistY = Y(-39 - 5 * attackPower);
+        ctx.quadraticCurveTo(screenX + 31, Y(-57), fistX, fistY);
       } else if (attackActive && isUppercut) {
-        const rise = 30 * attackPower;
-        ctx.lineTo(screenX + facing * 12 + bodyLean, shoulderY + 12);
-        ctx.quadraticCurveTo(screenX + facing * 29, screenY - 30 - rise, screenX + facing * 24, screenY - 83 - rise);
-        fistX = screenX + facing * 24; fistY = screenY - 83 - rise;
+        fistX = screenX + 17; fistY = Y(-79 - 16 * attackPower);
+        ctx.lineTo(screenX + 18, Y(-35)); ctx.quadraticCurveTo(screenX + 27, Y(-57), fistX, fistY);
       } else {
-        ctx.lineTo(screenX + 18, shoulderY + 12 - armSwing * .25);
-        ctx.lineTo(screenX + 14, screenY - 28 - armSwing * .2);
+        fistX = screenX + 13; fistY = Y(-35 - walkPhase * 3);
+        ctx.lineTo(screenX + 18, Y(-42)); ctx.lineTo(fistX, fistY);
       }
-      ctx.stroke();
-      ctx.fillStyle = skin;
-      ctx.beginPath(); ctx.arc(fistX, fistY, 5, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#111827'; ctx.beginPath(); ctx.arc(fistX, fistY, 3.4, 0, Math.PI * 2); ctx.fill();
-
-      // 목과 얼굴
-      ctx.fillStyle = skin;
-      ctx.fillRect(screenX - 4, screenY - 65, 8, 10);
-      ctx.beginPath(); ctx.arc(screenX, screenY - 75, 13, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = '#9a6248'; ctx.lineWidth = 1.5; ctx.stroke();
-      // 얼굴을 덮는 검은 전술 헬멧과 청록색 발광 바이저
-      ctx.fillStyle = '#111827'; ctx.strokeStyle = '#64748b'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(screenX, screenY - 75, 14, Math.PI, Math.PI * 2); ctx.lineTo(screenX + 13, screenY - 69); ctx.lineTo(screenX - 13, screenY - 69); ctx.closePath(); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = '#082f49'; ctx.shadowColor = '#22d3ee'; ctx.shadowBlur = 12;
-      ctx.beginPath(); ctx.roundRect(screenX - 10, screenY - 78, 20, 5, 2); ctx.fill(); ctx.shadowBlur = 0;
-      ctx.strokeStyle = '#67e8f9'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(screenX - 9, screenY - 76); ctx.lineTo(screenX + 9, screenY - 76); ctx.stroke();
-      ctx.fillStyle = '#334155'; ctx.fillRect(screenX - 12, screenY - 70, 24, 4);
-      ctx.fillStyle = '#cbd5e1'; ctx.font = 'bold 5px system-ui'; ctx.textAlign = 'center'; ctx.fillText('DR', screenX, screenY - 61);
-
+      ctx.stroke(); ctx.fillStyle = '#111c27'; ctx.beginPath(); ctx.arc(fistX, fistY, 5, 0, Math.PI * 2); ctx.fill();
+      // 목과 오른쪽을 향한 헬멧/바이저
+      ctx.fillStyle = skin; ctx.fillRect(screenX - 1, Y(-66), 8, 12);
+      ctx.fillStyle = '#182532'; ctx.strokeStyle = '#657b8b'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(screenX - 10, Y(-74)); ctx.quadraticCurveTo(screenX - 8, Y(-91), screenX + 5, Y(-90)); ctx.quadraticCurveTo(screenX + 16, Y(-88), screenX + 15, Y(-77)); ctx.lineTo(screenX + 21, Y(-73)); ctx.lineTo(screenX + 12, Y(-69)); ctx.lineTo(screenX - 7, Y(-69)); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#083344'; ctx.shadowColor = '#22d3ee'; ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.moveTo(screenX + 1, Y(-81)); ctx.lineTo(screenX + 17, Y(-79)); ctx.lineTo(screenX + 19, Y(-75)); ctx.lineTo(screenX + 1, Y(-76)); ctx.closePath(); ctx.fill(); ctx.shadowBlur = 0;
+      ctx.strokeStyle = '#67e8f9'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(screenX + 3, Y(-79)); ctx.lineTo(screenX + 16, Y(-77.5)); ctx.stroke();
+      if (attackActive) {
+        ctx.save(); ctx.strokeStyle = '#38bdf8'; ctx.shadowColor = '#38bdf8'; ctx.shadowBlur = 10; ctx.lineWidth = isUppercut ? 4 : 3; ctx.beginPath();
+        if (isJab) { ctx.moveTo(screenX + 14, Y(-48)); ctx.lineTo(fistX + 5, fistY); }
+        else if (isHook) ctx.arc(screenX + 8, Y(-40), 25 * attackPower, -.8, .8);
+        else { ctx.moveTo(screenX + 12, Y(-34)); ctx.quadraticCurveTo(screenX + 30, Y(-62), fistX, fistY - 4); }
+        ctx.stroke(); ctx.restore();
+      }
       // 이름표와 공격 동작 표시
       ctx.fillStyle = '#e0f2fe'; ctx.font = '12px system-ui'; ctx.textAlign = 'center';
       ctx.fillText('더미', screenX, screenY - 94);
