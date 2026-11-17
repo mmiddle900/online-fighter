@@ -58,10 +58,10 @@
     // 더미 캐릭터 기본 조작
     const canvas = document.querySelector('#battle-canvas');
     const ctx = canvas.getContext('2d');
-    // 제너럴 K 전용 64×64 논리 픽셀 캔버스. 화면에서는 최근접 보간으로 4배 확대한다.
+    // 제너럴 K 전용 128×128 논리 픽셀 캔버스. 256px 원화 좌표를 절반으로 줄여 2배 확대한다.
     const characterPixelCanvas = document.createElement('canvas');
-    characterPixelCanvas.width = 64;
-    characterPixelCanvas.height = 64;
+    characterPixelCanvas.width = 128;
+    characterPixelCanvas.height = 128;
     const characterPixelCtx = characterPixelCanvas.getContext('2d');
     const positionReadout = document.querySelector('#position-readout');
     const actionReadout = document.querySelector('#action-readout');
@@ -243,12 +243,12 @@
       const motion=attackActive?(activeAttack==='잽'?'jab':activeAttack==='훅'?'hook':'upper'):jumpHeight>0?'jump':dx?'walk':'idle';
       const stride=motion==='walk'?Math.sin(now/110)*3:0;
       const punch=attackActive?Math.sin(Math.min(1,attackProgress)*Math.PI):0;
-      const pc=characterPixelCtx;pc.clearRect(0,0,64,64);pc.save();pc.imageSmoothingEnabled=false;pc.scale(0.25,0.25);
-      // 모든 좌표를 4px 단위로 스냅해 윤곽과 명암을 일관된 픽셀 군집으로 정리
-      const snap=v=>Math.round(v/4)*4;
-      const px=(x,y,w,h,col)=>{pc.fillStyle=col;pc.fillRect(snap(x),snap(y),Math.max(4,Math.round(w/4)*4),Math.max(4,Math.round(h/4)*4));};
+      const pc=characterPixelCtx;pc.clearRect(0,0,128,128);pc.save();pc.imageSmoothingEnabled=false;pc.scale(0.5,0.5);
+      // 2px 단위 픽셀 군집으로 윤곽·관절·갑옷 명암을 세밀하게 정리
+      const snap=v=>Math.round(v/2)*2;
+      const px=(x,y,w,h,col)=>{pc.fillStyle=col;pc.fillRect(snap(x),snap(y),Math.max(2,Math.round(w/2)*2),Math.max(2,Math.round(h/2)*2));};
       const poly=(pts,col)=>{pc.fillStyle=col;pc.beginPath();pc.moveTo(snap(pts[0][0]),snap(pts[0][1]));for(let i=1;i<pts.length;i++)pc.lineTo(snap(pts[i][0]),snap(pts[i][1]));pc.closePath();pc.fill();};
-      const line=(pts,col,w)=>{pc.strokeStyle=col;pc.lineWidth=Math.max(4,Math.round(w/4)*4);pc.lineCap='square';pc.lineJoin='miter';pc.beginPath();pc.moveTo(snap(pts[0][0]),snap(pts[0][1]));for(let i=1;i<pts.length;i++)pc.lineTo(snap(pts[i][0]),snap(pts[i][1]));pc.stroke();};
+      const line=(pts,col,w)=>{pc.strokeStyle=col;pc.lineWidth=Math.max(2,Math.round(w/2)*2);pc.lineCap='square';pc.lineJoin='miter';pc.beginPath();pc.moveTo(snap(pts[0][0]),snap(pts[0][1]));for(let i=1;i<pts.length;i++)pc.lineTo(snap(pts[i][0]),snap(pts[i][1]));pc.stroke();};
       const C={ink:'#080d15',shadow:'#172333',dark:'#26384c',mid:'#405970',lit:'#647f96',shine:'#a9bac8',steel:'#d0d9df',cloth:'#202638',cloth2:'#35384d',gold:'#a9824c',gold2:'#d8bd83',cyan:'#42e5dc',white:'#d9fffc'};
       // 망토와 칼집은 진행 방향의 반대쪽에 배치
       poly([[119,66],[103,61],[88,70],[79,91],[78,122],[67,158],[54,190],[43,225],[58,215],[76,188],[91,157],[105,126],[120,96]],C.ink);
