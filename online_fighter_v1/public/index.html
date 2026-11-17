@@ -189,7 +189,11 @@
         ctx.fillText('훈련 완료!', enemyScreenX, groundScreenY - 24);
       }
 
-      // 전신 판금 갑옷: 짧은 목, 정돈된 헬멧, 오른쪽 측면
+      // 전신 판금 갑옷: 5배 확대, 발 위치를 기준으로 유지
+      ctx.save();
+      ctx.translate(screenX, groundScreenY);
+      ctx.scale(5, 5);
+      ctx.translate(-screenX, -groundScreenY);
       const walkPhase = dx ? Math.sin(now / 85) : 0;
       const attackActive = activeAttack && now < attackUntil;
       const attackProgress = attackActive ? 1 - (attackUntil - now) / 260 : 0;
