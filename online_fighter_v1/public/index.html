@@ -265,19 +265,19 @@
 
       // 목 노출을 없앤 낮은 목 보호대와 비율이 정돈된 폐쇄형 투구
       ctx.fillStyle='#405d73';ctx.strokeStyle=armorDark;ctx.lineWidth=1.5;
-      ctx.beginPath();ctx.roundRect(screenX-5,Y(-67),13,10,3);ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.roundRect(screenX-5,Y(-64),13,4,2);ctx.fill();ctx.stroke();
       ctx.fillStyle='#263e54';ctx.strokeStyle='#8da8ba';ctx.lineWidth=1.7;
       ctx.beginPath();
       ctx.moveTo(screenX-11,Y(-73));ctx.lineTo(screenX-9,Y(-84));
       ctx.quadraticCurveTo(screenX-6,Y(-91),screenX+4,Y(-91));
       ctx.lineTo(screenX+13,Y(-87));ctx.lineTo(screenX+16,Y(-79));
-      ctx.lineTo(screenX+22,Y(-75));ctx.lineTo(screenX+17,Y(-70));
-      ctx.lineTo(screenX-7,Y(-69));ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.lineTo(screenX+22,Y(-75));ctx.lineTo(screenX+17,Y(-64));
+      ctx.lineTo(screenX-7,Y(-64));ctx.closePath();ctx.fill();ctx.stroke();
       // 투구의 이마 장식과 좁은 오른쪽 바이저
       ctx.fillStyle='#162b40';ctx.beginPath();ctx.moveTo(screenX-7,Y(-85));ctx.lineTo(screenX+5,Y(-89));ctx.lineTo(screenX+13,Y(-85));ctx.lineTo(screenX+7,Y(-82));ctx.closePath();ctx.fill();
       ctx.fillStyle='#07384a';ctx.strokeStyle=glow;ctx.lineWidth=1;
       ctx.beginPath();ctx.moveTo(screenX+2,Y(-81));ctx.lineTo(screenX+17,Y(-79));ctx.lineTo(screenX+20,Y(-75));ctx.lineTo(screenX+1,Y(-76));ctx.closePath();ctx.fill();ctx.stroke();
-      ctx.strokeStyle='#9bb7c8';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(screenX-8,Y(-71));ctx.lineTo(screenX+15,Y(-71));ctx.stroke();
+      ctx.strokeStyle='#9bb7c8';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(screenX-8,Y(-66));ctx.lineTo(screenX+15,Y(-66));ctx.stroke();
 
       // 공격 궤적
       if (attackActive) {
@@ -294,6 +294,7 @@
         activeAttack = null;
         actionReadout.textContent = '대기 중';
       }
+      ctx.restore();
       positionReadout.textContent = 'x: ' + dummy.x.toFixed(1) + ', y: ' + dummy.y.toFixed(1);
       requestAnimationFrame(drawBattle);
     }
