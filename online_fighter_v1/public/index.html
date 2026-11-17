@@ -287,25 +287,10 @@
         else{ctx.moveTo(screenX+12,Y(-34));ctx.quadraticCurveTo(screenX+30,Y(-62),fistX,fistY-4);}
         ctx.stroke();ctx.restore();
       }
-      // 이름표와 공격 동작 표시
+      // 이름표 표시: 공격 이펙트는 위의 갑옷 팔 동작에서만 렌더링합니다.
       ctx.fillStyle = '#e0f2fe'; ctx.font = '12px system-ui'; ctx.textAlign = 'center';
       ctx.fillText('더미', screenX, screenY - 94);
-      if (attackActive) {
-        ctx.save();
-        ctx.strokeStyle = '#38bdf8'; ctx.shadowColor = '#38bdf8'; ctx.shadowBlur = 14;
-        ctx.lineWidth = isUppercut ? 5 : 3;
-        ctx.beginPath();
-        if (isJab) {
-          ctx.moveTo(screenX + facing * 17, shoulderY + 3);
-          ctx.lineTo(screenX + facing * 54, shoulderY + 3);
-        } else if (isHook) {
-          ctx.arc(screenX + facing * 8, shoulderY + 10, 32, facing < 0 ? Math.PI * 1.35 : Math.PI * 1.65, facing < 0 ? Math.PI * .65 : Math.PI * .35, facing < 0);
-        } else {
-          ctx.moveTo(screenX + facing * 12, screenY - 28);
-          ctx.quadraticCurveTo(screenX + facing * 48, screenY - 55, screenX + facing * 27, screenY - 100);
-        }
-        ctx.stroke(); ctx.restore();
-      } else if (activeAttack) {
+      if (!attackActive && activeAttack) {
         activeAttack = null;
         actionReadout.textContent = '대기 중';
       }
