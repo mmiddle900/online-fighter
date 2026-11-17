@@ -60,8 +60,8 @@
     const ctx = canvas.getContext('2d');
     // 제너럴 K 전용 64×64 저해상도 픽셀 캔버스
     const characterPixelCanvas = document.createElement('canvas');
-    characterPixelCanvas.width = 256;
-    characterPixelCanvas.height = 256;
+    characterPixelCanvas.width = 512;
+    characterPixelCanvas.height = 512;
     const characterPixelCtx = characterPixelCanvas.getContext('2d');
     const positionReadout = document.querySelector('#position-readout');
     const actionReadout = document.querySelector('#action-readout');
@@ -244,8 +244,10 @@
       const stride=motion==='walk'?Math.round(Math.sin(now/110)*2):0;
       const punch=attackActive?Math.sin(Math.min(1,attackProgress)*Math.PI):0;
       const pc=characterPixelCtx;
-      pc.clearRect(0,0,256,256);
+      pc.clearRect(0,0,512,512);
       pc.save();
+      // 256단위 도형을 512×512 원본에 2배 해상도로 렌더링.
+      pc.scale(2,2);
       pc.imageSmoothingEnabled=false;
       const px=(x,y,w,h,color)=>{pc.fillStyle=color;pc.fillRect(Math.round(x),Math.round(y),Math.max(1,Math.round(w)),Math.max(1,Math.round(h)));};
       const poly=(pts,color)=>{pc.fillStyle=color;pc.beginPath();pc.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)pc.lineTo(pts[i][0],pts[i][1]);pc.closePath();pc.fill();};
@@ -332,15 +334,15 @@
       pc.restore();
       ctx.save();
       ctx.imageSmoothingEnabled=false;
-      const spriteTop=groundScreenY-jumpHeight-160;
-      ctx.drawImage(characterPixelCanvas,Math.round(screenX-80),Math.round(spriteTop),160,160);
+      const spriteTop=groundScreenY-jumpHeight-256;
+      ctx.drawImage(characterPixelCanvas,Math.round(screenX-128),Math.round(spriteTop),256,256);
       ctx.restore();
       // purely visual blue attack trail; hitbox and damage remain unchanged
       if(attackActive){ctx.save();ctx.globalAlpha=.8*Math.sin(Math.min(1,attackProgress)*Math.PI);ctx.translate(screenX+42,base-60);ctx.strokeStyle='#55caff';ctx.shadowColor='#168bff';ctx.shadowBlur=10;ctx.lineWidth=3;ctx.lineCap='round';ctx.beginPath();if(motion==='jab'){ctx.moveTo(-4,0);ctx.quadraticCurveTo(20,-10,43,-2);}else if(motion==='hook'){ctx.arc(0,0,25,-1.15,.6);}else{ctx.moveTo(-4,13);ctx.quadraticCurveTo(22,-9,19,-34);}ctx.stroke();ctx.restore();}
       ctx.fillStyle = '#bfdbfe';
       ctx.font = '12px system-ui';
       ctx.textAlign = 'center';
-      ctx.fillText('제너럴 K', screenX, groundScreenY - 194 - jumpHeight);
+      ctx.fillText('제너럴 K', screenX, groundScreenY - 270 - jumpHeight);
       if (!attackActive && activeAttack) {
         activeAttack = null;
         actionReadout.textContent = '대기 중';
