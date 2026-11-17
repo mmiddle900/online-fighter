@@ -63,20 +63,47 @@
     const enemyHpReadout = document.querySelector('#enemy-hp');
     const enemy = { x: 3.2, hp: 1000, maxHp: 1000, hitUntil: 0, hitFlash: 0 };
     const attackCooldowns = { g: 0, h: 0, j: 0 };
+    // Character + VFX atlas (checkerboard matte is removed at load time).
     const dummySprite = new Image();
-    const spriteLocalUrl = '/dummy-sprites.png?v=3';
-    const spriteRawUrl = 'https://raw.githubusercontent.com/mmiddle900/online-fighter/main/online_fighter_v1/public/dummy-sprites.png';
+    const spriteLocalUrl = '/%ED%94%BD%EC%85%80%20%EC%95%84%ED%8A%B8%20%EB%8B%8C%EC%9E%90%20%EC%BA%90%EB%A6%AD%ED%84%B0%C2%B7%EB%B8%94%EB%A3%A8%20VFX%20%EC%8A%A4%ED%94%84%EB%9D%BC%EC%9D%B4%ED%8A%B8%20%EC%8B%9C%ED%8A%B8.png';
     let spriteLoadFailed = false;
-    let spriteFallbackTried = false;
-    dummySprite.onerror = () => {
-      if (!spriteFallbackTried) {
-        spriteFallbackTried = true;
-        dummySprite.src = spriteRawUrl;
-      } else {
-        spriteLoadFailed = true;
+    let spriteReady = false;
+    const atlasCanvas = document.createElement('canvas');
+    const atlasCtx = atlasCanvas.getContext('2d', { willReadFrequently: true });
+    dummySprite.onload = () => {
+      atlasCanvas.width = dummySprite.naturalWidth;
+      atlasCanvas.height = dummySprite.naturalHeight;
+      atlasCtx.drawImage(dummySprite, 0, 0);
+      const pixels = atlasCtx.getImageData(0, 0, atlasCanvas.width, atlasCanvas.height);
+      const d = pixels.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const hi = Math.max(d[i], d[i+1], d[i+2]);
+        const lo = Math.min(d[i], d[i+1], d[i+2]);
+        const lightness = (d[i] + d[i+1] + d[i+2]) / 3;
+        // The source sheet uses a light gray checkerboard instead of transparency.
+        if (lightness > 165 && hi - lo < 34) d[i+3] = 0;
       }
+      atlasCtx.putImageData(pixels, 0, 0);
+      spriteReady = true;
     };
+    dummySprite.onerror = () => { spriteLoadFailed = true; };
     dummySprite.src = spriteLocalUrl;
+
+    const characterFrames = {
+      idle: { y: 24, h: 92, xs: [105,198,290,382,474,566,658,750,842,934], w: 82 },
+      walk: { y: 112, h: 86, xs: [105,198,290,382,474,566,658,750,842,934,1026,1118,1210,1360,1450], w: 82 },
+      jab: { y: 193, h: 76, xs: [105,198,290,382,474,566,658,750], w: 82 },
+      hook: { y: 270, h: 82, xs: [92,184,276,368,460,552,644,736], w: 86 },
+      upper: { y: 350, h: 82, xs: [92,184,276,368,460,552,644,736], w: 86 },
+      dash: { y: 430, h: 62, xs: [105,198,290,382,474,566,658,750], w: 92 },
+      hit: { y: 492, h: 62, xs: [105,198,290,382,474,566,658,750,842,934,1026], w: 86 },
+      victory: { y: 555, h: 62, xs: [105,198,290,382,474,566], w: 86 }
+    };
+    const attackVfx = {
+      jab: { x: 12, y: 910, w: 195, h: 88 },
+      hook: { x: 326, y: 750, w: 176, h: 150 },
+      upper: { x: 330, y: 752, w: 90, h: 150 }
+    };
     const attackSpecs = { g: { name: '잽', damage: 80, range: 1.45, cooldown: 420 }, h: { name: '훅', damage: 130, range: 1.9, cooldown: 720 }, j: { name: '어퍼컷', damage: 200, range: 1.65, cooldown: 1050 } };
     const dummy = { name: '제너럴 K', x: 0, y: -4, speed: 4, facing: { x: 0, y: 0 } };
     let jumpHeight = 0;
@@ -203,63 +230,37 @@
         ctx.fillText('훈련 완료!', enemyScreenX, groundScreenY - 24);
       }
 
-        // 업로드된 더미 스프라이트 시트의 실제 프레임 애니메이션
+      // 제너럴 K: 업로드된 시트의 개별 모션 프레임을 실제 애니메이션으로 재생
       const attackActive = !!activeAttack && now < attackUntil;
       const attackProgress = attackActive ? 1 - (attackUntil - now) / 260 : 0;
-      const isJab = activeAttack === '잽';
-      const isHook = activeAttack === '훅';
-      const spriteFrame = (() => {
-        if (attackActive) {
-          const kind = isJab ? 'jab' : isHook ? 'hook' : 'upper';
-          return attackProgress < 0.48 ? kind + 'Ready' : kind + 'Hit';
-        }
-        if (jumpHeight > 0) return 'jump';
-        if (dx) return 'walk';
-        return 'idle';
-      })();
-      const spriteCrop = {
-        idle:[550,70,125,195], walk:[675,65,135,195], run:[805,65,145,195],
-        jump:[1235,25,145,235],
-        jabReady:[0,335,135,165], jabHit:[255,335,140,165],
-        hookReady:[535,335,140,165], hookHit:[800,335,145,165],
-        upperReady:[1090,335,140,165], upperHit:[1460,285,175,215]
-      }[spriteFrame];
-      if (dummySprite.complete && dummySprite.naturalWidth) {
+      let motion = 'idle';
+      if (attackActive) motion = activeAttack === '잽' ? 'jab' : activeAttack === '훅' ? 'hook' : 'upper';
+      else if (jumpHeight > 0) motion = 'dash';
+      else if (dx) motion = 'walk';
+      const row = characterFrames[motion];
+      const frameIndex = attackActive
+        ? Math.min(row.xs.length - 1, Math.floor(attackProgress * row.xs.length))
+        : motion === 'walk' ? Math.floor(now / 85) % row.xs.length
+        : motion === 'dash' ? Math.min(row.xs.length - 1, Math.floor(now / 75) % row.xs.length)
+        : Math.floor(now / 260) % row.xs.length;
+      const sx = row.xs[frameIndex], sy = row.y, sw = row.w, sh = row.h;
+      if (spriteReady) {
         ctx.save();
-        const [sx, sy, sw, sh] = spriteCrop;
         const flip = dummy.facing.x < 0;
         ctx.translate(screenX, 0);
         if (flip) ctx.scale(-1, 1);
-        ctx.drawImage(dummySprite, sx, sy, sw, sh, -68, groundScreenY - 184 - jumpHeight, 136, 184);
-        ctx.restore();
-      } else {      // 공격 이펙트는 화면 장식 전용이다. 실제 적중/피해는 triggerDummyAttack의 거리·방향 판정만 사용한다.
-      if (attackActive) {
-        const dir = dummy.facing.x || 1;
-        const p = Math.max(0, Math.min(1, attackProgress));
-        ctx.save();
-        ctx.translate(screenX, groundScreenY - 112 - jumpHeight);
-        ctx.scale(dir, 1);
-        ctx.globalAlpha = 0.9 * (1 - p * 0.25);
-        ctx.lineCap = 'round';
-        if (isJab) {
-          ctx.strokeStyle = '#7dd3fc'; ctx.lineWidth = 5;
-          ctx.beginPath(); ctx.moveTo(18, -4); ctx.quadraticCurveTo(52, -18, 76, -3); ctx.stroke();
-          ctx.strokeStyle = '#e0f2fe'; ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.moveTo(25, -4); ctx.lineTo(72, -3); ctx.stroke();
-        } else if (isHook) {
-          ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 7;
-          ctx.beginPath(); ctx.arc(20, -4, 39, -1.15, 0.75); ctx.stroke();
-          ctx.strokeStyle = '#dbeafe'; ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.arc(20, -4, 30, -1.1, 0.65); ctx.stroke();
-        } else {
-          ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 7;
-          ctx.beginPath(); ctx.moveTo(14, 20); ctx.quadraticCurveTo(48, -8, 38, -58); ctx.stroke();
-          ctx.strokeStyle = '#e0f2fe'; ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.moveTo(22, 14); ctx.quadraticCurveTo(48, -12, 42, -49); ctx.stroke();
+        const drawH = 156, drawW = drawH * (sw / sh);
+        ctx.drawImage(atlasCanvas, sx, sy, sw, sh, -drawW * 0.5, groundScreenY - drawH - jumpHeight, drawW, drawH);
+        // 공격 VFX는 장식 전용이며 공격 판정/피해 계산에 관여하지 않습니다.
+        if (attackActive) {
+          const fx = attackVfx[motion];
+          const scale = motion === 'jab' ? 1.0 : motion === 'hook' ? 0.92 : 0.9;
+          ctx.globalAlpha = Math.max(0, 1 - attackProgress * 0.25);
+          ctx.drawImage(atlasCanvas, fx.x, fx.y, fx.w, fx.h,
+            12, groundScreenY - 150 - jumpHeight, fx.w * scale, fx.h * scale);
         }
         ctx.restore();
-      }
-
+      } else {
         ctx.fillStyle = '#93c5fd';
         ctx.font = '12px system-ui';
         ctx.textAlign = 'center';
