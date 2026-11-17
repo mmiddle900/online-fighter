@@ -89,15 +89,17 @@
     dummySprite.onerror = () => { spriteLoadFailed = true; };
     dummySprite.src = spriteLocalUrl;
 
+    // 프레임마다 폭·높이·간격이 다르므로 균등 간격으로 자르지 않고
+    // 원본 이미지에서 확인한 각 캐릭터의 실제 경계 상자를 사용한다.
     const characterFrames = {
-      idle: { y: 24, h: 92, xs: [105,198,290,382,474,566,658,750,842,934], w: 82 },
-      walk: { y: 112, h: 86, xs: [105,198,290,382,474,566,658,750,842,934,1026,1118,1210,1360,1450], w: 82 },
-      jab: { y: 193, h: 76, xs: [105,198,290,382,474,566,658,750], w: 82 },
-      hook: { y: 270, h: 82, xs: [92,184,276,368,460,552,644,736], w: 86 },
-      upper: { y: 350, h: 82, xs: [92,184,276,368,460,552,644,736], w: 86 },
-      dash: { y: 430, h: 62, xs: [105,198,290,382,474,566,658,750], w: 92 },
-      hit: { y: 492, h: 62, xs: [105,198,290,382,474,566,658,750,842,934,1026], w: 86 },
-      victory: { y: 555, h: 62, xs: [105,198,290,382,474,566], w: 86 }
+      idle: { drawH: 156, frames: [[121,37,55,65],[196,25,67,77],[280,24,65,78],[365,23,65,79],[446,23,67,79],[532,23,75,79],[628,22,76,80],[724,22,79,80],[820,22,76,80],[913,22,75,80]] },
+      walk: { drawH: 156, frames: [[115,111,61,68],[197,112,66,67],[280,115,71,63],[368,114,69,65],[452,114,72,65],[542,117,74,62],[634,117,77,61],[722,117,84,62],[825,114,74,65],[918,111,91,68],[1015,111,89,68],[1115,112,75,67],[1215,112,88,66],[1315,117,95,62],[1428,117,95,62]] },
+      jab: { drawH: 156, frames: [[110,189,62,65],[197,189,65,65],[282,190,68,64],[376,189,93,65],[491,190,71,64],[586,190,69,64],[681,191,74,63],[779,191,80,63]] },
+      hook: { drawH: 156, frames: [[92,265,86,71],[194,265,71,71],[285,265,89,71],[390,265,90,71],[496,265,92,71],[602,265,102,70],[720,265,107,70],[838,265,98,70]] },
+      upper: { drawH: 156, frames: [[107,349,75,68],[205,349,74,68],[307,349,72,68],[410,348,79,69],[519,347,67,70],[613,348,80,69],[726,347,81,71],[843,342,74,75]] },
+      dash: { drawH: 112, frames: [[103,428,74,53],[197,429,71,52],[294,432,80,49],[416,432,97,48],[554,432,96,49],[692,433,99,48],[841,426,104,55],[1000,426,107,55]] },
+      hit: { drawH: 104, frames: [[114,489,62,52],[203,489,63,52],[301,491,71,50],[415,493,72,48],[535,513,80,28],[646,512,95,29],[783,520,103,21],[916,513,73,28],[1010,490,67,51],[1098,495,71,46]] },
+      victory: { drawH: 156, frames: [[115,551,63,55],[216,555,64,51],[325,559,62,47],[444,561,60,45],[554,569,76,37],[667,555,65,51]] }
     };
     const attackVfx = {
       jab: { x: 12, y: 910, w: 195, h: 88 },
@@ -239,17 +241,20 @@
       else if (dx) motion = 'walk';
       const row = characterFrames[motion];
       const frameIndex = attackActive
-        ? Math.min(row.xs.length - 1, Math.floor(attackProgress * row.xs.length))
-        : motion === 'walk' ? Math.floor(now / 85) % row.xs.length
-        : motion === 'dash' ? Math.min(row.xs.length - 1, Math.floor(now / 75) % row.xs.length)
-        : Math.floor(now / 260) % row.xs.length;
-      const sx = row.xs[frameIndex], sy = row.y, sw = row.w, sh = row.h;
+        ? Math.min(row.frames.length - 1, Math.floor(attackProgress * row.frames.length))
+        : motion === 'walk' ? Math.floor(now / 85) % row.frames.length
+        : motion === 'dash' ? Math.floor(now / 75) % row.frames.length
+        : Math.floor(now / 260) % row.frames.length;
+      const [rawX, rawY, rawW, rawH] = row.frames[frameIndex];
+      // 모든 프레임을 동일한 기준선(발 위치)과 중심축으로 정렬한다.
+      const pad = 7, sx = Math.max(0, rawX - pad), sy = Math.max(0, rawY - pad);
+      const sw = rawW + pad * 2, sh = rawH + pad * 2;
       if (spriteReady) {
         ctx.save();
         const flip = dummy.facing.x < 0;
         ctx.translate(screenX, 0);
         if (flip) ctx.scale(-1, 1);
-        const drawH = 156, drawW = drawH * (sw / sh);
+        const drawH = row.drawH, drawW = drawH * (sw / sh);
         ctx.drawImage(atlasCanvas, sx, sy, sw, sh, -drawW * 0.5, groundScreenY - drawH - jumpHeight, drawW, drawH);
         // 공격 VFX는 장식 전용이며 공격 판정/피해 계산에 관여하지 않습니다.
         if (attackActive) {
