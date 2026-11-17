@@ -33,8 +33,52 @@
     <footer>프로젝트 기반 버전 0.1.0</footer>
   </main>
   <script>
-    // 새 게임 로직은 이곳에서 시작합니다.
-    // 이전 게임의 캐릭터, 기술, 전투 규칙 및 UI 코드는 포함하지 않습니다.
+    // 기본 전투 규칙: 모든 시간 단위는 밀리초(ms)입니다.
+    const FightRules = Object.freeze({
+      stun: Object.freeze({
+        weak: Object.freeze({ duration: 100, blocksInput: true, blocksAttack: false }),
+        strong: Object.freeze({ duration: 300, blocksInput: true, blocksAttack: true })
+      })
+    });
+
+    function createCombatState() {
+      return { inputLockedUntil: 0, attackLockedUntil: 0, stunType: null };
+    }
+
+    function applyStun(state, type, now = performance.now()) {
+      const rule = FightRules.stun[type];
+      if (!state || !rule) throw new Error('올바르지 않은 기절 상태입니다.');
+      if (rule.blocksInput) state.inputLockedUntil = Math.max(state.inputLockedUntil || 0, now + rule.duration);
+      if (rule.blocksAttack) state.attackLockedUntil = Math.max(state.attackLockedUntil || 0, now + rule.duration);
+      state.stunType = type;
+      return rule.duration;
+    }
+
+    function canReceiveKeyInput(state, now = performance.now()) {
+      return !state || now >= (state.inputLockedUntil || 0);
+    }
+
+    function canStartAttack(state, now = performance.now()) {
+      return !state || now >= (state.attackLockedUntil || 0);
+    }
+
+    function getActiveStun(state, now = performance.now()) {
+      if (!state) return null;
+      if (now < (state.attackLockedUntil || 0)) return 'strong';
+      if (now < (state.inputLockedUntil || 0)) return 'weak';
+      state.stunType = null;
+      return null;
+    }
+
+    // 이후 이동·공격 입력 시스템은 반드시 위 판정 함수를 거치도록 연결합니다.
+    window.FightRules = Object.freeze({
+      stun: FightRules.stun,
+      createCombatState,
+      applyStun,
+      canReceiveKeyInput,
+      canStartAttack,
+      getActiveStun
+    });
   </script>
 </body>
 </html>
