@@ -192,7 +192,7 @@
       // 전신 판금 갑옷: 5배 확대, 발 위치를 기준으로 유지
       ctx.save();
       ctx.translate(screenX, groundScreenY);
-      ctx.scale(5, 5);
+      ctx.scale(2.5, 2.5);
       ctx.translate(-screenX, -groundScreenY);
       const walkPhase = dx ? Math.sin(now / 85) : 0;
       const attackActive = activeAttack && now < attackUntil;
@@ -267,21 +267,32 @@
       ctx.beginPath();ctx.roundRect(fistX-5,fistY-5,11,10,3);ctx.fill();ctx.stroke();
       ctx.strokeStyle='#d1e1eb';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(fistX-2,fistY-2);ctx.lineTo(fistX+3,fistY-2);ctx.stroke();
 
-      // 목 노출을 없앤 낮은 목 보호대와 비율이 정돈된 폐쇄형 투구
+      // 짧은 목 보호대와 작고 균형 잡힌 측면형 투구
+      ctx.save();
+      const headPivotX = screenX + 4, headPivotY = Y(-78);
+      ctx.translate(headPivotX, headPivotY);
+      ctx.scale(0.78, 0.78);
+      ctx.translate(-headPivotX, -headPivotY);
       ctx.fillStyle='#405d73';ctx.strokeStyle=armorDark;ctx.lineWidth=1.5;
-      ctx.beginPath();ctx.roundRect(screenX-5,Y(-64),13,4,2);ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.roundRect(screenX-5,Y(-66),13,5,2);ctx.fill();ctx.stroke();
       ctx.fillStyle='#263e54';ctx.strokeStyle='#8da8ba';ctx.lineWidth=1.7;
       ctx.beginPath();
-      ctx.moveTo(screenX-11,Y(-73));ctx.lineTo(screenX-9,Y(-84));
-      ctx.quadraticCurveTo(screenX-6,Y(-91),screenX+4,Y(-91));
-      ctx.lineTo(screenX+13,Y(-87));ctx.lineTo(screenX+16,Y(-79));
-      ctx.lineTo(screenX+22,Y(-75));ctx.lineTo(screenX+17,Y(-64));
-      ctx.lineTo(screenX-7,Y(-64));ctx.closePath();ctx.fill();ctx.stroke();
-      // 투구의 이마 장식과 좁은 오른쪽 바이저
-      ctx.fillStyle='#162b40';ctx.beginPath();ctx.moveTo(screenX-7,Y(-85));ctx.lineTo(screenX+5,Y(-89));ctx.lineTo(screenX+13,Y(-85));ctx.lineTo(screenX+7,Y(-82));ctx.closePath();ctx.fill();
+      ctx.moveTo(screenX-9,Y(-70));ctx.lineTo(screenX-9,Y(-81));
+      ctx.quadraticCurveTo(screenX-8,Y(-88),screenX-1,Y(-89));
+      ctx.lineTo(screenX+7,Y(-88));ctx.quadraticCurveTo(screenX+13,Y(-87),screenX+14,Y(-81));
+      ctx.lineTo(screenX+20,Y(-77));ctx.lineTo(screenX+16,Y(-72));
+      ctx.quadraticCurveTo(screenX+10,Y(-68),screenX+1,Y(-68));
+      ctx.lineTo(screenX-6,Y(-68));ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.fillStyle='#162b40';ctx.beginPath();
+      ctx.moveTo(screenX-7,Y(-84));ctx.quadraticCurveTo(screenX+2,Y(-92),screenX+11,Y(-85));
+      ctx.lineTo(screenX+5,Y(-82));ctx.closePath();ctx.fill();
       ctx.fillStyle='#07384a';ctx.strokeStyle=glow;ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(screenX+2,Y(-81));ctx.lineTo(screenX+17,Y(-79));ctx.lineTo(screenX+20,Y(-75));ctx.lineTo(screenX+1,Y(-76));ctx.closePath();ctx.fill();ctx.stroke();
-      ctx.strokeStyle='#9bb7c8';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(screenX-8,Y(-66));ctx.lineTo(screenX+15,Y(-66));ctx.stroke();
+      ctx.beginPath();ctx.moveTo(screenX+3,Y(-80));ctx.lineTo(screenX+16,Y(-78));
+      ctx.lineTo(screenX+18,Y(-75));ctx.lineTo(screenX+2,Y(-75));
+      ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.strokeStyle='#9bb7c8';ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(screenX-7,Y(-70));ctx.lineTo(screenX+13,Y(-70));ctx.stroke();
+      ctx.restore();
 
       // 공격 궤적
       if (attackActive) {
