@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#101827">
-  <title>새 격투 게임</title>
+  <title>ONLINE FIGHTER - 제너럴 K</title>
   <style>
     *{box-sizing:border-box}
     body{margin:0;min-height:100vh;background:#101827;color:#edf2f7;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:24px}
@@ -33,18 +33,18 @@
 <body>
   <main>
     <header>
-      <h1>새 격투 게임</h1>
-      <p>새로운 전투 시스템을 만들기 위한 초기 프로젝트</p>
+      <h1>ONLINE FIGHTER</h1>
+      <p>제너럴 K 훈련장</p>
     </header>
     <div class="toolbar">
       <span class="grid-label">격자 간격: 1칸 = 1m</span>
       <button id="crosshair-toggle" class="toggle" type="button" aria-pressed="true">십자선 표시: ON</button>
     </div>
-    <section class="arena crosshair-on" aria-label="더미 캐릭터 훈련장">
+    <section class="arena crosshair-on" aria-label="제너럴 K 훈련장">
       <canvas id="battle-canvas" aria-label="더미 캐릭터 게임 화면"></canvas>
     </section>
     <div class="hud">
-      <span>캐릭터: <strong>더미</strong> · 좌표: <strong id="position-readout">x: 0, y: -4</strong></span>
+      <span>캐릭터: <strong>제너럴 K</strong> · 좌표: <strong id="position-readout">x: 0, y: -4</strong></span>
       <span class="attack-log" id="action-readout">대기 중</span>
     </div>
     <div class="hud"><span>상대 체력: <strong id="enemy-hp">1000 / 1000</strong></span><span>내 공격력은 사거리 안에서 적중합니다</span></div>
@@ -78,7 +78,7 @@
     };
     dummySprite.src = spriteLocalUrl;
     const attackSpecs = { g: { name: '잽', damage: 80, range: 1.45, cooldown: 420 }, h: { name: '훅', damage: 130, range: 1.9, cooldown: 720 }, j: { name: '어퍼컷', damage: 200, range: 1.65, cooldown: 1050 } };
-    const dummy = { name: '더미', x: 0, y: -4, speed: 4, facing: { x: 0, y: 0 } };
+    const dummy = { name: '제너럴 K', x: 0, y: -4, speed: 4, facing: { x: 0, y: 0 } };
     let jumpHeight = 0;
     let jumpVelocity = 0;
     const jumpPower = 620;
@@ -232,7 +232,34 @@
         if (flip) ctx.scale(-1, 1);
         ctx.drawImage(dummySprite, sx, sy, sw, sh, -68, groundScreenY - 184 - jumpHeight, 136, 184);
         ctx.restore();
-      } else {
+      } else {      // 공격 이펙트는 화면 장식 전용이다. 실제 적중/피해는 triggerDummyAttack의 거리·방향 판정만 사용한다.
+      if (attackActive) {
+        const dir = dummy.facing.x || 1;
+        const p = Math.max(0, Math.min(1, attackProgress));
+        ctx.save();
+        ctx.translate(screenX, groundScreenY - 112 - jumpHeight);
+        ctx.scale(dir, 1);
+        ctx.globalAlpha = 0.9 * (1 - p * 0.25);
+        ctx.lineCap = 'round';
+        if (isJab) {
+          ctx.strokeStyle = '#7dd3fc'; ctx.lineWidth = 5;
+          ctx.beginPath(); ctx.moveTo(18, -4); ctx.quadraticCurveTo(52, -18, 76, -3); ctx.stroke();
+          ctx.strokeStyle = '#e0f2fe'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(25, -4); ctx.lineTo(72, -3); ctx.stroke();
+        } else if (isHook) {
+          ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 7;
+          ctx.beginPath(); ctx.arc(20, -4, 39, -1.15, 0.75); ctx.stroke();
+          ctx.strokeStyle = '#dbeafe'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(20, -4, 30, -1.1, 0.65); ctx.stroke();
+        } else {
+          ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 7;
+          ctx.beginPath(); ctx.moveTo(14, 20); ctx.quadraticCurveTo(48, -8, 38, -58); ctx.stroke();
+          ctx.strokeStyle = '#e0f2fe'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(22, 14); ctx.quadraticCurveTo(48, -12, 42, -49); ctx.stroke();
+        }
+        ctx.restore();
+      }
+
         ctx.fillStyle = '#93c5fd';
         ctx.font = '12px system-ui';
         ctx.textAlign = 'center';
@@ -241,7 +268,7 @@
       ctx.fillStyle = '#bfdbfe';
       ctx.font = '12px system-ui';
       ctx.textAlign = 'center';
-      ctx.fillText('더미', screenX, groundScreenY - 194 - jumpHeight);
+      ctx.fillText('제너럴 K', screenX, groundScreenY - 194 - jumpHeight);
       if (!attackActive && activeAttack) {
         activeAttack = null;
         actionReadout.textContent = '대기 중';
