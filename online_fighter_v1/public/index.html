@@ -12,9 +12,16 @@
     header{margin-bottom:18px}
     h1{font-size:clamp(28px,5vw,42px);margin:0 0 8px}
     p{color:#aab8ca;margin:0}
-    .arena{width:100%;aspect-ratio:16/9;min-height:260px;background:#0a111d;border:1px solid #334155;border-radius:14px;display:grid;place-items:center;text-align:center;padding:24px}
+    .toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 10px}
+    .grid-label{font-size:13px;color:#aab8ca}
+    .toggle{border:1px solid #64748b;border-radius:8px;background:#1e293b;color:#edf2f7;padding:9px 13px;font:inherit;font-size:14px;cursor:pointer}
+    .toggle[aria-pressed="true"]{background:#1d4ed8;border-color:#60a5fa}
+    .arena{position:relative;isolation:isolate;overflow:hidden;width:100%;aspect-ratio:16/9;min-height:260px;background:#0a111d;border:1px solid #334155;border-radius:14px;display:grid;place-items:center;text-align:center;padding:24px}
+    .arena:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(to right,rgba(148,163,184,.22) 1px,transparent 1px),linear-gradient(to bottom,rgba(148,163,184,.22) 1px,transparent 1px);background-size:40px 40px}
+    .arena.crosshair-on:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to right,transparent calc(50% - .5px),rgba(248,113,113,.9) calc(50% - .5px),rgba(248,113,113,.9) calc(50% + .5px),transparent calc(50% + .5px)),linear-gradient(to bottom,transparent calc(50% - .5px),rgba(248,113,113,.9) calc(50% - .5px),rgba(248,113,113,.9) calc(50% + .5px),transparent calc(50% + .5px))}
     .arena strong{display:block;font-size:clamp(18px,3vw,26px);margin-bottom:8px}
     .arena span{color:#8fa1b8}
+    .arena-content{position:relative;z-index:1;padding:10px 14px;border-radius:10px;background:rgba(10,17,29,.82)}
     footer{margin-top:12px;color:#718198;font-size:13px}
   </style>
 </head>
@@ -24,15 +31,29 @@
       <h1>새 격투 게임</h1>
       <p>새로운 전투 시스템을 만들기 위한 초기 프로젝트</p>
     </header>
-    <section class="arena" aria-label="게임 화면">
-      <div>
+    <div class="toolbar">
+      <span class="grid-label">격자 간격: 1칸 = 1m</span>
+      <button id="crosshair-toggle" class="toggle" type="button" aria-pressed="true">십자선 표시: ON</button>
+    </div>
+    <section class="arena crosshair-on" aria-label="1미터 단위 격자가 표시된 게임 화면">
+      <div class="arena-content">
         <strong>전투 시스템 초기화 완료</strong>
-        <span>이곳에서 새로운 격투 게임을 시작합니다.</span>
+        <span>1m 단위 격자 · 십자선 표시 설정 가능</span>
       </div>
     </section>
     <footer>프로젝트 기반 버전 0.1.0</footer>
   </main>
   <script>
+    // 십자선 표시 설정
+    const arena = document.querySelector('.arena');
+    const crosshairToggle = document.querySelector('#crosshair-toggle');
+    crosshairToggle.addEventListener('click', () => {
+      const enabled = crosshairToggle.getAttribute('aria-pressed') !== 'true';
+      crosshairToggle.setAttribute('aria-pressed', String(enabled));
+      crosshairToggle.textContent = '십자선 표시: ' + (enabled ? 'ON' : 'OFF');
+      arena.classList.toggle('crosshair-on', enabled);
+    });
+
     // 기본 전투 규칙: 모든 시간 단위는 밀리초(ms)입니다.
     const FightRules = Object.freeze({
       stun: Object.freeze({
