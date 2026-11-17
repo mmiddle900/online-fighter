@@ -48,7 +48,7 @@
       <span class="attack-log" id="action-readout">대기 중</span>
     </div>
     <div class="hud">
-      <span>이동 <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span></span>
+      <span>이동 <span class="key">A</span><span class="key">D</span> · 점프 <span class="key">W</span></span>
       <span>약공격 <span class="key">G</span> · 중공격 <span class="key">H</span> · 강공격 <span class="key">J</span></span>
     </div>
     <footer>프로젝트 기반 버전 0.1.0</footer>
@@ -59,7 +59,11 @@
     const ctx = canvas.getContext('2d');
     const positionReadout = document.querySelector('#position-readout');
     const actionReadout = document.querySelector('#action-readout');
-    const dummy = { name: '더미', x: 0, y: -4, speed: 4, facing: { x: 0, y: 1 } };
+    const dummy = { name: '더미', x: 0, y: -4, speed: 4, facing: { x: 0, y: 0 } };
+    let jumpHeight = 0;
+    let jumpVelocity = 0;
+    const jumpPower = 620;
+    const gravity = 1700;
     const pressedKeys = new Set();
     let activeAttack = null;
     let attackUntil = 0;
@@ -85,7 +89,8 @@
     window.addEventListener('keydown', event => {
       const key = event.key.toLowerCase();
       if (['w','a','s','d','g','h','j'].includes(key)) event.preventDefault();
-      if (['w','a','s','d'].includes(key)) pressedKeys.add(key);
+      if (['a','d'].includes(key)) pressedKeys.add(key);
+      if (key === 'w' && !event.repeat && jumpHeight <= 0) jumpVelocity = jumpPower;
       if (!event.repeat && ['g','h','j'].includes(key)) triggerDummyAttack(key);
     });
     window.addEventListener('keyup', event => pressedKeys.delete(event.key.toLowerCase()));
@@ -97,17 +102,20 @@
       const dt = lastFrame ? Math.min((now - lastFrame) / 1000, 0.05) : 0;
       lastFrame = now;
       const dx = (pressedKeys.has('d') ? 1 : 0) - (pressedKeys.has('a') ? 1 : 0);
-      const dy = (pressedKeys.has('w') ? 1 : 0) - (pressedKeys.has('s') ? 1 : 0);
-      if (dx || dy) {
-        const length = Math.hypot(dx, dy);
-        dummy.x += dx / length * dummy.speed * dt;
-        dummy.y += dy / length * dummy.speed * dt;
-        dummy.facing = { x: dx / length, y: dy / length };
+      const dy = 0;
+      if (dx) {
+        dummy.x += dx * dummy.speed * dt;
+        dummy.facing = { x: dx, y: 0 };
+      }
+      if (jumpHeight > 0 || jumpVelocity > 0) {
+        jumpVelocity -= gravity * dt;
+        jumpHeight += jumpVelocity * dt;
+        if (jumpHeight <= 0) { jumpHeight = 0; jumpVelocity = 0; }
       }
       const unit = 40;
       const groundScreenY = height * 0.78;
       const screenX = width / 2 + dummy.x * unit;
-      const screenY = groundScreenY - (dummy.y - (-4)) * unit;
+      const screenY = groundScreenY - jumpHeight;
       ctx.clearRect(0, 0, width, height);
       ctx.fillStyle = '#0a111d';
       ctx.fillRect(0, 0, width, height);
@@ -147,11 +155,11 @@
       const hipY = screenY - 25;
       const legStride = armSwing * .7;
       ctx.strokeStyle = dark; ctx.lineWidth = 9;
-      ctx.beginPath(); ctx.moveTo(screenX - 5, hipY); ctx.lineTo(screenX - 8 - legStride, screenY - 9); ctx.lineTo(screenX - 10 - legStride, groundScreenY - 2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(screenX + 5, hipY); ctx.lineTo(screenX + 8 + legStride, screenY - 9); ctx.lineTo(screenX + 10 + legStride, groundScreenY - 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(screenX - 5, hipY); ctx.lineTo(screenX - 8 - legStride, screenY - 9); ctx.lineTo(screenX - 10 - legStride, screenY - 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(screenX + 5, hipY); ctx.lineTo(screenX + 8 + legStride, screenY - 9); ctx.lineTo(screenX + 10 + legStride, screenY - 2); ctx.stroke();
       ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 7;
-      ctx.beginPath(); ctx.moveTo(screenX - 10 - legStride, groundScreenY - 2); ctx.lineTo(screenX - 16 - legStride, groundScreenY - 2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(screenX + 10 + legStride, groundScreenY - 2); ctx.lineTo(screenX + 16 + legStride, groundScreenY - 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(screenX - 10 - legStride, screenY - 2); ctx.lineTo(screenX - 16 - legStride, screenY - 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(screenX + 10 + legStride, screenY - 2); ctx.lineTo(screenX + 16 + legStride, screenY - 2); ctx.stroke();
 
       // 몸통
       ctx.fillStyle = suit;
