@@ -44,6 +44,14 @@
     <footer>프로젝트 기반 버전 0.1.0</footer>
   </main>
   <script>
+    // 월드 좌표 규칙: y = -4가 캐릭터가 서는 바닥 높이입니다.
+    const FightWorld = Object.freeze({
+      groundY: -4,
+      characterStandingY: -4,
+      gridUnit: 1
+    });
+    window.FightWorld = FightWorld;
+
     // 십자선 표시 설정
     const arena = document.querySelector('.arena');
     const crosshairToggle = document.querySelector('#crosshair-toggle');
