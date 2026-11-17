@@ -232,45 +232,61 @@
         ctx.fillText('훈련 완료!', enemyScreenX, groundScreenY - 24);
       }
 
-      // 제너럴 K: 업로드된 시트의 개별 모션 프레임을 실제 애니메이션으로 재생
+      // Procedural General K: every part is drawn in one stable local coordinate system.
       const attackActive = !!activeAttack && now < attackUntil;
-      const attackProgress = attackActive ? 1 - (attackUntil - now) / 260 : 0;
-      let motion = 'idle';
-      if (attackActive) motion = activeAttack === '잽' ? 'jab' : activeAttack === '훅' ? 'hook' : 'upper';
-      else if (jumpHeight > 0) motion = 'dash';
-      else if (dx) motion = 'walk';
-      const row = characterFrames[motion];
-      const frameIndex = attackActive
-        ? Math.min(row.frames.length - 1, Math.floor(attackProgress * row.frames.length))
-        : motion === 'walk' ? Math.floor(now / 85) % row.frames.length
-        : motion === 'dash' ? Math.floor(now / 75) % row.frames.length
-        : Math.floor(now / 260) % row.frames.length;
-      const [rawX, rawY, rawW, rawH] = row.frames[frameIndex];
-      // 모든 프레임을 동일한 기준선(발 위치)과 중심축으로 정렬한다.
-      const pad = 7, sx = Math.max(0, rawX - pad), sy = Math.max(0, rawY - pad);
-      const sw = rawW + pad * 2, sh = rawH + pad * 2;
-      if (spriteReady) {
-        ctx.save();
-        const flip = dummy.facing.x < 0;
-        ctx.translate(screenX, 0);
-        if (flip) ctx.scale(-1, 1);
-        const drawH = row.drawH, drawW = drawH * (sw / sh);
-        ctx.drawImage(atlasCanvas, sx, sy, sw, sh, -drawW * 0.5, groundScreenY - drawH - jumpHeight, drawW, drawH);
-        // 공격 VFX는 장식 전용이며 공격 판정/피해 계산에 관여하지 않습니다.
-        if (attackActive) {
-          const fx = attackVfx[motion];
-          const scale = motion === 'jab' ? 1.0 : motion === 'hook' ? 0.92 : 0.9;
-          ctx.globalAlpha = Math.max(0, 1 - attackProgress * 0.25);
-          ctx.drawImage(atlasCanvas, fx.x, fx.y, fx.w, fx.h,
-            12, groundScreenY - 150 - jumpHeight, fx.w * scale, fx.h * scale);
-        }
-        ctx.restore();
-      } else {
-        ctx.fillStyle = '#93c5fd';
-        ctx.font = '12px system-ui';
-        ctx.textAlign = 'center';
-        ctx.fillText(spriteLoadFailed ? '스프라이트 로딩 실패' : '스프라이트 불러오는 중...', screenX, groundScreenY - 80);
-      }
+      const attackProgress = attackActive ? 1-(attackUntil-now)/260 : 0;
+      const motion = attackActive ? (activeAttack==='잽'?'jab':activeAttack==='훅'?'hook':'upper') : jumpHeight>0?'jump':dx?'walk':'idle';
+      const phase=now/125, stride=motion==='walk'?Math.sin(phase):0;
+      const bob=motion==='walk'?Math.abs(stride)*2.5:motion==='idle'?Math.sin(now/230)*1.2:0;
+      const punch=attackActive?Math.sin(Math.min(1,attackProgress)*Math.PI):0;
+      const facing=dummy.facing.x<0?-1:1, ground=groundScreenY-jumpHeight, by=ground-76-bob;
+      ctx.save(); ctx.translate(screenX,0); ctx.scale(facing,1);
+      // Ground shadow
+      ctx.globalAlpha=Math.max(.18,.4-jumpHeight/1700); ctx.fillStyle='#020617';
+      ctx.beginPath();ctx.ellipse(0,groundScreenY+2,23+jumpHeight*.01,5,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+      // Flowing split cloak behind the body
+      const wave=Math.sin(now/180)*(motion==='walk'?5:2);
+      const cape=ctx.createLinearGradient(-42,by-42,-5,by+38);
+      cape.addColorStop(0,'#344d87');cape.addColorStop(.55,'#111d3b');cape.addColorStop(1,'#050a17');
+      ctx.fillStyle=cape;ctx.strokeStyle='#5278c9';ctx.lineWidth=1.4;
+      ctx.beginPath();ctx.moveTo(-10,by-42);ctx.quadraticCurveTo(-36,by-45+wave,-49,by+9);ctx.lineTo(-30,by-1);ctx.lineTo(-39,by+30);ctx.lineTo(-12,by+13);ctx.lineTo(-3,by+36);ctx.lineTo(12,by+5);ctx.closePath();ctx.fill();ctx.stroke();
+      // Limb helper: dark outline + metallic inner stroke
+      const limb=(pts,w,col)=>{ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#050a17';ctx.lineWidth=w+4;ctx.beginPath();ctx.moveTo(pts[0],pts[1]);for(let i=2;i<pts.length;i+=2)ctx.lineTo(pts[i],pts[i+1]);ctx.stroke();ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(pts[0],pts[1]);for(let i=2;i<pts.length;i+=2)ctx.lineTo(pts[i],pts[i+1]);ctx.stroke();};
+      const leg=motion==='walk'?stride*9:motion==='jump'?-7:0;
+      limb([-8,by+4,-13+leg*.4,by+27,-17+leg,ground-4],10,'#263b69');
+      limb([8,by+4,13-leg*.4,by+27,17-leg,ground-4],10,'#17294f');
+      // Armored boots
+      ctx.fillStyle='#080f20';ctx.strokeStyle='#5e80c9';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(-26+leg,ground-8);ctx.lineTo(-9+leg,ground-8);ctx.lineTo(-7+leg,ground);ctx.lineTo(-28+leg,ground);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.moveTo(8-leg,ground-8);ctx.lineTo(26-leg,ground-8);ctx.lineTo(29-leg,ground);ctx.lineTo(8-leg,ground);ctx.closePath();ctx.fill();ctx.stroke();
+      // Torso armor and chest plates
+      const armor=ctx.createLinearGradient(-19,by-38,18,by+18);armor.addColorStop(0,'#40598d');armor.addColorStop(.45,'#1a2d55');armor.addColorStop(1,'#080f20');
+      ctx.fillStyle=armor;ctx.strokeStyle='#7694d8';ctx.lineWidth=1.7;
+      ctx.beginPath();ctx.moveTo(-12,by-40);ctx.lineTo(12,by-40);ctx.lineTo(19,by-13);ctx.lineTo(11,by+14);ctx.lineTo(-11,by+14);ctx.lineTo(-19,by-13);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.fillStyle='#09152b';ctx.beginPath();ctx.moveTo(-10,by-24);ctx.lineTo(10,by-24);ctx.lineTo(7,by+6);ctx.lineTo(-7,by+6);ctx.closePath();ctx.fill();
+      ctx.strokeStyle='#43c5ff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-8,by-15);ctx.lineTo(8,by-15);ctx.moveTo(-6,by-5);ctx.lineTo(6,by-5);ctx.stroke();
+      // Angular shoulder guards
+      ctx.fillStyle='#2d477d';ctx.strokeStyle='#7897dc';ctx.lineWidth=1.4;
+      for(const s of [-1,1]){ctx.beginPath();ctx.moveTo(s*9,by-35);ctx.lineTo(s*22,by-32);ctx.lineTo(s*26,by-18);ctx.lineTo(s*14,by-11);ctx.lineTo(s*7,by-22);ctx.closePath();ctx.fill();ctx.stroke();}
+      // Attack-specific arm pose
+      let hx=25,hy=by-7,rx=-20,ry=by-3;
+      if(motion==='jab'){hx=29+36*punch;hy=by-13;}
+      if(motion==='hook'){hx=28+18*punch;hy=by-28-9*punch;}
+      if(motion==='upper'){hx=18+9*punch;hy=by-47-12*punch;}
+      if(motion==='jump'){hy=by-34;ry=by-31;}
+      limb([14,by-28,22,by-17,hx,hy],9,'#243c70');
+      limb([-13,by-27,-22,by-14,rx,ry],9,'#1b2d55');
+      for(const [x,y] of [[hx,hy],[rx,ry]]){ctx.fillStyle='#071126';ctx.strokeStyle='#78a4ed';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,6,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#55d9ff';ctx.beginPath();ctx.arc(x+1,y-1,2,0,Math.PI*2);ctx.fill();}
+      // Hood, mask and glowing cyan visor
+      ctx.fillStyle='#101d39';ctx.fillRect(-6,by-51,12,14);
+      const hood=ctx.createLinearGradient(-15,by-91,15,by-45);hood.addColorStop(0,'#40598d');hood.addColorStop(.5,'#1a2d50');hood.addColorStop(1,'#070d1b');
+      ctx.fillStyle=hood;ctx.strokeStyle='#819bdb';ctx.lineWidth=1.7;ctx.beginPath();ctx.moveTo(-15,by-66);ctx.quadraticCurveTo(-13,by-92,1,by-90);ctx.quadraticCurveTo(17,by-87,15,by-65);ctx.lineTo(10,by-48);ctx.lineTo(-10,by-48);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.fillStyle='#050b19';ctx.beginPath();ctx.moveTo(-10,by-68);ctx.lineTo(11,by-68);ctx.lineTo(8,by-53);ctx.lineTo(0,by-49);ctx.lineTo(-8,by-54);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#55dcff';ctx.shadowColor='#159dff';ctx.shadowBlur=10;ctx.beginPath();ctx.moveTo(-9,by-66);ctx.lineTo(10,by-66);ctx.lineTo(7,by-61);ctx.lineTo(-7,by-61);ctx.closePath();ctx.fill();ctx.shadowBlur=0;
+      ctx.strokeStyle='#9abaff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-8,by-82);ctx.lineTo(-17,by-93);ctx.moveTo(4,by-85);ctx.lineTo(12,by-96);ctx.stroke();
+      ctx.restore();
+      // Decorative attack trail only; hit detection remains in triggerDummyAttack.
+      if(attackActive){ctx.save();ctx.globalAlpha=.9*Math.sin(Math.min(1,attackProgress)*Math.PI);ctx.translate(screenX+facing*38,by-10);ctx.scale(facing,1);ctx.strokeStyle='#55caff';ctx.shadowColor='#168bff';ctx.shadowBlur=14;ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();if(motion==='jab'){ctx.moveTo(-5,0);ctx.quadraticCurveTo(18,-12,48,-3);}else if(motion==='hook'){ctx.arc(0,0,31,-1.25,.75);}else{ctx.moveTo(-8,19);ctx.quadraticCurveTo(28,-10,22,-47);}ctx.stroke();ctx.restore();}
       ctx.fillStyle = '#bfdbfe';
       ctx.font = '12px system-ui';
       ctx.textAlign = 'center';
