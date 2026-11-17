@@ -244,9 +244,9 @@
       const stride=motion==='walk'?Math.sin(now/110)*3:0;
       const punch=attackActive?Math.sin(Math.min(1,attackProgress)*Math.PI):0;
       const pc=characterPixelCtx;pc.clearRect(0,0,128,128);pc.save();pc.imageSmoothingEnabled=false;pc.scale(0.5,0.5);
-      // 2px 단위 픽셀 군집으로 윤곽·관절·갑옷 명암을 세밀하게 정리
+      // 작은 점 형태의 장식 픽셀은 생략하고, 큰 픽셀 군집으로 윤곽과 명암을 정돈
       const snap=v=>Math.round(v/2)*2;
-      const px=(x,y,w,h,col)=>{pc.fillStyle=col;pc.fillRect(snap(x),snap(y),Math.max(2,Math.round(w/2)*2),Math.max(2,Math.round(h/2)*2));};
+      const px=(x,y,w,h,col)=>{if(w<10||h<5)return;pc.fillStyle=col;pc.fillRect(snap(x),snap(y),Math.max(2,Math.round(w/2)*2),Math.max(2,Math.round(h/2)*2));};
       const poly=(pts,col)=>{pc.fillStyle=col;pc.beginPath();pc.moveTo(snap(pts[0][0]),snap(pts[0][1]));for(let i=1;i<pts.length;i++)pc.lineTo(snap(pts[i][0]),snap(pts[i][1]));pc.closePath();pc.fill();};
       const line=(pts,col,w)=>{pc.strokeStyle=col;pc.lineWidth=Math.max(2,Math.round(w/2)*2);pc.lineCap='square';pc.lineJoin='miter';pc.beginPath();pc.moveTo(snap(pts[0][0]),snap(pts[0][1]));for(let i=1;i<pts.length;i++)pc.lineTo(snap(pts[i][0]),snap(pts[i][1]));pc.stroke();};
       const C={ink:'#080d15',shadow:'#172333',dark:'#26384c',mid:'#405970',lit:'#647f96',shine:'#a9bac8',steel:'#d0d9df',cloth:'#202638',cloth2:'#35384d',gold:'#a9824c',gold2:'#d8bd83',cyan:'#42e5dc',white:'#d9fffc'};
