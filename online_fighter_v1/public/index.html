@@ -47,6 +47,7 @@
       <span>캐릭터: <strong>더미</strong> · 좌표: <strong id="position-readout">x: 0, y: -4</strong></span>
       <span class="attack-log" id="action-readout">대기 중</span>
     </div>
+    <div class="hud"><span>상대 체력: <strong id="enemy-hp">1000 / 1000</strong></span><span>내 공격력은 사거리 안에서 적중합니다</span></div>
     <div class="hud">
       <span>이동 <span class="key">A</span><span class="key">D</span> · 점프 <span class="key">W</span></span>
       <span>잽 <span class="key">G</span> · 훅 <span class="key">H</span> · 어퍼컷 <span class="key">J</span></span>
@@ -59,6 +60,10 @@
     const ctx = canvas.getContext('2d');
     const positionReadout = document.querySelector('#position-readout');
     const actionReadout = document.querySelector('#action-readout');
+    const enemyHpReadout = document.querySelector('#enemy-hp');
+    const enemy = { x: 3.2, hp: 1000, maxHp: 1000, hitUntil: 0, hitFlash: 0 };
+    const attackCooldowns = { g: 0, h: 0, j: 0 };
+    const attackSpecs = { g: { name: '잽', damage: 80, range: 1.45, cooldown: 420 }, h: { name: '훅', damage: 130, range: 1.9, cooldown: 720 }, j: { name: '어퍼컷', damage: 200, range: 1.65, cooldown: 1050 } };
     const dummy = { name: '더미', x: 0, y: -4, speed: 4, facing: { x: 0, y: 0 } };
     let jumpHeight = 0;
     let jumpVelocity = 0;
@@ -80,10 +85,26 @@
     resizeBattleCanvas();
 
     function triggerDummyAttack(type) {
-      const labels = { g: '잽', h: '훅', j: '어퍼컷' };
-      activeAttack = labels[type];
-      attackUntil = performance.now() + 220;
-      actionReadout.textContent = activeAttack + ' 입력';
+      const now = performance.now();
+      const spec = attackSpecs[type];
+      if (now < attackCooldowns[type]) {
+        actionReadout.textContent = spec.name + ' 재사용 대기 중';
+        return;
+      }
+      activeAttack = spec.name;
+      attackUntil = now + 260;
+      attackCooldowns[type] = now + spec.cooldown;
+      const distance = Math.abs(enemy.x - dummy.x);
+      const facingEnemy = Math.sign(enemy.x - dummy.x) === (dummy.facing.x || 1);
+      if (enemy.hp > 0 && distance <= spec.range && facingEnemy) {
+        enemy.hp = Math.max(0, enemy.hp - spec.damage);
+        enemy.hitUntil = now + 180;
+        enemy.x += (dummy.facing.x || 1) * 0.18;
+        actionReadout.textContent = spec.name + ' 적중! -' + spec.damage;
+      } else {
+        actionReadout.textContent = spec.name + ' 빗나감';
+      }
+      enemyHpReadout.textContent = enemy.hp + ' / ' + enemy.maxHp;
     }
 
     window.addEventListener('keydown', event => {
@@ -104,7 +125,7 @@
       const dx = (pressedKeys.has('d') ? 1 : 0) - (pressedKeys.has('a') ? 1 : 0);
       const dy = 0;
       if (dx) {
-        dummy.x += dx * dummy.speed * dt;
+        dummy.x = Math.max(-7.2, Math.min(7.2, dummy.x + dx * dummy.speed * dt));
         dummy.facing = { x: dx, y: 0 };
       }
       if (jumpHeight > 0 || jumpVelocity > 0) {
@@ -135,6 +156,38 @@
       ctx.font = '11px system-ui';
       ctx.textAlign = 'left';
       ctx.fillText('GROUND  y = -4', 10, groundScreenY + 18);
+
+      // 훈련 상대: 체력과 피격 반응이 있는 적 캐릭터
+      const enemyScreenX = width / 2 + enemy.x * unit;
+      const enemyHit = now < enemy.hitUntil;
+      if (enemy.hp > 0) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,.35)';
+        ctx.beginPath(); ctx.ellipse(enemyScreenX, groundScreenY + 3, 20, 6, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = enemyHit ? '#fca5a5' : '#7f1d1d';
+        ctx.strokeStyle = enemyHit ? '#fff' : '#f87171';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(enemyScreenX - 12, groundScreenY - 58, 24, 38, 7); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#450a0a'; ctx.fillRect(enemyScreenX - 9, groundScreenY - 53, 18, 22);
+        ctx.fillStyle = '#fecaca';
+        ctx.beginPath(); ctx.arc(enemyScreenX, groundScreenY - 73, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#450a0a'; ctx.beginPath(); ctx.arc(enemyScreenX, groundScreenY - 76, 14, Math.PI, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#fca5a5'; ctx.fillRect(enemyScreenX - 9, groundScreenY - 75, 18, 4);
+        ctx.strokeStyle = '#fecaca'; ctx.lineWidth = 7;
+        ctx.beginPath(); ctx.moveTo(enemyScreenX - 10, groundScreenY - 51); ctx.lineTo(enemyScreenX - 17, groundScreenY - 29); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(enemyScreenX + 10, groundScreenY - 51); ctx.lineTo(enemyScreenX + 17, groundScreenY - 29); ctx.stroke();
+        ctx.strokeStyle = '#991b1b'; ctx.lineWidth = 9;
+        ctx.beginPath(); ctx.moveTo(enemyScreenX - 5, groundScreenY - 22); ctx.lineTo(enemyScreenX - 9, groundScreenY - 3); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(enemyScreenX + 5, groundScreenY - 22); ctx.lineTo(enemyScreenX + 9, groundScreenY - 3); ctx.stroke();
+        ctx.fillStyle = '#fee2e2'; ctx.font = '12px system-ui'; ctx.textAlign = 'center';
+        ctx.fillText('훈련 상대', enemyScreenX, groundScreenY - 94);
+        ctx.fillStyle = '#334155'; ctx.fillRect(enemyScreenX - 22, groundScreenY - 108, 44, 5);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(enemyScreenX - 22, groundScreenY - 108, 44 * enemy.hp / enemy.maxHp, 5);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = '#86efac'; ctx.font = 'bold 18px system-ui'; ctx.textAlign = 'center';
+        ctx.fillText('훈련 완료!', enemyScreenX, groundScreenY - 24);
+      }
 
       // MUGEN 스타일 2D 격투 캐릭터: 머리/얼굴, 몸통, 양팔, 양다리를 관절로 그립니다.
       const facing = dummy.facing.x < 0 ? -1 : 1;
