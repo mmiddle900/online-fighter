@@ -64,7 +64,7 @@
     const enemy = { x: 3.2, hp: 1000, maxHp: 1000, hitUntil: 0, hitFlash: 0 };
     const attackCooldowns = { g: 0, h: 0, j: 0 };
     const dummySprite = new Image();
-    dummySprite.src = '/%EB%84%A4%EC%98%A8%20%EB%8A%91%EB%8C%80%20%EB%B3%91%EC%82%AC%20%EB%8D%94%EB%AF%B8%20%EC%8A%A4%ED%94%84%EB%9D%BC%EC%9D%B4%ED%8A%B8%20%EC%8B%9C%ED%8A%B8.png';
+    dummySprite.src = '/%EC%82%AC%EC%9D%B4%EB%B2%84%20%EB%8B%88%EC%9E%90%20%EC%A0%84%ED%88%AC%20%EC%8A%A4%ED%94%84%EB%9D%BC%EC%9D%B4%ED%8A%B8%20%EC%8B%9C%ED%8A%B8.png';
     let spriteLoadFailed = false;
     dummySprite.onerror = () => { spriteLoadFailed = true; };
     const attackSpecs = { g: { name: '잽', damage: 80, range: 1.45, cooldown: 420 }, h: { name: '훅', damage: 130, range: 1.9, cooldown: 720 }, j: { name: '어퍼컷', damage: 200, range: 1.65, cooldown: 1050 } };
@@ -208,11 +208,11 @@
         return 'idle';
       })();
       const spriteCrop = {
-        idle:[560,72,105,185], walk:[680,72,110,185], run:[805,72,115,185],
-        jump:[1260,42,125,215],
-        jabReady:[22,350,105,155], jabHit:[255,350,120,155],
-        hookReady:[535,350,110,155], hookHit:[805,350,125,155],
-        upperReady:[1105,350,110,155], upperHit:[1450,315,150,195]
+        idle:[550,70,125,195], walk:[675,65,135,195], run:[805,65,145,195],
+        jump:[1235,25,145,235],
+        jabReady:[0,335,135,165], jabHit:[255,335,140,165],
+        hookReady:[535,335,140,165], hookHit:[800,335,145,165],
+        upperReady:[1090,335,140,165], upperHit:[1460,285,175,215]
       }[spriteFrame];
       if (dummySprite.complete && dummySprite.naturalWidth) {
         ctx.save();
