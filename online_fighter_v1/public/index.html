@@ -58,6 +58,11 @@
     // 더미 캐릭터 기본 조작
     const canvas = document.querySelector('#battle-canvas');
     const ctx = canvas.getContext('2d');
+    // 제너럴 K 전용 64×64 저해상도 픽셀 캔버스
+    const characterPixelCanvas = document.createElement('canvas');
+    characterPixelCanvas.width = 64;
+    characterPixelCanvas.height = 64;
+    const characterPixelCtx = characterPixelCanvas.getContext('2d');
     const positionReadout = document.querySelector('#position-readout');
     const actionReadout = document.querySelector('#action-readout');
     const enemyHpReadout = document.querySelector('#enemy-hp');
@@ -232,52 +237,43 @@
         ctx.fillText('훈련 완료!', enemyScreenX, groundScreenY - 24);
       }
 
-      // Pixel-art General K based on the supplied reference proportions, facing right.
-      const attackActive=!!activeAttack&&now<attackUntil,attackProgress=attackActive?1-(attackUntil-now)/260:0;
+      // 64×64 전용 픽셀 캔버스에 제너럴 K를 직접 그림. 모든 좌표는 정수 픽셀.
+      const attackActive=!!activeAttack&&now<attackUntil;
+      const attackProgress=attackActive?1-(attackUntil-now)/260:0;
       const motion=attackActive?(activeAttack==='잽'?'jab':activeAttack==='훅'?'hook':'upper'):jumpHeight>0?'jump':dx?'walk':'idle';
-      const phase=now/145,stride=motion==='walk'?Math.sin(phase):0,bob=motion==='walk'?Math.abs(stride)*1.5:motion==='idle'?Math.sin(now/260):0;
-      const punch=attackActive?Math.sin(Math.min(1,attackProgress)*Math.PI):0,ground=groundScreenY-jumpHeight,base=ground-bob;
-      const pixelCtx = characterPixelCtx;
-      pixelCtx.clearRect(0,0,56,68);
-      pixelCtx.save();pixelCtx.setTransform(0.5,0,0,0.5,28,64-base*0.5);
-      pixelCtx.fillStyle='rgba(2,8,23,.3)';pixelCtx.beginPath();pixelCtx.ellipse(-1,base+2,25,5,0,0,Math.PI*2);pixelCtx.fill();
-      const poly=(p,f,s='#111827',w=1)=>{pixelCtx.beginPath();pixelCtx.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)pixelCtx.lineTo(p[i],p[i+1]);pixelCtx.closePath();pixelCtx.fillStyle=f;pixelCtx.fill();if(s){pixelCtx.strokeStyle=s;pixelCtx.lineWidth=w;pixelCtx.stroke();}};
-      const seg=(p,w,col)=>{pixelCtx.lineCap='square';pixelCtx.lineJoin='miter';pixelCtx.strokeStyle='#101522';pixelCtx.lineWidth=w+2;pixelCtx.beginPath();pixelCtx.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)pixelCtx.lineTo(p[i],p[i+1]);pixelCtx.stroke();pixelCtx.strokeStyle=col;pixelCtx.lineWidth=w;pixelCtx.beginPath();pixelCtx.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)pixelCtx.lineTo(p[i],p[i+1]);pixelCtx.stroke();};
-      // scarf and cape trail behind the character
-      poly([-8,base-70,-27,base-63,-48,base-42,-40,base-39,-52,base-18,-31,base-27,-25,base-8,-11,base-34],'#172747','#405b8c');
-      const rear=motion==='walk'?stride*7:motion==='jump'?-5:0,front=motion==='walk'?-stride*7:motion==='jump'?-6:0;
-      // long rear leg and short armored boot
-      seg([-7,base-36,-20+rear,base-19,-42+rear,base+4],9,'#263d68');
-      poly([-50+rear,base+1,-34+rear,base-4,-27+rear,base+1,-31+rear,base+7,-51+rear,base+7],'#0a1427','#5875a8');
-      // bent front leg
-      seg([2,base-37,15+front,base-20,22+front,base-4],10,'#354f7e');
-      poly([14+front,base-8,28+front,base-8,33+front,base-3,31+front,base+2,12+front,base+2,9+front,base-2],'#172b4e','#7893c4');
-      // compact forward-leaning torso and narrow waist
-      poly([-13,base-76,2,base-79,15,base-69,12,base-48,2,base-36,-12,base-39,-19,base-54],'#263f70','#8197c1',1.2);
-      poly([-7,base-70,5,base-71,10,base-56,-2,base-48,-12,base-56],'#101d37','#4d6c9f');
-      poly([-12,base-42,11,base-46,14,base-39,-11,base-34],'#0b1428','#526d9c');
-      // rear arm tucked behind; front arm reaches right
-      seg([-11,base-69,-25,base-57,-21,base-47],7,'#344e7b');
-      let ex=15,ey=base-63,hx=31,hy=base-55;
-      if(motion==='jab'){ex=23+8*punch;ey=base-62;hx=39+37*punch;hy=base-63;}
-      if(motion==='hook'){ex=24+5*punch;ey=base-72;hx=38+13*punch;hy=base-78-5*punch;}
-      if(motion==='upper'){ex=17;ey=base-76-4*punch;hx=28+5*punch;hy=base-91-8*punch;}
-      if(motion==='jump'){ey=base-76;hy=base-83;}
-      seg([7,base-69,ex,ey,hx,hy],8,'#3e5b8d');
-      poly([hx-4,hy-4,hx+4,hy-4,hx+6,hy+2,hx+1,hy+6,hx-5,hy+3],'#0b1428','#8aa3d2');
-      // compact hood and face mask in right-facing side profile
-      poly([-3,base-84,9,base-83,11,base-74,-1,base-73],'#111d35','#34496f');
-      poly([-13,base-104,-4,base-111,9,base-108,17,base-98,18,base-88,11,base-80,-5,base-82,-14,base-91],'#263e6d','#91a8d2',1.2);
-      poly([4,base-99,16,base-98,23,base-93,16,base-88,5,base-90],'#080f20','#182b4b');
-      poly([8,base-98,18,base-97,22,base-94,10,base-94],'#54d9ff',null);
-      poly([-10,base-104,-3,base-110,8,base-108,1,base-103],'#405b8b',null);
-      poly([-6,base-108,-15,base-116,-12,base-105],'#506d9e',null);
-      poly([1,base-109,-2,base-117,7,base-108],'#506d9e',null);
-      pixelCtx.fillStyle='#7fa0d6';pixelCtx.fillRect(-8,base-66,5,2);pixelCtx.fillRect(4,base-57,7,2);
-      pixelCtx.restore();
+      const stride=motion==='walk'?Math.round(Math.sin(now/110)*3):0;
+      const punch=attackActive?Math.sin(Math.min(1,attackProgress)*Math.PI):0;
+      const pc=characterPixelCtx;
+      pc.clearRect(0,0,64,64);
+      const px=(x,y,w,h,color)=>{pc.fillStyle=color;pc.fillRect(Math.round(x),Math.round(y),Math.max(1,Math.round(w)),Math.max(1,Math.round(h)));};
+      // 망토: 캐릭터의 뒤쪽(왼쪽)으로 흐르는 실루엣
+      px(10,20,9,24,'#172747');px(5,25,8,17,'#203963');px(1,35,12,5,'#304c7b');px(4,42,9,4,'#172747');
+      // 뒤쪽 다리와 부츠
+      px(19,42,8,8,'#263f70');px(17+stride,49,7,8,'#344f80');px(13+stride,56,13,4,'#0b1428');px(12+stride,59,15,2,'#7893c4');
+      // 앞쪽 다리: 걷기 때 무릎과 발이 교대로 움직임
+      px(29,41,8,9,'#354f7e');px(31-stride,48,7,8,'#405b8b');px(32-stride,55,13,4,'#172b4e');px(34-stride,59,13,2,'#8aa3d2');
+      // 허리와 짧은 상체
+      px(19,34,18,10,'#101d37');px(17,24,22,15,'#263f70');px(20,26,15,11,'#355486');px(18,36,19,4,'#0b1428');px(21,37,14,2,'#7893c4');
+      // 등 뒤 팔
+      px(16,26,5,11,'#344e7b');px(13,34,6,7,'#263f70');px(12,39,7,3,'#8aa3d2');
+      // 오른쪽을 향하는 앞팔: 공격 종류에 따라 자세만 변경
+      let armX=34,armY=28,handX=40,handY=29;
+      if(motion==='jab'){armX=37+Math.round(8*punch);armY=27;handX=43+Math.round(13*punch);handY=27;}
+      if(motion==='hook'){armX=36+Math.round(4*punch);armY=24;handX=43+Math.round(7*punch);handY=20-Math.round(3*punch);}
+      if(motion==='upper'){armX=34;armY=22-Math.round(3*punch);handX=39+Math.round(4*punch);handY=14-Math.round(5*punch);}
+      if(motion==='jump'){armY=23;handY=18;}
+      px(31,25,7,6,'#405b8b');px(armX,armY,7,5,'#49699e');px(handX,handY,6,6,'#0b1428');px(handX+1,handY+1,4,2,'#8aa3d2');
+      // 후드와 작은 옆얼굴, 청록색 바이저
+      px(20,7,14,3,'#405b8b');px(17,10,19,11,'#263e6d');px(19,8,13,4,'#506d9e');px(31,12,8,7,'#111d35');px(35,15,8,4,'#080f20');px(36,15,7,2,'#54d9ff');px(21,19,15,4,'#172747');
+      // 목과 어깨 연결부
+      px(25,19,8,5,'#172747');px(18,21,20,5,'#263f70');px(17,24,4,5,'#8197c1');
+      // 작은 하이라이트로 갑옷 면 분리
+      px(21,27,3,2,'#8aa3d2');px(29,31,4,2,'#7fa0d6');px(22,40,5,2,'#7893c4');
+      // 64×64 원본을 정수 배율 2로 확대해 픽셀 경계를 보존
       ctx.save();
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(characterPixelCanvas, screenX-56, groundScreenY-jumpHeight-136, 112, 136);
+      ctx.imageSmoothingEnabled=false;
+      const spriteTop=groundScreenY-jumpHeight-128;
+      ctx.drawImage(characterPixelCanvas,Math.round(screenX-64),Math.round(spriteTop),128,128);
       ctx.restore();
       // purely visual blue attack trail; hitbox and damage remain unchanged
       if(attackActive){ctx.save();ctx.globalAlpha=.8*Math.sin(Math.min(1,attackProgress)*Math.PI);ctx.translate(screenX+42,base-60);ctx.strokeStyle='#55caff';ctx.shadowColor='#168bff';ctx.shadowBlur=10;ctx.lineWidth=3;ctx.lineCap='round';ctx.beginPath();if(motion==='jab'){ctx.moveTo(-4,0);ctx.quadraticCurveTo(20,-10,43,-2);}else if(motion==='hook'){ctx.arc(0,0,25,-1.15,.6);}else{ctx.moveTo(-4,13);ctx.quadraticCurveTo(22,-9,19,-34);}ctx.stroke();ctx.restore();}
