@@ -153,9 +153,19 @@
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
-      // 그림자
+      // 그림자와 푸른 영혼 오라
       ctx.fillStyle = 'rgba(0,0,0,.35)';
-      ctx.beginPath(); ctx.ellipse(screenX, groundScreenY + 3, 17, 5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(screenX, groundScreenY + 3, 20, 6, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.save(); ctx.globalAlpha = .32 + Math.sin(now / 180) * .08;
+      ctx.strokeStyle = '#168bff'; ctx.shadowColor = '#168bff'; ctx.shadowBlur = 15; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(screenX, screenY - 42, 24, 48, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+      // 등 뒤의 망토와 교차된 검집
+      ctx.fillStyle = '#111827'; ctx.strokeStyle = '#475569'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(screenX - 8, screenY - 53); ctx.lineTo(screenX - 25, screenY - 39); ctx.lineTo(screenX - 22, screenY - 5); ctx.lineTo(screenX - 5, screenY - 22); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 7;
+      ctx.beginPath(); ctx.moveTo(screenX - 13, screenY - 75); ctx.lineTo(screenX + 15, screenY - 37); ctx.moveTo(screenX + 1, screenY - 80); ctx.lineTo(screenX + 23, screenY - 43); ctx.stroke();
+      ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(screenX - 13, screenY - 75); ctx.lineTo(screenX + 15, screenY - 37); ctx.moveTo(screenX + 1, screenY - 80); ctx.lineTo(screenX + 23, screenY - 43); ctx.stroke();
 
       // 다리와 발
       const hipY = screenY - 25;
@@ -175,6 +185,14 @@
       ctx.strokeStyle = '#bae6fd'; ctx.lineWidth = 2; ctx.stroke();
       ctx.fillStyle = dark;
       ctx.fillRect(screenX - 11 + bodyLean, screenY - 29 + bodyLift, 22, 5);
+      // 전술 조끼와 파우치, 어깨 보호대
+      ctx.fillStyle = '#1e293b'; ctx.fillRect(screenX - 8 + bodyLean, screenY - 52 + bodyLift, 16, 23);
+      ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(screenX - 8 + bodyLean, screenY - 53 + bodyLift); ctx.lineTo(screenX + 7 + bodyLean, screenY - 29 + bodyLift); ctx.stroke();
+      ctx.fillStyle = '#64748b'; ctx.fillRect(screenX - 7 + bodyLean, screenY - 39 + bodyLift, 5, 8); ctx.fillRect(screenX + 2 + bodyLean, screenY - 39 + bodyLift, 5, 8);
+      ctx.fillStyle = '#334155'; ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(screenX - 12 + bodyLean, screenY - 52 + bodyLift, 8, 6, -.25, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(screenX + 12 + bodyLean, screenY - 52 + bodyLift, 8, 6, .25, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
 
       // 팔: 잽은 직선, 훅은 수평 회전, 어퍼컷은 아래에서 위로 올립니다.
       const shoulderY = screenY - 51 + bodyLift;
@@ -213,15 +231,14 @@
       ctx.fillRect(screenX - 4, screenY - 65, 8, 10);
       ctx.beginPath(); ctx.arc(screenX, screenY - 75, 13, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = '#9a6248'; ctx.lineWidth = 1.5; ctx.stroke();
-      // 머리카락
-      ctx.fillStyle = '#1e293b';
-      ctx.beginPath(); ctx.arc(screenX, screenY - 79, 13, Math.PI, Math.PI * 2); ctx.fill();
-      // 눈/코/입은 캐릭터가 바라보는 쪽에 배치
-      ctx.fillStyle = '#0f172a';
-      ctx.beginPath(); ctx.arc(screenX + facing * 5, screenY - 77, 1.8, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = '#9a6248'; ctx.lineWidth = 1.2;
-      ctx.beginPath(); ctx.moveTo(screenX + facing * 8, screenY - 72); ctx.lineTo(screenX + facing * 11, screenY - 71); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(screenX + facing * 4, screenY - 67); ctx.lineTo(screenX + facing * 8, screenY - 67); ctx.stroke();
+      // 얼굴을 덮는 검은 전술 헬멧과 청록색 발광 바이저
+      ctx.fillStyle = '#111827'; ctx.strokeStyle = '#64748b'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(screenX, screenY - 75, 14, Math.PI, Math.PI * 2); ctx.lineTo(screenX + 13, screenY - 69); ctx.lineTo(screenX - 13, screenY - 69); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#082f49'; ctx.shadowColor = '#22d3ee'; ctx.shadowBlur = 12;
+      ctx.beginPath(); ctx.roundRect(screenX - 10, screenY - 78, 20, 5, 2); ctx.fill(); ctx.shadowBlur = 0;
+      ctx.strokeStyle = '#67e8f9'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(screenX - 9, screenY - 76); ctx.lineTo(screenX + 9, screenY - 76); ctx.stroke();
+      ctx.fillStyle = '#334155'; ctx.fillRect(screenX - 12, screenY - 70, 24, 4);
+      ctx.fillStyle = '#cbd5e1'; ctx.font = 'bold 5px system-ui'; ctx.textAlign = 'center'; ctx.fillText('DR', screenX, screenY - 61);
 
       // 이름표와 공격 동작 표시
       ctx.fillStyle = '#e0f2fe'; ctx.font = '12px system-ui'; ctx.textAlign = 'center';
