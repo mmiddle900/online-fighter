@@ -60,8 +60,8 @@
     const ctx = canvas.getContext('2d');
     // 제너럴 K 전용 64×64 저해상도 픽셀 캔버스
     const characterPixelCanvas = document.createElement('canvas');
-    characterPixelCanvas.width = 64;
-    characterPixelCanvas.height = 64;
+    characterPixelCanvas.width = 128;
+    characterPixelCanvas.height = 128;
     const characterPixelCtx = characterPixelCanvas.getContext('2d');
     const positionReadout = document.querySelector('#position-readout');
     const actionReadout = document.querySelector('#action-readout');
@@ -244,7 +244,8 @@
       const stride=motion==='walk'?Math.round(Math.sin(now/110)*3):0;
       const punch=attackActive?Math.sin(Math.min(1,attackProgress)*Math.PI):0;
       const pc=characterPixelCtx;
-      pc.clearRect(0,0,64,64);
+      pc.clearRect(0,0,128,128);
+      pc.save(); pc.scale(2,2);
       const px=(x,y,w,h,color)=>{pc.fillStyle=color;pc.fillRect(Math.round(x),Math.round(y),Math.max(1,Math.round(w)),Math.max(1,Math.round(h)));};
       // 망토: 캐릭터의 뒤쪽(왼쪽)으로 흐르는 실루엣
       px(10,20,9,24,'#172747');px(5,25,8,17,'#203963');px(1,35,12,5,'#304c7b');px(4,42,9,4,'#172747');
@@ -269,7 +270,12 @@
       px(25,19,8,5,'#172747');px(18,21,20,5,'#263f70');px(17,24,4,5,'#8197c1');
       // 작은 하이라이트로 갑옷 면 분리
       px(21,27,3,2,'#8aa3d2');px(29,31,4,2,'#7fa0d6');px(22,40,5,2,'#7893c4');
-      // 64×64 원본을 정수 배율 2로 확대해 픽셀 경계를 보존
+      // 관절·갑옷 분리선을 추가해 사람다운 팔다리 형태를 또렷하게 표현
+      px(19,31,4,3,'#7893c4'); px(31,39,4,3,'#7893c4');
+      px(22,46,5,3,'#172747'); px(30,46,5,3,'#172747');
+      px(16,34,3,4,'#8aa3d2'); px(37,26,3,3,'#8aa3d2');
+      // 128×128 네이티브 픽셀 캔버스
+      pc.restore();
       ctx.save();
       ctx.imageSmoothingEnabled=false;
       const spriteTop=groundScreenY-jumpHeight-128;
