@@ -171,6 +171,25 @@
  .knob{width:clamp(30px,8dvh,36px)!important;height:clamp(30px,8dvh,36px)!important}
  #game>.row:last-child,#exit-game{height:15px!important;min-height:15px!important;max-height:15px!important}
 }
+
+/* Mobile combat controls: remove attack button and give joystick a wider, larger area */
+@media(orientation:landscape) and (max-width:900px){
+ #game{grid-template-rows:12px 12px minmax(0,1fr) clamp(92px,29dvh,132px) 16px!important}
+ .gamecontrols{grid-template-columns:clamp(96px,28vw,156px) minmax(0,1fr)!important;gap:4px!important}
+ .mobilepad{width:100%!important;min-width:0!important}
+ .stick{width:clamp(78px,25vw,132px)!important;height:clamp(78px,25vw,132px)!important;max-width:100%!important;max-height:100%!important}
+ .knob{width:clamp(32px,9vw,46px)!important;height:clamp(32px,9vw,46px)!important}
+ .actionbuttons{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ #attack{display:none!important}
+}
+@media(orientation:landscape) and (max-width:560px){
+ #game{grid-template-rows:11px 11px minmax(0,1fr) clamp(86px,28dvh,116px) 15px!important;gap:1px!important}
+ .gamecontrols{grid-template-columns:clamp(92px,28vw,132px) minmax(0,1fr)!important;gap:3px!important}
+ .stick{width:clamp(76px,24vw,112px)!important;height:clamp(76px,24vw,112px)!important}
+ .knob{width:clamp(30px,9vw,40px)!important;height:clamp(30px,9vw,40px)!important}
+ .actionbuttons{gap:2px!important}
+}
+
 </style></head><body><div id="rotate-notice" class="rotate-notice" aria-live="polite"><div class="rotate-card"><div class="rotate-icon">📱↻</div><h2>가로 모드로 플레이</h2><p>휴대폰을 가로로 돌려주세요.<br>게임은 가로 화면에서만 표시됩니다.</p></div></div><div class="wrap">
 <header class="top"><h1>⚔ 김진수의 던전</h1><div class="pill" id="connection">서버 연결 중...</div></header>
 <section id="home" class="panel stack"><h2>던전 로그라이크</h2><p class="sub">혼자 탐험하거나 최대 6명이 함께 던전을 공략하세요.</p><button id="go-start" class="primary big">시작</button></section>
