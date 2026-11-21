@@ -2,6 +2,11 @@
   "name": "online-fighter",
   "version": "1.0.0",
   "private": true,
-  "scripts": {"start": "node server.js"},
-  "dependencies": {"express": "^4.21.2", "ws": "^8.18.0", "pg": "^8.13.1"}
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "ws": "^8.18.0"
+  }
 }
