@@ -30,6 +30,17 @@
  #exit-game{display:block;min-height:28px;height:28px;padding:3px 10px;font-size:11px}#game>.row:last-child{flex:0 0 28px;margin:0!important;min-height:0}
 }
 @media(orientation:landscape) and (max-width:560px){#game .hud{flex-basis:20px}.gamecontrols{grid-template-columns:70px minmax(0,1fr);flex-basis:72px}.stick{width:62px;height:62px}.actionbuttons{gap:3px}.actionbuttons button{font-size:10px;padding:2px 0}}
+
+/* Scrollable landscape layout: keep game canvas and controls usable without trapping the page */
+@media(orientation:landscape) and (max-width:900px){
+ html,body{height:auto;min-height:100%;max-height:none;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain;touch-action:pan-y}
+ .wrap{height:auto;min-height:100dvh;max-height:none;overflow:visible;padding-bottom:calc(12px + env(safe-area-inset-bottom));touch-action:pan-y}
+ #game{height:auto;max-height:none;min-height:0;flex:0 0 auto;overflow:visible}
+ .canvasbox{height:min(46dvh,360px);min-height:180px;max-height:none;flex:none;touch-action:pan-y}
+ #world{height:100%;touch-action:pan-y}
+ .gamecontrols{flex:0 0 76px;max-height:none}
+ #shop{max-height:none;overflow:visible}
+}
 </style></head><body><div id="rotate-notice" class="rotate-notice" aria-live="polite"><div class="rotate-card"><div class="rotate-icon">📱↻</div><h2>가로 모드로 플레이</h2><p>휴대폰을 가로로 돌려주세요.<br>게임은 가로 화면에서만 표시됩니다.</p></div></div><div class="wrap">
 <header class="top"><h1>⚔ 김진수의 던전</h1><div class="pill" id="connection">서버 연결 중...</div></header>
 <section id="home" class="panel stack"><h2>던전 로그라이크</h2><p class="sub">혼자 탐험하거나 최대 6명이 함께 던전을 공략하세요.</p><button id="go-start" class="primary big">시작</button></section>
