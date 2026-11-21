@@ -223,6 +223,25 @@
  #game .actionbuttons{width:clamp(58px,17vw,82px)!important;gap:5px!important}
  #game .actionbuttons button{height:clamp(42px,7.5dvh,58px)!important;min-height:42px!important;font-size:clamp(9px,2.8vw,12px)!important}
 }
+
+/* Mobile controls arranged like the user's reference sketch */
+@media(max-width:900px){
+ #game .actionbuttons{position:absolute!important;right:max(14px,env(safe-area-inset-right))!important;bottom:max(14px,env(safe-area-inset-bottom))!important;width:clamp(230px,42vw,310px)!important;height:clamp(205px,42dvh,280px)!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(3,minmax(0,1fr))!important;gap:8px!important;align-items:center!important;justify-items:center!important;pointer-events:auto!important}
+ #game .actionbuttons button{display:flex!important;align-items:center!important;justify-content:center!important;width:clamp(64px,12vw,88px)!important;height:clamp(64px,12vw,88px)!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;border-radius:50%!important;padding:5px!important;font-size:clamp(11px,2vw,15px)!important;line-height:1.05!important;white-space:normal!important}
+ #game #skill1{grid-column:3!important;grid-row:1!important}
+ #game #skill2{grid-column:2!important;grid-row:2!important}
+ #game #skill3{grid-column:1!important;grid-row:3!important}
+ #game #dodge-button{grid-column:3!important;grid-row:2!important;width:clamp(54px,10vw,72px)!important;height:clamp(54px,10vw,72px)!important}
+ #game #attack{grid-column:3!important;grid-row:3!important;width:clamp(88px,16vw,120px)!important;height:clamp(88px,16vw,120px)!important;font-size:clamp(13px,2.3vw,17px)!important}
+ #game .mobilepad{left:max(14px,env(safe-area-inset-left))!important;bottom:max(14px,env(safe-area-inset-bottom))!important;width:clamp(108px,24vw,160px)!important;height:clamp(108px,24vw,160px)!important}
+}
+@media(max-width:900px) and (orientation:portrait){
+ #game .actionbuttons{width:clamp(220px,62vw,290px)!important;height:clamp(210px,35dvh,270px)!important;right:10px!important;bottom:10px!important}
+ #game .actionbuttons button{width:clamp(62px,17vw,82px)!important;height:clamp(62px,17vw,82px)!important}
+ #game #dodge-button{width:clamp(52px,14vw,68px)!important;height:clamp(52px,14vw,68px)!important}
+ #game #attack{width:clamp(82px,21vw,104px)!important;height:clamp(82px,21vw,104px)!important}
+ #game .mobilepad{width:clamp(105px,30vw,140px)!important;height:clamp(105px,30vw,140px)!important;left:10px!important;bottom:10px!important}
+}
 </style></head><body><div id="rotate-notice" class="rotate-notice" aria-live="polite"><div class="rotate-card"><div class="rotate-icon">📱↻</div><h2>가로 모드로 플레이</h2><p>휴대폰을 가로로 돌려주세요.<br>게임은 가로 화면에서만 표시됩니다.</p></div></div><div class="wrap">
 <header class="top"><h1>⚔ 김진수의 던전</h1><div class="pill" id="connection">서버 연결 중...</div></header>
 <section id="home" class="panel stack"><h2>던전 로그라이크</h2><p class="sub">혼자 탐험하거나 최대 6명이 함께 던전을 공략하세요.</p><button id="go-start" class="primary big">시작</button></section>
