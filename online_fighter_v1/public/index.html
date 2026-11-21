@@ -1,444 +1,82 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#101827">
-  <title>ONLINE FIGHTER - 제너럴 K</title>
-  <style>
-    *{box-sizing:border-box}
-    body{margin:0;min-height:100vh;background:#101827;color:#edf2f7;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:24px}
-    main{width:min(100%,1000px)}
-    header{margin-bottom:18px}
-    h1{font-size:clamp(28px,5vw,42px);margin:0 0 8px}
-    p{color:#aab8ca;margin:0}
-    .toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 10px}
-    .grid-label{font-size:13px;color:#aab8ca}
-    .toggle{border:1px solid #64748b;border-radius:8px;background:#1e293b;color:#edf2f7;padding:9px 13px;font:inherit;font-size:14px;cursor:pointer}
-    .toggle[aria-pressed="true"]{background:#1d4ed8;border-color:#60a5fa}
-    .arena{position:relative;isolation:isolate;overflow:hidden;width:100%;aspect-ratio:16/9;min-height:260px;background:#0a111d;border:1px solid #334155;border-radius:14px;display:grid;place-items:center;text-align:center;padding:24px}
-    .arena:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(to right,rgba(148,163,184,.22) 1px,transparent 1px),linear-gradient(to bottom,rgba(148,163,184,.22) 1px,transparent 1px);background-size:40px 40px}
-    .arena.crosshair-on:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to right,transparent calc(50% - .5px),rgba(248,113,113,.9) calc(50% - .5px),rgba(248,113,113,.9) calc(50% + .5px),transparent calc(50% + .5px)),linear-gradient(to bottom,transparent calc(50% - .5px),rgba(248,113,113,.9) calc(50% - .5px),rgba(248,113,113,.9) calc(50% + .5px),transparent calc(50% + .5px))}
-    .arena strong{display:block;font-size:clamp(18px,3vw,26px);margin-bottom:8px}
-    .arena span{color:#8fa1b8}
-    .arena-content{position:relative;z-index:1;padding:10px 14px;border-radius:10px;background:rgba(10,17,29,.82)}
-    #battle-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0}
-    .arena.crosshair-on:after{z-index:2}
-    .hud{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:10px;color:#cbd5e1;font-size:14px}
-    .key{display:inline-block;min-width:25px;padding:2px 6px;margin:0 2px;border:1px solid #64748b;border-radius:5px;background:#1e293b;text-align:center;font-weight:700;color:#fff}
-    .attack-log{color:#93c5fd}
-    footer{margin-top:12px;color:#718198;font-size:13px}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>새 게임</title>
+<style>
+*{box-sizing:border-box}
+:root{color-scheme:dark}
+body{margin:0;min-height:100vh;background:#101827;color:#edf2f7;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:24px}
+main{width:min(100%,1000px)}
+header{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px}
+h1{font-size:clamp(28px,5vw,42px);margin:0}
+.status{display:flex;align-items:center;gap:9px;padding:8px 12px;border:1px solid #334155;border-radius:999px;background:#1e293b;font-size:14px;color:#cbd5e1}
+.dot{width:9px;height:9px;border-radius:50%;background:#f59e0b}
+.status[data-state="connected"] .dot{background:#34d399}
+.status[data-state="disconnected"] .dot{background:#f87171}
+.stage{min-height:420px;display:grid;place-items:center;border:1px solid #334155;border-radius:16px;background:#0b1220;position:relative;overflow:hidden}
+.stage:before{content:"";position:absolute;inset:0;background-image:linear-gradient(to right,rgba(148,163,184,.12) 1px,transparent 1px),linear-gradient(to bottom,rgba(148,163,184,.12) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+.message{position:relative;text-align:center;padding:24px}
+.message h2{font-size:clamp(22px,3vw,30px);margin:0 0 10px}
+.message p{margin:0;color:#94a3b8}
+footer{margin-top:14px;color:#64748b;font-size:13px;text-align:right}
+@media(max-width:600px){body{padding:14px}.stage{min-height:300px}}
+</style>
 </head>
 <body>
-  <main>
-    <header>
-      <h1>ONLINE FIGHTER</h1>
-      <p>제너럴 K 훈련장</p>
-    </header>
-    <div class="toolbar">
-      <span class="grid-label">격자 간격: 1칸 = 1m</span>
-      <button id="crosshair-toggle" class="toggle" type="button" aria-pressed="true">십자선 표시: ON</button>
-    </div>
-    <section class="arena crosshair-on" aria-label="제너럴 K 훈련장">
-      <canvas id="battle-canvas" aria-label="더미 캐릭터 게임 화면"></canvas>
-    </section>
-    <div class="hud">
-      <span>캐릭터: <strong>제너럴 K</strong> · 좌표: <strong id="position-readout">x: 0, y: -4</strong></span>
-      <span class="attack-log" id="action-readout">대기 중</span>
-    </div>
-    <div class="hud"><span>상대 체력: <strong id="enemy-hp">1000 / 1000</strong></span><span>내 공격력은 사거리 안에서 적중합니다</span></div>
-    <div class="hud">
-      <span>이동 <span class="key">A</span><span class="key">D</span> · 점프 <span class="key">W</span></span>
-      <span>잽 <span class="key">G</span> · 훅 <span class="key">H</span> · 어퍼컷 <span class="key">J</span></span>
-    </div>
-    <footer>프로젝트 기반 버전 0.1.0</footer>
-  </main>
-  <script>
-    // 더미 캐릭터 기본 조작
-    const canvas = document.querySelector('#battle-canvas');
-    const ctx = canvas.getContext('2d');
-    // 제너럴 K 전용 128×128 논리 픽셀 캔버스. 256px 원화 좌표를 절반으로 줄여 2배 확대한다.
-    const characterPixelCanvas = document.createElement('canvas');
-    characterPixelCanvas.width = 128;
-    characterPixelCanvas.height = 128;
-    const characterPixelCtx = characterPixelCanvas.getContext('2d');
-    const positionReadout = document.querySelector('#position-readout');
-    const actionReadout = document.querySelector('#action-readout');
-    const enemyHpReadout = document.querySelector('#enemy-hp');
-    const enemy = { x: 3.2, hp: 1000, maxHp: 1000, hitUntil: 0, hitFlash: 0 };
-    const attackCooldowns = { g: 0, h: 0, j: 0 };
-    // Character + VFX atlas (checkerboard matte is removed at load time).
-    const dummySprite = new Image();
-    const spriteLocalUrl = '/%ED%94%BD%EC%85%80%20%EC%95%84%ED%8A%B8%20%EB%8B%8C%EC%9E%90%20%EC%BA%90%EB%A6%AD%ED%84%B0%C2%B7%EB%B8%94%EB%A3%A8%20VFX%20%EC%8A%A4%ED%94%84%EB%9D%BC%EC%9D%B4%ED%8A%B8%20%EC%8B%9C%ED%8A%B8.png';
-    let spriteLoadFailed = false;
-    let spriteReady = false;
-    const atlasCanvas = document.createElement('canvas');
-    const atlasCtx = atlasCanvas.getContext('2d', { willReadFrequently: true });
-    dummySprite.onload = () => {
-      atlasCanvas.width = dummySprite.naturalWidth;
-      atlasCanvas.height = dummySprite.naturalHeight;
-      atlasCtx.drawImage(dummySprite, 0, 0);
-      const pixels = atlasCtx.getImageData(0, 0, atlasCanvas.width, atlasCanvas.height);
-      const d = pixels.data;
-      for (let i = 0; i < d.length; i += 4) {
-        const hi = Math.max(d[i], d[i+1], d[i+2]);
-        const lo = Math.min(d[i], d[i+1], d[i+2]);
-        const lightness = (d[i] + d[i+1] + d[i+2]) / 3;
-        // The source sheet uses a light gray checkerboard instead of transparency.
-        if (lightness > 165 && hi - lo < 34) d[i+3] = 0;
-      }
-      atlasCtx.putImageData(pixels, 0, 0);
-      spriteReady = true;
-    };
-    dummySprite.onerror = () => { spriteLoadFailed = true; };
-    dummySprite.src = spriteLocalUrl;
-
-    // 프레임마다 폭·높이·간격이 다르므로 균등 간격으로 자르지 않고
-    // 원본 이미지에서 확인한 각 캐릭터의 실제 경계 상자를 사용한다.
-    const characterFrames = {
-      idle: { drawH: 156, frames: [[121,37,55,65],[196,25,67,77],[280,24,65,78],[365,23,65,79],[446,23,67,79],[532,23,75,79],[628,22,76,80],[724,22,79,80],[820,22,76,80],[913,22,75,80]] },
-      walk: { drawH: 156, frames: [[115,111,61,68],[197,112,66,67],[280,115,71,63],[368,114,69,65],[452,114,72,65],[542,117,74,62],[634,117,77,61],[722,117,84,62],[825,114,74,65],[918,111,91,68],[1015,111,89,68],[1115,112,75,67],[1215,112,88,66],[1315,117,95,62],[1428,117,95,62]] },
-      jab: { drawH: 156, frames: [[110,189,62,65],[197,189,65,65],[282,190,68,64],[376,189,93,65],[491,190,71,64],[586,190,69,64],[681,191,74,63],[779,191,80,63]] },
-      hook: { drawH: 156, frames: [[92,265,86,71],[194,265,71,71],[285,265,89,71],[390,265,90,71],[496,265,92,71],[602,265,102,70],[720,265,107,70],[838,265,98,70]] },
-      upper: { drawH: 156, frames: [[107,349,75,68],[205,349,74,68],[307,349,72,68],[410,348,79,69],[519,347,67,70],[613,348,80,69],[726,347,81,71],[843,342,74,75]] },
-      dash: { drawH: 112, frames: [[103,428,74,53],[197,429,71,52],[294,432,80,49],[416,432,97,48],[554,432,96,49],[692,433,99,48],[841,426,104,55],[1000,426,107,55]] },
-      hit: { drawH: 104, frames: [[114,489,62,52],[203,489,63,52],[301,491,71,50],[415,493,72,48],[535,513,80,28],[646,512,95,29],[783,520,103,21],[916,513,73,28],[1010,490,67,51],[1098,495,71,46]] },
-      victory: { drawH: 156, frames: [[115,551,63,55],[216,555,64,51],[325,559,62,47],[444,561,60,45],[554,569,76,37],[667,555,65,51]] }
-    };
-    const attackVfx = {
-      jab: { x: 12, y: 910, w: 195, h: 88 },
-      hook: { x: 326, y: 750, w: 176, h: 150 },
-      upper: { x: 330, y: 752, w: 90, h: 150 }
-    };
-    const attackSpecs = { g: { name: '잽', damage: 80, range: 1.45, cooldown: 420 }, h: { name: '훅', damage: 130, range: 1.9, cooldown: 720 }, j: { name: '어퍼컷', damage: 200, range: 1.65, cooldown: 1050 } };
-    const dummy = { name: '제너럴 K', x: 0, y: -4, speed: 4, facing: { x: 0, y: 0 } };
-    let jumpHeight = 0;
-    let jumpVelocity = 0;
-    const jumpPower = 620;
-    const gravity = 1700;
-    const pressedKeys = new Set();
-    let activeAttack = null;
-    let attackUntil = 0;
-    let lastFrame = 0;
-
-    function resizeBattleCanvas() {
-      const rect = canvas.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = Math.max(1, Math.round(rect.width * dpr));
-      canvas.height = Math.max(1, Math.round(rect.height * dpr));
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    window.addEventListener('resize', resizeBattleCanvas);
-    resizeBattleCanvas();
-
-    function triggerDummyAttack(type) {
-      const now = performance.now();
-      const spec = attackSpecs[type];
-      if (now < attackCooldowns[type]) {
-        actionReadout.textContent = spec.name + ' 재사용 대기 중';
-        return;
-      }
-      activeAttack = spec.name;
-      attackUntil = now + 260;
-      attackCooldowns[type] = now + spec.cooldown;
-      const distance = Math.abs(enemy.x - dummy.x);
-      const facingEnemy = Math.sign(enemy.x - dummy.x) === (dummy.facing.x || 1);
-      if (enemy.hp > 0 && distance <= spec.range && facingEnemy) {
-        enemy.hp = Math.max(0, enemy.hp - spec.damage);
-        enemy.hitUntil = now + 180;
-        enemy.x += (dummy.facing.x || 1) * 0.18;
-        actionReadout.textContent = spec.name + ' 적중! -' + spec.damage;
-      } else {
-        actionReadout.textContent = spec.name + ' 빗나감';
-      }
-      enemyHpReadout.textContent = enemy.hp + ' / ' + enemy.maxHp;
-    }
-
-    window.addEventListener('keydown', event => {
-      const key = event.key.toLowerCase();
-      if (['w','a','s','d','g','h','j'].includes(key)) event.preventDefault();
-      if (['a','d'].includes(key)) pressedKeys.add(key);
-      if (key === 'w' && !event.repeat && jumpHeight <= 0) jumpVelocity = jumpPower;
-      if (!event.repeat && ['g','h','j'].includes(key)) triggerDummyAttack(key);
+<main>
+<header>
+<h1>새 게임</h1>
+<div id="online-status" class="status" data-state="connecting" role="status" aria-live="polite"><span class="dot"></span><span id="online-label">온라인 서버 연결 중</span></div>
+</header>
+<section class="stage" aria-label="새 게임 제작 공간">
+<div class="message">
+<h2>새 게임 제작 공간</h2>
+<p>기존 게임 요소가 초기화되었습니다.</p>
+</div>
+</section>
+<footer>온라인 연결 기능 유지</footer>
+</main>
+<script>
+(() => {
+  const status = document.querySelector('#online-status');
+  const label = document.querySelector('#online-label');
+  let socket;
+  let retryTimer;
+  let stopped = false;
+  function setStatus(state, text) {
+    status.dataset.state = state;
+    label.textContent = text;
+  }
+  function connect() {
+    if (stopped) return;
+    const scheme = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    socket = new WebSocket(scheme + '//' + location.host);
+    socket.addEventListener('open', () => setStatus('connected', '온라인 서버 연결됨'));
+    socket.addEventListener('message', event => {
+      try {
+        const message = JSON.parse(event.data);
+        if (message.type === 'connected') setStatus('connected', '온라인 서버 연결됨');
+      } catch (_) {}
     });
-    window.addEventListener('keyup', event => pressedKeys.delete(event.key.toLowerCase()));
-    window.addEventListener('blur', () => pressedKeys.clear());
-
-    function drawBattle(now) {
-      const rect = canvas.getBoundingClientRect();
-      const width = rect.width, height = rect.height;
-      const dt = lastFrame ? Math.min((now - lastFrame) / 1000, 0.05) : 0;
-      lastFrame = now;
-      const dx = (pressedKeys.has('d') ? 1 : 0) - (pressedKeys.has('a') ? 1 : 0);
-      const dy = 0;
-      if (dx) {
-        dummy.x = Math.max(-7.2, Math.min(7.2, dummy.x + dx * dummy.speed * dt));
-        dummy.facing = { x: dx, y: 0 };
-      }
-      if (jumpHeight > 0 || jumpVelocity > 0) {
-        jumpVelocity -= gravity * dt;
-        jumpHeight += jumpVelocity * dt;
-        if (jumpHeight <= 0) { jumpHeight = 0; jumpVelocity = 0; }
-      }
-      const unit = 40;
-      const groundScreenY = height * 0.78;
-      const screenX = width / 2 + dummy.x * unit;
-      const screenY = groundScreenY - jumpHeight;
-      ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = '#0a111d';
-      ctx.fillRect(0, 0, width, height);
-      ctx.strokeStyle = 'rgba(148,163,184,.22)';
-      ctx.lineWidth = 1;
-      for (let x = ((width / 2) % unit); x < width; x += unit) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
-      }
-      for (let y = ((height / 2) % unit); y < height; y += unit) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
-      }
-      // y = -4 바닥선: 캐릭터 발이 이 선 위에 놓입니다.
-      ctx.strokeStyle = 'rgba(226,232,240,.65)';
-      ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(0, groundScreenY + 1); ctx.lineTo(width, groundScreenY + 1); ctx.stroke();
-      ctx.fillStyle = 'rgba(148,163,184,.75)';
-      ctx.font = '11px system-ui';
-      ctx.textAlign = 'left';
-      ctx.fillText('GROUND  y = -4', 10, groundScreenY + 18);
-
-      // 훈련 상대: 체력과 피격 반응이 있는 적 캐릭터
-      const enemyScreenX = width / 2 + enemy.x * unit;
-      const enemyHit = now < enemy.hitUntil;
-      if (enemy.hp > 0) {
-        ctx.save();
-        ctx.fillStyle = 'rgba(0,0,0,.35)';
-        ctx.beginPath(); ctx.ellipse(enemyScreenX, groundScreenY + 3, 20, 6, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = enemyHit ? '#fca5a5' : '#7f1d1d';
-        ctx.strokeStyle = enemyHit ? '#fff' : '#f87171';
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.roundRect(enemyScreenX - 12, groundScreenY - 58, 24, 38, 7); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = '#450a0a'; ctx.fillRect(enemyScreenX - 9, groundScreenY - 53, 18, 22);
-        ctx.fillStyle = '#fecaca';
-        ctx.beginPath(); ctx.arc(enemyScreenX, groundScreenY - 73, 13, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#450a0a'; ctx.beginPath(); ctx.arc(enemyScreenX, groundScreenY - 76, 14, Math.PI, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#fca5a5'; ctx.fillRect(enemyScreenX - 9, groundScreenY - 75, 18, 4);
-        ctx.strokeStyle = '#fecaca'; ctx.lineWidth = 7;
-        ctx.beginPath(); ctx.moveTo(enemyScreenX - 10, groundScreenY - 51); ctx.lineTo(enemyScreenX - 17, groundScreenY - 29); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(enemyScreenX + 10, groundScreenY - 51); ctx.lineTo(enemyScreenX + 17, groundScreenY - 29); ctx.stroke();
-        ctx.strokeStyle = '#991b1b'; ctx.lineWidth = 9;
-        ctx.beginPath(); ctx.moveTo(enemyScreenX - 5, groundScreenY - 22); ctx.lineTo(enemyScreenX - 9, groundScreenY - 3); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(enemyScreenX + 5, groundScreenY - 22); ctx.lineTo(enemyScreenX + 9, groundScreenY - 3); ctx.stroke();
-        ctx.fillStyle = '#fee2e2'; ctx.font = '12px system-ui'; ctx.textAlign = 'center';
-        ctx.fillText('훈련 상대', enemyScreenX, groundScreenY - 94);
-        ctx.fillStyle = '#334155'; ctx.fillRect(enemyScreenX - 22, groundScreenY - 108, 44, 5);
-        ctx.fillStyle = '#ef4444'; ctx.fillRect(enemyScreenX - 22, groundScreenY - 108, 44 * enemy.hp / enemy.maxHp, 5);
-        ctx.restore();
-      } else {
-        ctx.fillStyle = '#86efac'; ctx.font = 'bold 18px system-ui'; ctx.textAlign = 'center';
-        ctx.fillText('훈련 완료!', enemyScreenX, groundScreenY - 24);
-      }
-
-      // 제너럴 K 전면 재설계: 전술 중장갑과 청록 바이저, 등 뒤의 쌍검
-      const attackActive=!!activeAttack&&now<attackUntil;
-      const attackProgress=attackActive?1-(attackUntil-now)/260:0;
-      const motion=attackActive?(activeAttack==='잽'?'jab':activeAttack==='훅'?'hook':'upper'):jumpHeight>0?'jump':dx?'walk':'idle';
-      const stride=motion==='walk'?Math.sin(now/110)*3:0;
-      const punch=attackActive?Math.sin(Math.min(1,attackProgress)*Math.PI):0;
-      const pc=characterPixelCtx;pc.clearRect(0,0,128,128);pc.save();pc.imageSmoothingEnabled=false;pc.scale(.5,.5);
-      const snap=v=>Math.round(v/2)*2;
-      const poly=(p,col)=>{pc.fillStyle=col;pc.beginPath();pc.moveTo(snap(p[0][0]),snap(p[0][1]));for(let i=1;i<p.length;i++)pc.lineTo(snap(p[i][0]),snap(p[i][1]));pc.closePath();pc.fill();};
-      const line=(p,col,w)=>{pc.strokeStyle=col;pc.lineWidth=w;pc.lineCap='square';pc.lineJoin='miter';pc.beginPath();pc.moveTo(snap(p[0][0]),snap(p[0][1]));for(let i=1;i<p.length;i++)pc.lineTo(snap(p[i][0]),snap(p[i][1]));pc.stroke();};
-      const C={e:'#070b12',b:'#111a27',d:'#1d2a3b',a:'#30445a',m:'#506981',l:'#8197aa',h:'#c0ccd5',cloth:'#171a2a',cloth2:'#34334a',cyan:'#38e6df',cyan2:'#c4fffb',gold:'#a98550'};
-      // 망토와 등 뒤 쌍검
-      poly([[118,58],[103,53],[89,63],[79,88],[75,122],[67,157],[55,194],[43,239],[57,230],[77,199],[93,166],[108,128],[124,91]],C.e);
-      poly([[114,64],[103,60],[93,70],[85,94],[82,124],[74,160],[58,216],[73,197],[90,163],[105,128],[120,91]],C.cloth);
-      poly([[99,79],[91,111],[94,140],[82,179],[70,204],[91,178],[107,139],[116,99]],C.cloth2);
-      line([[84,117],[78,157],[64,196]],'#77748a',3);
-      poly([[107,72],[73,19],[80,14],[118,68]],C.e);poly([[111,67],[80,20],[84,19],[121,65]],C.l);
-      poly([[127,68],[146,13],[154,16],[137,76]],C.e);poly([[131,66],[149,20],[151,21],[139,72]],C.l);
-      line([[68,29],[93,66]],C.gold,5);line([[137,29],[158,34]],C.gold,5);
-      // 뒤쪽 다리
-      pc.save();pc.translate(-stride,0);
-      poly([[103,137],[128,137],[132,156],[128,179],[124,201],[121,224],[122,240],[132,247],[128,252],[77,252],[73,247],[89,239],[92,220],[94,198],[96,176]],C.e);
-      poly([[108,143],[124,143],[127,159],[123,180],[120,202],[117,224],[118,240],[125,246],[84,246],[97,237],[99,219],[101,198],[102,177]],C.a);
-      poly([[111,151],[123,155],[119,179],[114,202],[110,235],[102,222],[106,198],[107,176]],C.m);
-      poly([[92,218],[120,220],[118,239],[129,247],[81,247],[91,237]],C.b);
-      poly([[84,243],[125,243],[134,250],[129,253],[74,253],[72,248]],C.e);
-      poly([[91,246],[122,246],[128,250],[82,250]],C.l);
-      pc.restore();
-      // 앞쪽 다리와 무릎 보호대
-      pc.save();pc.translate(-10+stride,0);
-      poly([[121,136],[146,136],[151,155],[151,178],[154,200],[159,222],[164,239],[175,247],[171,253],[116,253],[112,247],[128,238],[130,220],[129,198],[126,176]],C.e);
-      poly([[127,143],[141,143],[146,159],[146,179],[149,201],[154,223],[161,240],[167,247],[121,247],[134,237],[135,219],[134,198],[131,177]],C.a);
-      poly([[132,151],[143,155],[142,179],[145,202],[152,225],[157,239],[147,231],[138,207],[135,183]],C.m);
-      poly([[132,184],[155,184],[160,199],[155,212],[135,210],[128,198]],C.b);
-      poly([[137,188],[152,188],[155,199],[148,206],[135,202]],C.l);
-      poly([[119,244],[167,244],[178,250],[173,253],[114,253],[111,248]],C.e);
-      poly([[128,247],[163,247],[169,250],[121,250]],C.l);
-      pc.restore();
-      // 골반과 벨트
-      poly([[108,119],[139,119],[148,133],[143,152],[134,165],[112,165],[103,152],[101,133]],C.e);
-      poly([[113,125],[136,125],[141,136],[137,152],[131,159],[116,159],[109,149],[107,136]],C.a);
-      poly([[105,147],[142,147],[145,155],[136,162],[111,162],[102,155]],C.b);
-      poly([[115,149],[137,149],[139,156],[132,159],[116,159],[110,154]],C.gold);
-      // 먼 쪽 팔: 몸통 뒤에 먼저 그린다
-      poly([[104,65],[119,60],[132,69],[132,83],[121,95],[108,88],[99,76]],C.e);
-      poly([[109,69],[119,65],[127,73],[127,82],[119,89],[109,82]],C.m);
-      poly([[103,83],[117,86],[123,100],[119,116],[110,131],[97,130],[91,119],[94,102]],C.e);
-      poly([[107,89],[116,93],[118,103],[114,116],[106,125],[99,122],[98,112],[100,100]],C.a);
-      poly([[93,117],[106,115],[115,125],[115,140],[109,154],[98,162],[87,156],[83,143],[85,130]],C.e);
-      poly([[97,123],[105,122],[111,131],[110,142],[104,154],[96,156],[90,148],[90,136]],C.m);
-      poly([[85,151],[98,149],[107,158],[107,170],[100,180],[88,179],[80,170],[79,160]],C.e);
-      poly([[89,156],[98,155],[103,162],[102,170],[96,175],[87,170],[84,163]],C.a);
-      // 몸통: 어깨는 넓게, 허리는 좁게, 사각 판금으로 구성
-      poly([[108,57],[120,50],[140,51],[154,59],[164,74],[166,92],[158,107],[146,120],[139,132],[116,132],[108,119],[99,105],[96,88],[99,71]],C.e);
-      poly([[113,62],[122,56],[139,57],[151,64],[159,78],[160,91],[153,104],[143,117],[135,126],[120,126],[112,115],[105,102],[102,87],[105,73]],C.a);
-      poly([[111,69],[122,62],[130,64],[128,89],[123,108],[116,118],[108,104],[105,89],[106,77]],C.m);
-      poly([[137,63],[149,68],[157,80],[157,92],[149,104],[140,115],[132,121],[130,105],[133,87]],C.l);
-      poly([[119,64],[140,63],[151,71],[158,85],[154,97],[143,108],[132,115],[119,109],[110,97],[107,82]],'#34495e');
-      poly([[122,69],[139,68],[148,76],[153,86],[149,95],[140,104],[131,109],[121,102],[114,92],[112,81]],'#647d91');
-      poly([[124,72],[139,71],[147,79],[150,87],[140,91],[128,87],[118,79]],'#aab9c5');
-      poly([[118,92],[130,98],[145,92],[151,97],[140,108],[127,113],[116,105]],C.b);
-      line([[116,93],[130,100],[146,94]],C.l,3);
-      // 오른팔: 원래 전경 레이어로 복귀
-      pc.save();pc.translate(-16,0);
-
-      poly([[142,78],[156,77],[166,87],[170,100],[164,112],[152,118],[141,109],[137,95]],C.e);
-      poly([[146,83],[156,82],[163,91],[164,100],[157,109],[149,109],[143,100],[142,91]],C.m);
-      poly([[150,105],[164,104],[172,114],[174,129],[168,142],[157,146],[148,137],[146,122]],C.e);
-      poly([[154,111],[163,111],[168,119],[168,130],[163,139],[156,139],[151,130],[151,120]],C.a);
-      poly([[154,134],[167,132],[174,141],[175,154],[169,167],[158,169],[151,160],[150,148]],C.e);
-      poly([[158,140],[166,139],[170,147],[169,158],[163,164],[156,158],[155,149]],C.m);
-      line([[153,118],[164,122],[168,131]],C.l,3);
-      let armX=0,armY=0;
-      if(motion==='jab'){armX=Math.round(34*punch);armY=-Math.round(2*punch);}
-      if(motion==='hook'){armX=Math.round(17*punch);armY=-Math.round(14*punch);}
-      if(motion==='upper'){armX=Math.round(5*punch);armY=-Math.round(26*punch);}
-      if(motion==='jump')armY=-6;
-      poly([[156+armX,158+armY],[167+armX,155+armY],[178+armX,161+armY],[181+armX,172+armY],[175+armX,183+armY],[164+armX,186+armY],[155+armX,177+armY],[152+armX,166+armY]],C.e);
-      poly([[160+armX,162+armY],[168+armX,160+armY],[175+armX,167+armY],[175+armX,174+armY],[169+armX,180+armY],[162+armX,176+armY],[157+armX,169+armY]],C.a);
-      line([[161+armX,165+armY],[171+armX,169+armY]],C.l,3);
-      // 손등 판금
-      poly([[164+armX,177+armY],[174+armX,175+armY],[181+armX,181+armY],[179+armX,189+armY],[170+armX,192+armY],[161+armX,186+armY]],C.e);
-      poly([[167+armX,180+armY],[174+armX,179+armY],[177+armX,184+armY],[171+armX,188+armY],[165+armX,185+armY]],C.m);
-      pc.restore();
-      // 가까운 쪽 어깨 보호대
-      poly([[137,58],[151,54],[164,63],[171,77],[166,90],[153,95],[142,86],[135,72]],C.e);
-      poly([[142,62],[152,60],[162,68],[166,78],[161,86],[151,88],[143,80],[139,70]],C.m);
-      poly([[147,64],[157,65],[163,73],[158,79],[149,76]],C.l);
-      // 복부 분할 장갑
-      poly([[117,104],[132,109],[130,129],[120,133],[111,122],[108,112]],C.b);
-      poly([[134,109],[146,103],[142,122],[133,133],[126,128],[128,116]],C.d);
-      line([[115,112],[121,123],[119,130]],C.l,3);
-      // 목과 헬멧: 목을 짧게 연결하고 얼굴 전체를 오른쪽 측면으로 정렬
-      poly([[119,43],[143,41],[154,56],[149,70],[126,70],[114,56]],C.e);
-      poly([[124,47],[141,46],[148,57],[141,64],[127,63],[119,54]],C.a);
-      // 헬멧 돔과 턱 보호대
-      poly([[107,26],[114,15],[128,8],[145,9],[159,17],[166,29],[164,38],[174,43],[168,51],[158,58],[143,61],[126,56],[113,47],[104,36]],C.e);
-      poly([[112,26],[120,18],[131,13],[145,14],[155,21],[161,30],[159,37],[167,43],[160,49],[153,54],[142,56],[129,51],[118,43],[109,34]],C.a);
-      poly([[117,24],[127,17],[141,18],[153,25],[158,32],[145,31],[132,27],[114,34]],C.l);
-      poly([[109,30],[116,22],[126,18],[132,23],[120,34],[112,39]],C.m);
-      // 청록 바이저가 오른쪽으로 길게 뻗는 실루엣
-      poly([[121,33],[153,31],[173,39],[166,47],[157,49],[129,46],[118,40]],C.e);
-      poly([[127,35],[153,34],[166,40],[159,44],[132,43],[123,39]],C.cyan);
-      line([[130,36],[154,36],[163,40]],C.cyan2,3);
-      poly([[143,48],[161,46],[158,54],[145,58],[136,53]],C.b);
-      // 귀 옆 통신 장치
-      poly([[105,29],[115,27],[119,37],[114,47],[105,43],[101,35]],C.e);
-      poly([[107,32],[113,31],[115,38],[111,42],[106,39]],C.l);
-      poly([[102,45],[115,44],[117,51],[108,55],[100,51]],C.b);
-      // 어깨, 팔꿈치, 무릎의 판금 경계와 흉갑 문장
-      line([[144,69],[158,75],[165,86]],C.h,3);line([[154,105],[166,111],[171,123]],C.l,3);
-      line([[96,151],[92,167],[99,178]],C.l,3);
-      poly([[119,79],[126,82],[130,78],[134,82],[142,79],[137,87],[132,90],[130,97],[127,90],[122,87]],C.gold);
-      poly([[127,83],[130,85],[133,83],[132,91],[130,94],[128,90]],'#e0c18a');
-      // 부츠와 판금 하이라이트
-      poly([[84,224],[99,222],[105,229],[99,235],[82,235]],C.m);
-      poly([[140,223],[157,226],[162,236],[151,234]],C.m);
-      line([[88,245],[120,245]],C.l,3);line([[126,247],[162,247]],C.l,3);
-      pc.restore();ctx.save();ctx.imageSmoothingEnabled=false;
-      const spriteTop=groundScreenY-jumpHeight-256;
-      ctx.drawImage(characterPixelCanvas,Math.round(screenX-128),Math.round(spriteTop),256,256);
-      ctx.restore();
-      // purely visual blue attack trail; hitbox and damage remain unchanged
-      if(attackActive){ctx.save();ctx.globalAlpha=.8*Math.sin(Math.min(1,attackProgress)*Math.PI);ctx.translate(screenX+42,groundScreenY-jumpHeight-60);ctx.strokeStyle='#55caff';ctx.shadowColor='#168bff';ctx.shadowBlur=10;ctx.lineWidth=3;ctx.lineCap='round';ctx.beginPath();if(motion==='jab'){ctx.moveTo(-4,0);ctx.quadraticCurveTo(20,-10,43,-2);}else if(motion==='hook'){ctx.arc(0,0,25,-1.15,.6);}else{ctx.moveTo(-4,13);ctx.quadraticCurveTo(22,-9,19,-34);}ctx.stroke();ctx.restore();}
-      ctx.fillStyle = '#bfdbfe';
-      ctx.font = '12px system-ui';
-      ctx.textAlign = 'center';
-      ctx.fillText('제너럴 K', screenX, groundScreenY - 270 - jumpHeight);
-      if (!attackActive && activeAttack) {
-        activeAttack = null;
-        actionReadout.textContent = '대기 중';
-      }
-      ctx.restore();
-      positionReadout.textContent = 'x: ' + dummy.x.toFixed(1) + ', y: ' + dummy.y.toFixed(1);
-      requestAnimationFrame(drawBattle);
-    }
-    requestAnimationFrame(drawBattle);
-
-    // 월드 좌표 규칙: y = -4가 캐릭터가 서는 바닥 높이입니다.
-    const FightWorld = Object.freeze({
-      groundY: -4,
-      characterStandingY: -4,
-      gridUnit: 1
+    socket.addEventListener('close', () => {
+      setStatus('disconnected', '서버 연결 끊김 · 재연결 중');
+      if (!stopped) retryTimer = setTimeout(connect, 1800);
     });
-    window.FightWorld = FightWorld;
-
-    // 십자선 표시 설정
-    const arena = document.querySelector('.arena');
-    const crosshairToggle = document.querySelector('#crosshair-toggle');
-    crosshairToggle.addEventListener('click', () => {
-      const enabled = crosshairToggle.getAttribute('aria-pressed') !== 'true';
-      crosshairToggle.setAttribute('aria-pressed', String(enabled));
-      crosshairToggle.textContent = '십자선 표시: ' + (enabled ? 'ON' : 'OFF');
-      arena.classList.toggle('crosshair-on', enabled);
+    socket.addEventListener('error', () => {
+      setStatus('disconnected', '온라인 연결 오류');
+      try { socket.close(); } catch (_) {}
     });
-
-    // 기본 전투 규칙: 모든 시간 단위는 밀리초(ms)입니다.
-    const FightRules = Object.freeze({
-      stun: Object.freeze({
-        weak: Object.freeze({ duration: 100, blocksInput: true, blocksAttack: false }),
-        strong: Object.freeze({ duration: 300, blocksInput: true, blocksAttack: true })
-      })
-    });
-
-    function createCombatState() {
-      return { inputLockedUntil: 0, attackLockedUntil: 0, stunType: null };
-    }
-
-    function applyStun(state, type, now = performance.now()) {
-      const rule = FightRules.stun[type];
-      if (!state || !rule) throw new Error('올바르지 않은 기절 상태입니다.');
-      if (rule.blocksInput) state.inputLockedUntil = Math.max(state.inputLockedUntil || 0, now + rule.duration);
-      if (rule.blocksAttack) state.attackLockedUntil = Math.max(state.attackLockedUntil || 0, now + rule.duration);
-      state.stunType = type;
-      return rule.duration;
-    }
-
-    function canReceiveKeyInput(state, now = performance.now()) {
-      return !state || now >= (state.inputLockedUntil || 0);
-    }
-
-    function canStartAttack(state, now = performance.now()) {
-      return !state || now >= (state.attackLockedUntil || 0);
-    }
-
-    function getActiveStun(state, now = performance.now()) {
-      if (!state) return null;
-      if (now < (state.attackLockedUntil || 0)) return 'strong';
-      if (now < (state.inputLockedUntil || 0)) return 'weak';
-      state.stunType = null;
-      return null;
-    }
-
-    // 이후 이동·공격 입력 시스템은 반드시 위 판정 함수를 거치도록 연결합니다.
-    window.FightRules = Object.freeze({
-      stun: FightRules.stun,
-      createCombatState,
-      applyStun,
-      canReceiveKeyInput,
-      canStartAttack,
-      getActiveStun
-    });
-  </script>
+  }
+  window.addEventListener('beforeunload', () => {
+    stopped = true;
+    clearTimeout(retryTimer);
+    if (socket) socket.close();
+  });
+  connect();
+})();
+</script>
 </body>
 </html>
