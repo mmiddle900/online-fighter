@@ -41,6 +41,36 @@
  .gamecontrols{flex:0 0 76px;max-height:none}
  #shop{max-height:none;overflow:visible}
 }
+
+/* Stable mobile landscape: fit controls in viewport; scroll overflow inside game */
+@media(orientation:landscape) and (max-width:900px){
+ html,body{width:100%;height:100%;min-height:0;max-height:100%;overflow:hidden!important;touch-action:pan-y}
+ .wrap{width:100%;height:100dvh;min-height:0;max-height:100dvh;overflow:hidden;padding:3px 5px calc(3px + env(safe-area-inset-bottom));display:flex;flex-direction:column}
+ #game{height:100%;max-height:100%;min-height:0;flex:1 1 0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;touch-action:pan-y;display:flex;flex-direction:column;gap:3px}
+ #game .hud{flex:0 0 19px;height:19px;min-height:19px;margin:0;gap:3px;overflow:hidden}
+ #game .hud .pill{font-size:9px;padding:2px 4px}
+ #game .bar{width:clamp(25px,6vw,48px);height:3px}
+ .canvasbox{width:100%;height:38dvh;min-height:115px;max-height:38dvh;flex:0 0 38dvh;overflow:hidden;touch-action:pan-y}
+ #world{width:100%;height:100%;max-width:100%;max-height:100%;touch-action:pan-y}
+ .gamecontrols{flex:0 0 66px;height:66px;min-height:66px;max-height:66px;grid-template-columns:64px minmax(0,1fr);gap:4px;margin:0}
+ .stick{width:58px;height:58px}
+ .knob{width:28px;height:28px;left:calc(50% - 14px);top:calc(50% - 14px)}
+ .actionbuttons{grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}
+ .actionbuttons button{min-height:0;height:100%;font-size:clamp(9px,1.6vw,12px);padding:2px 0}
+ #attack{font-size:clamp(9px,1.7vw,12px)}
+ #game>.row:last-child{flex:0 0 25px;height:25px;min-height:25px;margin:0!important}
+ #exit-game{height:25px;min-height:25px;padding:2px 8px;font-size:10px}
+ #shop{flex:0 0 auto;max-height:none;overflow:visible;padding:6px;margin:0!important}
+ #shop h2{font-size:13px;margin:0}
+ #shop .sub{font-size:10px;margin:2px 0}
+ #shop button{min-height:28px;padding:3px;font-size:10px}
+}
+@media(orientation:landscape) and (max-width:560px){
+ .canvasbox{height:34dvh;max-height:34dvh;flex-basis:34dvh;min-height:100px}
+ .gamecontrols{flex-basis:60px;height:60px;min-height:60px;max-height:60px;grid-template-columns:58px minmax(0,1fr)}
+ .stick{width:54px;height:54px}
+ #game .hud{flex-basis:18px;height:18px;min-height:18px}
+}
 </style></head><body><div id="rotate-notice" class="rotate-notice" aria-live="polite"><div class="rotate-card"><div class="rotate-icon">📱↻</div><h2>가로 모드로 플레이</h2><p>휴대폰을 가로로 돌려주세요.<br>게임은 가로 화면에서만 표시됩니다.</p></div></div><div class="wrap">
 <header class="top"><h1>⚔ 김진수의 던전</h1><div class="pill" id="connection">서버 연결 중...</div></header>
 <section id="home" class="panel stack"><h2>던전 로그라이크</h2><p class="sub">혼자 탐험하거나 최대 6명이 함께 던전을 공략하세요.</p><button id="go-start" class="primary big">시작</button></section>
