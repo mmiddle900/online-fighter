@@ -72,23 +72,22 @@
  #game{flex:1 1 auto!important;height:100%;min-height:0;overflow:hidden;gap:3px}
  #game .hud{flex:0 0 22px;min-height:22px;gap:3px}
  #game .hud .pill{font-size:10px;padding:3px 5px}
- .canvasbox{flex:1 1 auto!important;min-height:90px;height:auto;max-height:44dvh}
+ .canvasbox{flex:1 1 auto!important;min-height:80px;height:auto;max-height:43dvh}
  #world{height:100%!important;width:100%;object-fit:contain}
- .gamecontrols{flex:0 0 clamp(76px,22dvh,106px)!important;min-height:0!important;margin:0;grid-template-columns:minmax(88px,18%) minmax(0,1fr);gap:5px}
+ .gamecontrols{flex:0 0 clamp(72px,20dvh,96px)!important;min-height:0!important;margin:0;grid-template-columns:78px minmax(0,1fr);gap:5px}
  .mobilepad{height:100%;min-height:0}
- .stick{width:min(18vw,92px);height:min(18vw,92px);min-width:72px;min-height:72px}
- .knob{width:36px;height:36px;left:calc(50% - 18px);top:calc(50% - 18px)}
- .actionbuttons{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:1fr;gap:4px}
- .actionbuttons button{min-height:0;height:100%;padding:3px 2px;font-size:clamp(10px,1.8vw,13px);line-height:1.05}
- #attack{grid-column:auto;grid-row:auto;font-size:clamp(11px,2vw,14px)}
+ .stick{width:72px;height:72px;min-width:72px;min-height:72px}
+ .knob{width:34px;height:34px;left:calc(50% - 17px);top:calc(50% - 17px)}
+ .actionbuttons{grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;gap:4px}
+ .actionbuttons button{min-height:0;height:100%;padding:2px 2px;font-size:clamp(10px,1.8vw,13px);line-height:1.05}
+ #attack{grid-column:1;grid-row:1/-1;font-size:clamp(11px,2vw,14px)}
  #dodge-button{font-size:clamp(10px,1.8vw,13px)}
  #exit-game{display:none}
  #shop{max-height:calc(100dvh - 35px);overflow-y:auto}
 }
 @media(orientation:landscape) and (max-width:560px){
- .gamecontrols{grid-template-columns:82px minmax(0,1fr)!important;flex-basis:clamp(74px,21dvh,94px)!important}
- .stick{width:72px;height:72px;min-width:72px;min-height:72px}
- .actionbuttons{grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:1fr!important}
+ .gamecontrols{grid-template-columns:74px minmax(0,1fr)!important;flex-basis:clamp(70px,19dvh,88px)!important}
+ .stick{width:68px;height:68px;min-width:68px;min-height:68px}
  .actionbuttons button{font-size:10px;padding:2px 1px}
 }
 </style></head><body><div id="rotate-notice" class="rotate-notice" aria-live="polite"><div class="rotate-card"><div class="rotate-icon">📱↻</div><h2>가로 모드로 플레이</h2><p>휴대폰을 가로로 돌려주세요.<br>게임은 가로 화면에서만 표시됩니다.</p></div></div><div class="wrap">
