@@ -1,45 +1,68 @@
 <!doctype html>
-<html lang="ko">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#101827">
-<title>온라인 PVP</title>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><meta name="theme-color" content="#111827"><title>김진수의 던전 로그라이크</title>
 <style>
-*{box-sizing:border-box}:root{color-scheme:dark}
-body{margin:0;min-height:100vh;background:#101827;color:#edf2f7;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:24px}
-main{width:min(100%,1000px)}header{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px}
-h1{font-size:clamp(28px,5vw,42px);margin:0}.status{display:flex;align-items:center;gap:9px;padding:8px 12px;border:1px solid #334155;border-radius:999px;background:#1e293b;font-size:14px;color:#cbd5e1}
-.dot{width:9px;height:9px;border-radius:50%;background:#f59e0b}.status[data-state="connected"] .dot{background:#34d399}.status[data-state="disconnected"] .dot{background:#f87171}
-.stage{min-height:420px;display:grid;place-items:center;border:1px solid #334155;border-radius:16px;background:#0b1220;position:relative;overflow:hidden}
-.stage:before{content:"";position:absolute;inset:0;background-image:linear-gradient(to right,rgba(148,163,184,.12) 1px,transparent 1px),linear-gradient(to bottom,rgba(148,163,184,.12) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
-.message{position:relative;text-align:center;padding:24px}.message h2{font-size:clamp(22px,3vw,30px);margin:0 0 10px}.message p{margin:0;color:#94a3b8}
-footer{margin-top:14px;color:#64748b;font-size:13px;text-align:right}@media(max-width:600px){body{padding:14px}.stage{min-height:300px}}
-</style>
-</head>
-<body>
-<main>
-<header><h1>온라인 PVP</h1><div id="online-status" class="status" data-state="connecting" role="status" aria-live="polite"><span class="dot"></span><span id="online-label">온라인 서버 연결 중</span></div></header>
-<section class="stage" aria-label="온라인 PVP 게임 공간"><div class="message"><h2>온라인 PVP 준비 중</h2><p>온라인 연결을 유지하고 있습니다. 전투 시스템을 이곳에 추가할 예정입니다.</p></div></section>
-<footer>실시간 온라인 서버 연결</footer>
-</main>
+*{box-sizing:border-box} :root{color-scheme:dark} body{margin:0;background:#0b1020;color:#f1f5f9;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}button,input{font:inherit}button{border:1px solid #475569;background:#263449;color:#f8fafc;border-radius:12px;padding:12px 16px;cursor:pointer;font-weight:700}button:disabled{opacity:.4;cursor:not-allowed}button.primary{background:#7c3aed;border-color:#8b5cf6}button.ready{background:#047857;border-color:#10b981}.hidden{display:none!important}.wrap{width:min(100%,1000px);margin:auto;padding:20px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}h1{margin:0;font-size:clamp(24px,4vw,36px)}.panel{background:#151e30;border:1px solid #2b3850;border-radius:18px;padding:20px}.sub{color:#94a3b8}.stack{display:grid;gap:14px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.modegrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.big{padding:24px;min-height:110px;font-size:20px}.slotgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.slot{background:#0e1626;border:1px solid #334155;border-radius:14px;padding:14px;text-align:center;min-height:100px}.slot .icon{font-size:30px}.slot .small{font-size:12px;color:#94a3b8}.code{font-size:28px;letter-spacing:5px;font-weight:800}.canvasbox{position:relative;background:#080d16;border:1px solid #334155;border-radius:16px;overflow:hidden}canvas{display:block;width:100%;height:min(68vh,620px);touch-action:none}.hud{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}.pill{background:#1e293b;border:1px solid #334155;border-radius:999px;padding:7px 12px;font-size:14px}.bar{height:9px;background:#334155;border-radius:99px;overflow:hidden;width:150px}.bar>i{display:block;height:100%;background:#ef4444;width:100%}.xpbar>i{background:#a78bfa}.gamecontrols{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-top:12px}.mobilepad{display:flex;align-items:center;gap:10px}.stick{width:116px;height:116px;border-radius:50%;background:#243249;border:1px solid #475569;position:relative;touch-action:none}.knob{width:44px;height:44px;border-radius:50%;background:#94a3b8;position:absolute;left:36px;top:36px}.actionbuttons{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.actionbuttons button{min-width:62px;min-height:58px}.log{font-size:13px;color:#cbd5e1;min-height:20px;margin-top:8px}@media(max-width:620px){.wrap{padding:12px}.panel{padding:14px}.modegrid{grid-template-columns:1fr}.slotgrid{gap:6px}.slot{padding:9px;min-height:90px}.gamecontrols{align-items:center}.actionbuttons{max-width:190px}.actionbuttons button{min-width:54px;padding:8px}.code{font-size:23px}}
+</style></head><body><div class="wrap">
+<header class="top"><h1>⚔ 김진수의 던전</h1><div class="pill" id="connection">서버 연결 중...</div></header>
+<section id="home" class="panel stack"><h2>던전 로그라이크</h2><p class="sub">혼자 탐험하거나 최대 6명이 함께 던전을 공략하세요.</p><button id="go-start" class="primary big">시작</button></section>
+<section id="mode" class="panel stack hidden"><h2>플레이 모드</h2><div class="modegrid"><button id="solo" class="big">🧍 1인 모드</button><button id="multi" class="big">🛡 다인 모드 (최대 6명)</button></div><button id="back-mode">뒤로</button></section>
+<section id="lobby" class="panel stack hidden"><div class="row" style="justify-content:space-between"><h2 id="lobby-title">대기실</h2><button id="leave">나가기</button></div><div id="room-area" class="stack hidden"><div class="row" style="justify-content:space-between"><span class="sub">방 코드 · 친구에게 공유</span><span id="room-code" class="code"></span></div><div class="row"><input id="join-code" maxlength="6" placeholder="방 코드 입력" style="width:170px;background:#0e1626;border:1px solid #475569;border-radius:10px;padding:12px;text-transform:uppercase"><button id="join-room">코드로 참가</button><button id="create-room" class="primary">방 생성</button></div></div><div class="stack"><h3>캐릭터 선택</h3><div class="slotgrid" id="characters"><button class="slot primary" id="choose-jinsoo"><div class="icon">🗡️</div><b>김진수</b><div class="small">칼을 든 모험가</div></button></div></div><div id="players" class="slotgrid"></div><div class="row"><button id="ready" class="ready">준비 완료</button><button id="start-dungeon" class="primary">던전 입장</button></div><p class="sub" id="lobby-note">캐릭터를 선택하고 준비 완료를 눌러주세요.</p></section>
+<section id="game" class="hidden"><div class="hud"><div class="pill">김진수 · <span id="roomnum">1</span>번째 방</div><div class="pill">HP <span id="hptext">100</span><div class="bar"><i id="hpbar"></i></div></div><div class="pill">EXP <span id="xptext">0</span><div class="bar xpbar"><i id="xpbar"></i></div></div></div><div class="hud"><div class="pill" id="unlocks">해금: 기본 칼 공격</div><div class="pill" id="enemycount">적 0</div></div><div class="canvasbox"><canvas id="world" width="960" height="600"></canvas></div><div class="gamecontrols"><div class="mobilepad"><div class="stick" id="stick"><div class="knob" id="knob"></div></div><span class="sub">이동</span></div><div class="actionbuttons"><button id="attack">⚔ 공격</button><button id="skill1" disabled>1 스킬</button><button id="skill2" disabled>2 스킬</button><button id="skill3" disabled>3 궁극</button></div></div><div class="log" id="gamelog">WASD 이동 · 마우스 방향/클릭 공격 · Space 회피 · 1/2/3 스킬</div><div class="row" style="margin-top:10px"><button id="exit-game">대기실로</button></div></section>
+</div>
 <script>
-(() => {
-  const status=document.querySelector('#online-status'),label=document.querySelector('#online-label');
-  let socket,retryTimer,stopped=false;
-  function setStatus(state,text){status.dataset.state=state;label.textContent=text;}
-  function connect(){
-    if(stopped)return;
-    const scheme=location.protocol==='https:'?'wss:':'ws:';
-    socket=new WebSocket(scheme+'//'+location.host);
-    socket.addEventListener('open',()=>setStatus('connected','온라인 서버 연결됨'));
-    socket.addEventListener('message',event=>{try{if(JSON.parse(event.data).type==='connected')setStatus('connected','온라인 서버 연결됨');}catch(_){}});
-    socket.addEventListener('close',()=>{setStatus('disconnected','서버 연결 끊김 · 재연결 중');if(!stopped)retryTimer=setTimeout(connect,1800);});
-    socket.addEventListener('error',()=>{setStatus('disconnected','온라인 연결 오류');try{socket.close();}catch(_){}});
-  }
-  window.addEventListener('beforeunload',()=>{stopped=true;clearTimeout(retryTimer);if(socket)socket.close();});
-  connect();
+(()=>{'use strict';
+const $=s=>document.querySelector(s),sections=['#home','#mode','#lobby','#game'];function show(id){sections.forEach(s=>$(s).classList.toggle('hidden',s!==id));}
+let ws,connected=false,myId='',room=null,isSolo=false,isHost=false,ready=false,started=false;
+function send(type,data={}){if(ws&&ws.readyState===1)ws.send(JSON.stringify({type,...data}));}
+function connect(){const scheme=location.protocol==='https:'?'wss:':'ws:';ws=new WebSocket(scheme+'//'+location.host);ws.onopen=()=>{$('#connection').textContent='온라인 연결됨';};ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}handle(m)};ws.onclose=()=>{$('#connection').textContent='연결 끊김 · 재연결 중';setTimeout(connect,1800)};ws.onerror=()=>{try{ws.close()}catch{}}}
+function handle(m){if(m.type==='connected'){myId=m.id;connected=true;return}if(m.type==='room-created'||m.type==='joined-room'){room=m.room;myId=m.id;isHost=room.host===myId;ready=false;showLobby();return}if(m.type==='room-update'){room=m.room;isHost=room.host===myId;renderPlayers();return}if(m.type==='error'){note(m.message);return}if(m.type==='dungeon-start'){startGame(m.seed);return}if(m.type==='remote-state'){remote[m.id]=m.state;return}if(m.type==='player-left'){delete remote[m.id];note('플레이어가 방을 나갔습니다.');return}if(m.type==='game-event'){if(m.event==='room-clear')note('다른 플레이어가 방을 클리어했습니다.');}}
+connect();
+function note(t){$('#lobby-note').textContent=t;$('#gamelog').textContent=t}
+$('#go-start').onclick=()=>show('#mode');$('#back-mode').onclick=()=>show('#home');$('#solo').onclick=()=>{isSolo=true;room=null;isHost=true;ready=true;showLobby();};
+$('#multi').onclick=()=>{isSolo=false;show('#lobby');$('#lobby-title').textContent='다인 대기실';$('#room-area').classList.remove('hidden');renderPlayers();note('방을 생성하거나 친구의 방 코드로 참가하세요.');};
+$('#create-room').onclick=()=>send('create-room');$('#join-room').onclick=()=>send('join-room',{code:$('#join-code').value});
+$('#join-code').addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,''));
+$('#choose-jinsoo').onclick=()=>{ready=false;$('#choose-jinsoo').classList.add('primary');if(!isSolo)send('choose-character');note('김진수를 선택했습니다. 준비 완료를 눌러주세요.');};
+$('#ready').onclick=()=>{ready=!ready;$('#ready').textContent=ready?'준비 취소':'준비 완료';$('#ready').classList.toggle('ready',ready);if(!isSolo)send('ready',{ready});note(ready?'준비 완료!':'준비를 취소했습니다.');renderPlayers();};
+$('#start-dungeon').onclick=()=>{if(isSolo){startGame(Math.floor(Math.random()*1e9));return}if(!room)return note('먼저 방을 생성하거나 참가하세요.');if(!isHost)return note('방장만 던전을 시작할 수 있습니다.');if(room.players.some(p=>!p.ready))return note('모든 플레이어가 준비 완료해야 합니다.');send('start-dungeon');};
+$('#leave').onclick=()=>{room=null;isSolo=false;ready=false;show('#mode');};
+function showLobby(){show('#lobby');$('#room-area').classList.toggle('hidden',isSolo);$('#lobby-title').textContent=isSolo?'1인 대기실':'다인 대기실';$('#room-code').textContent=room?.code||'';renderPlayers();note(isSolo?'김진수를 선택하고 던전 입장을 누르세요.':'캐릭터를 선택하고 준비 완료하세요. 방장은 모두 준비하면 던전을 시작할 수 있습니다.');}
+function renderPlayers(){let root=$('#players');root.innerHTML='';let players=isSolo?[{name:'김진수',host:true,ready:true}]:room?.players||[];for(let i=0;i<6;i++){let p=players[i],d=document.createElement('div');d.className='slot';d.innerHTML=p?'<div class="icon">🗡️</div><b>'+escapeHtml(p.name||'김진수')+'</b><div class="small">'+(p.host?'👑 방장 · ':'')+(p.ready?'준비 완료':'선택/준비 중')+'</div>':'<div class="icon">＋</div><div class="small">빈 슬롯</div>';root.appendChild(d)}$('#start-dungeon').disabled=!isSolo&&(!room||!isHost||room.players.length<1||room.players.some(p=>!p.ready));}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+const canvas=$('#world'),ctx=canvas.getContext('2d');let game=null,keys={},remote={},lastSync=0,stickVec={x:0,y:0},stickActive=false;
+const W=960,H=600,wall=34;
+function startGame(seed){started=true;show('#game');game={room:1,seed:seed||1,x:W/2,y:H/2,hp:100,xp:0,face:1,attackCd:0,dodge:0,skillCd:[0,0,0],kills:0,cleared:false,roomSeed:seed||1,enemies:[],particles:[],flash:0};remote={};spawnRoom();note('김진수의 던전 탐험 시작!');requestAnimationFrame(loop);}
+function rand(){game.roomSeed=(game.roomSeed*1664525+1013904223)>>>0;return game.roomSeed/4294967296;}
+function spawnRoom(){game.enemies=[];let count=Math.min(3+game.room+Math.floor(game.room/2),10);for(let i=0;i<count;i++){let type=game.room%4===0&&i===0?'elite':rand()<.18?'fast':'normal';let hp=type==='elite'?180:type==='fast'?45:75;game.enemies.push({id:i,x:100+rand()*(W-200),y:100+rand()*(H-200),hp,max:hp,speed:type==='fast'?105:type==='elite'?48:62,r:type==='elite'?22:16,type,cd:rand()*.5});}game.cleared=false;}
+function gainXp(n){game.xp+=n;let old=game.xp-n;let thresholds=[50,100,200];thresholds.forEach((t,i)=>{if(old<t&&game.xp>=t){note(['스킬 1 해금! 칼바람을 사용할 수 있습니다.','스킬 2 해금! 회전 베기를 사용할 수 있습니다.','궁극기 해금! 검의 폭풍을 사용할 수 있습니다.'][i]);}});send('game-event',{event:'xp',data:{amount:n,total:game.xp}});}
+function unlocks(){return [game.xp>=50?'칼바람':'잠김',game.xp>=100?'회전 베기':'잠김',game.xp>=200?'검의 폭풍':'잠김'];}
+function updateHud(){ $('#hptext').textContent=Math.ceil(game.hp);$('#hpbar').style.width=Math.max(0,game.hp)+'%';$('#xptext').textContent=game.xp;$('#xpbar').style.width=(game.xp%200)/2+'%';$('#roomnum').textContent=game.room;$('#enemycount').textContent='적 '+game.enemies.length;let u=unlocks();$('#unlocks').textContent='1 '+u[0]+' · 2 '+u[1]+' · 3 '+u[2];for(let i=0;i<3;i++)$('#skill'+(i+1)).disabled=game.xp<[50,100,200][i]||game.skillCd[i]>0;}
+function loop(t){if(!started||!game)return;let dt=Math.min(.033,(t-(game.last||t))/1000);game.last=t;update(dt);draw();updateHud();if(t-lastSync>80){lastSync=t;if(!isSolo)send('game-state',{state:{x:game.x/W,y:game.y/H,hp:game.hp,face:game.face<0?'left':'right',attack:game.attackCd>.3}});}requestAnimationFrame(loop);}
+function update(dt){if(game.hp<=0){game.hp=0;note('쓰러졌습니다. 이번 탐험이 끝났습니다.');started=false;$('#exit-game').textContent='던전 재시작';return;}
+let dx=(keys.d||keys.ArrowRight?1:0)-(keys.a||keys.ArrowLeft?1:0)+stickVec.x,dy=(keys.s||keys.ArrowDown?1:0)-(keys.w||keys.ArrowUp?1:0)+stickVec.y;let len=Math.hypot(dx,dy);if(len>1){dx/=len;dy/=len}let speed=210*(game.dodge>0?2.2:1);game.x=Math.max(wall+18,Math.min(W-wall-18,game.x+dx*speed*dt));game.y=Math.max(wall+18,Math.min(H-wall-18,game.y+dy*speed*dt));if(dx)game.face=Math.sign(dx);
+game.attackCd=Math.max(0,game.attackCd-dt);game.dodge=Math.max(0,game.dodge-dt);game.skillCd=game.skillCd.map(v=>Math.max(0,v-dt));game.flash=Math.max(0,game.flash-dt);
+for(let e of game.enemies){let vx=game.x-e.x,vy=game.y-e.y,d=Math.hypot(vx,vy)||1;if(d>e.r+20){e.x+=vx/d*e.speed*dt;e.y+=vy/d*e.speed*dt;}else{e.cd-=dt;if(e.cd<=0&&game.dodge<=0){game.hp-=e.type==='elite'?12:7;e.cd=.8;game.flash=.12;}}}
+game.enemies=game.enemies.filter(e=>e.hp>0);
+if(!game.enemies.length&&!game.cleared){game.cleared=true;send('game-event',{event:'room-clear',data:{room:game.room}});note('방 클리어! 출구가 열렸습니다. 오른쪽 출구로 이동하세요.');}
+if(game.cleared&&game.x>W-wall-35){game.room++;game.x=wall+40;game.y=H/2;spawnRoom();send('game-event',{event:'room-enter',data:{room:game.room}});note('던전 '+game.room+'번째 방');}
+for(let p of game.particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;}game.particles=game.particles.filter(p=>p.life>0);}
+function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle='#111a2a';ctx.fillRect(0,0,W,H);ctx.strokeStyle='#202c40';ctx.lineWidth=1;for(let x=wall;x<W-wall;x+=40){ctx.beginPath();ctx.moveTo(x,wall);ctx.lineTo(x,H-wall);ctx.stroke()}for(let y=wall;y<H-wall;y+=40){ctx.beginPath();ctx.moveTo(wall,y);ctx.lineTo(W-wall,y);ctx.stroke()}
+ctx.fillStyle='#334155';ctx.fillRect(0,0,W,wall);ctx.fillRect(0,H-wall,W,wall);ctx.fillRect(0,0,wall,H);ctx.fillRect(W-wall,0,wall,H);
+if(game.cleared){ctx.fillStyle='#34d399';ctx.fillRect(W-wall-12,H/2-50,12,100);ctx.fillStyle='#a7f3d0';ctx.font='20px system-ui';ctx.fillText('EXIT →',W-150,H/2-65);}
+for(let e of game.enemies){ctx.fillStyle=e.type==='elite'?'#f59e0b':e.type==='fast'?'#c084fc':'#ef4444';ctx.beginPath();ctx.arc(e.x,e.y,e.r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#0b1020';ctx.fillRect(e.x-e.r,e.y-e.r-10,e.r*2,5);ctx.fillStyle='#f87171';ctx.fillRect(e.x-e.r,e.y-e.r-10,e.r*2*(e.hp/e.max),5);}
+for(let p of game.particles){ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
+drawJinsoo(game.x,game.y,game.face);for(let id in remote){let s=remote[id];drawJinsoo(s.x*W,s.y*H,s.face==='left'?-1:1,true);}
+if(game.flash>0){ctx.fillStyle='rgba(255,0,0,.16)';ctx.fillRect(0,0,W,H);}}
+function drawJinsoo(x,y,face,other=false){ctx.save();ctx.translate(x,y);ctx.scale(face,1);ctx.fillStyle=other?'#38bdf8':'#60a5fa';ctx.fillRect(-13,-14,26,30);ctx.fillStyle='#f1c9a5';ctx.beginPath();ctx.arc(0,-22,12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#1e293b';ctx.fillRect(-11,-31,22,7);ctx.fillStyle='#e2e8f0';ctx.save();ctx.rotate(-.45);ctx.fillRect(14,-28,5,39);ctx.fillStyle='#94a3b8';ctx.fillRect(12,-32,9,7);ctx.restore();ctx.fillStyle='#111827';ctx.fillRect(-10,13,8,15);ctx.fillRect(2,13,8,15);ctx.restore();}
+function attack(){if(!started||game.attackCd>0)return;game.attackCd=.38;let hit=false;for(let e of game.enemies){let dx=e.x-game.x,dy=e.y-game.y,d=Math.hypot(dx,dy);if(d<76&&dx*game.face>-18){e.hp-=30;hit=true;game.particles.push({x:e.x,y:e.y,vx:(Math.random()-.5)*70,vy:-60,life:.3,color:'#f8fafc'});send('game-event',{event:'enemy-hit',data:{room:game.room,enemy:e.id,damage:30}});if(e.hp<=0){game.kills++;let xp=e.type==='elite'?100:e.type==='fast'?15:25;gainXp(xp);note('적 처치! +'+xp+' EXP');send('game-event',{event:'enemy-killed',data:{room:game.room,xp}});}}}if(!hit)note('칼을 휘둘렀습니다.');}
+function useSkill(i){if(!started)return;let req=[50,100,200][i],cd=[5,8,18][i];if(game.xp<req||game.skillCd[i]>0)return;game.skillCd[i]=cd;let radius=[145,110,220][i],damage=[55,80,160][i];for(let e of game.enemies){let d=Math.hypot(e.x-game.x,e.y-game.y);if(d<radius){e.hp-=damage;game.particles.push({x:e.x,y:e.y,vx:0,vy:-80,life:.5,color:['#93c5fd','#c4b5fd','#fbbf24'][i]});if(e.hp<=0){game.kills++;gainXp(e.type==='elite'?100:e.type==='fast'?15:25);}}}note(['김진수: 칼바람!','김진수: 회전 베기!','김진수: 검의 폭풍!'][i]);}
+function dodge(){if(!started||game.dodge>0)return;game.dodge=.35;}
+$('#attack').onclick=attack;$('#skill1').onclick=()=>useSkill(0);$('#skill2').onclick=()=>useSkill(1);$('#skill3').onclick=()=>useSkill(2);
+window.addEventListener('keydown',e=>{let k=e.key.length===1?e.key.toLowerCase():e.key;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();keys[k]=true;if(e.repeat)return;if(k===' '||k==='Shift')dodge();if(k==='1')useSkill(0);if(k==='2')useSkill(1);if(k==='3')useSkill(2);if(k==='j'||k==='Enter')attack();});
+window.addEventListener('keyup',e=>{let k=e.key.length===1?e.key.toLowerCase():e.key;keys[k]=false;});
+canvas.addEventListener('pointerdown',e=>{if(!started)return;const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;game.face=x>=game.x?1:-1;attack();});
+const stick=$('#stick'),knob=$('#knob');function setStick(e){const r=stick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=(e.clientX-cx)/(r.width/2),dy=(e.clientY-cy)/(r.height/2),d=Math.hypot(dx,dy);if(d>1){dx/=d;dy/=d}stickVec={x:dx,y:dy};knob.style.transform='translate('+dx*34+'px,'+dy*34+'px)';}
+stick.addEventListener('pointerdown',e=>{stickActive=true;stick.setPointerCapture(e.pointerId);setStick(e)});stick.addEventListener('pointermove',e=>{if(stickActive)setStick(e)});function resetStick(){stickActive=false;stickVec={x:0,y:0};knob.style.transform=''}stick.addEventListener('pointerup',resetStick);stick.addEventListener('pointercancel',resetStick);
+$('#exit-game').onclick=()=>{started=false;game=null;if(isSolo){show('#mode')}else{show('#lobby');note('던전에서 나왔습니다.');}};
 })();
-</script>
-</body>
-</html>
+</script></body></html>
