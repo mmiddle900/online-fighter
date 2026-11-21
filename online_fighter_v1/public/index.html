@@ -90,3 +90,15 @@
  .actionbuttons{gap:4px}
  .actionbuttons button{font-size:10px;padding:4px 1px}
 }
+
+/* Fix mobile landscape page scrolling: let the document own vertical gestures */
+@media(orientation:landscape) and (max-width:900px){
+ html{height:auto!important;min-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important;touch-action:pan-y!important}
+ body{height:auto!important;min-height:100dvh!important;overflow-x:hidden!important;overflow-y:scroll!important;overscroll-behavior-y:contain!important;touch-action:pan-y!important}
+ .wrap{height:auto!important;min-height:100dvh!important;max-height:none!important;overflow:visible!important;display:flex!important;flex-direction:column!important}
+ #game{height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:0 0 auto!important}
+ #world{touch-action:pan-y!important}
+ .canvasbox{flex:0 0 auto!important}
+ .gamecontrols{flex:0 0 auto!important}
+ #shop{max-height:none!important;overflow:visible!important}
+}
