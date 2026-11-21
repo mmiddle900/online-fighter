@@ -3,73 +3,60 @@
 <style>
 *{box-sizing:border-box} :root{color-scheme:dark} body{margin:0;background:#0b1020;color:#f1f5f9;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}button,input{font:inherit}button{border:1px solid #475569;background:#263449;color:#f8fafc;border-radius:12px;padding:12px 16px;cursor:pointer;font-weight:700}button:disabled{opacity:.4;cursor:not-allowed}button.primary{background:#7c3aed;border-color:#8b5cf6}button.ready{background:#047857;border-color:#10b981}.hidden{display:none!important}.wrap{width:min(100%,1000px);margin:auto;padding:20px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}h1{margin:0;font-size:clamp(24px,4vw,36px)}.panel{background:#151e30;border:1px solid #2b3850;border-radius:18px;padding:20px}.sub{color:#94a3b8}.stack{display:grid;gap:14px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.modegrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.big{padding:24px;min-height:110px;font-size:20px}.slotgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.slot{background:#0e1626;border:1px solid #334155;border-radius:14px;padding:14px;text-align:center;min-height:100px}.slot .icon{font-size:30px}.slot .small{font-size:12px;color:#94a3b8}.code{font-size:28px;letter-spacing:5px;font-weight:800}.canvasbox{position:relative;background:#080d16;border:1px solid #334155;border-radius:16px;overflow:hidden}canvas{display:block;width:100%;height:min(68vh,620px);touch-action:none}.hud{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}.pill{background:#1e293b;border:1px solid #334155;border-radius:999px;padding:7px 12px;font-size:14px}.bar{height:9px;background:#334155;border-radius:99px;overflow:hidden;width:150px}.bar>i{display:block;height:100%;background:#ef4444;width:100%}.xpbar>i{background:#a78bfa}.gamecontrols{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-top:12px}.mobilepad{display:flex;align-items:center;gap:10px}.stick{width:116px;height:116px;border-radius:50%;background:#243249;border:1px solid #475569;position:relative;touch-action:none}.knob{width:44px;height:44px;border-radius:50%;background:#94a3b8;position:absolute;left:36px;top:36px}.actionbuttons{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.actionbuttons button{min-width:62px;min-height:58px}.log{font-size:13px;color:#cbd5e1;min-height:20px;margin-top:8px}@media(max-width:620px){.wrap{padding:12px}.panel{padding:14px}.modegrid{grid-template-columns:1fr}.slotgrid{gap:6px}.slot{padding:9px;min-height:90px}.gamecontrols{align-items:center}.actionbuttons{max-width:190px}.actionbuttons button{min-width:54px;padding:8px}.code{font-size:23px}}
 
-/* Mobile compact viewport + robust multitouch */
-@media(max-width:620px){.wrap{padding:10px}.panel{padding:12px}.modegrid{grid-template-columns:1fr}.slotgrid{gap:6px}.slot{padding:8px;min-height:80px}}
+/* Responsive game fit: keep the full HUD, canvas and controls visible in landscape */
 .rotate-notice{display:none}
-@media(orientation:portrait) and (max-width:900px){body{overflow:hidden}.rotate-notice{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#080d16;padding:24px;text-align:center}.rotate-card{max-width:320px;border:1px solid #334155;background:#151e30;border-radius:22px;padding:28px 22px;box-shadow:0 20px 60px #0008}.rotate-icon{font-size:54px;margin-bottom:12px}.rotate-card h2{margin:0 0 12px;font-size:23px}.rotate-card p{color:#cbd5e1;line-height:1.65;margin:0}.wrap{display:none!important}}
-@media(orientation:landscape) and (max-width:900px){
- html,body{width:100%;height:100%;min-height:0;max-height:100%;margin:0;overflow:hidden!important;overscroll-behavior:none;touch-action:none}
- .wrap{width:100%;max-width:none;height:100dvh;min-height:0;max-height:100dvh;overflow:hidden;padding:4px 6px calc(4px + env(safe-area-inset-bottom));margin:0;display:flex;flex-direction:column;gap:4px}
- .top{display:none}#game{width:100%;height:100%;max-height:100%;min-height:0;flex:1 1 auto;overflow:hidden;display:flex;flex-direction:column;gap:4px}
- #game .hud{display:flex;flex:0 0 22px;flex-wrap:nowrap;align-items:center;gap:4px;margin:0;min-height:0;overflow:hidden}
- #game .hud .pill{font-size:10px;line-height:1;padding:3px 5px;border-radius:7px;white-space:nowrap;min-width:0;overflow:hidden}
- #game .bar{width:clamp(32px,8vw,68px);height:4px;margin-top:2px}
- #game .hud:nth-of-type(2) .pill{font-size:10px}
- .canvasbox{width:100%;flex:1 1 auto;min-height:0;height:auto;max-height:none;overflow:hidden;border-radius:8px;display:flex}
- #world{display:block;width:100%;height:100%;max-width:100%;max-height:100%;touch-action:none}
- .gamecontrols{width:100%;display:grid;grid-template-columns:clamp(72px,18vw,100px) minmax(0,1fr);gap:6px;align-items:center;margin:0;flex:0 0 clamp(72px,19dvh,88px);min-height:0;max-height:88px}
- .mobilepad{display:flex;justify-content:center;align-items:center;min-width:0;gap:0}.mobilepad .sub{display:none}
- .stick{width:clamp(64px,17vw,82px);height:clamp(64px,17vw,82px);min-width:0;min-height:0;max-width:100%;max-height:100%;border-radius:50%;position:relative;touch-action:none;user-select:none;-webkit-user-select:none;background:radial-gradient(circle,#30435f,#172438 75%);border:2px solid #5b718d;box-shadow:inset 0 0 0 5px #182438}
- .knob{width:32px;height:32px;left:calc(50% - 16px);top:calc(50% - 16px);position:absolute;pointer-events:none;background:#dbeafe;border:2px solid #64748b;border-radius:50%}
- .actionbuttons{width:100%;height:100%;max-width:none;min-width:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:minmax(0,1fr);gap:4px;justify-content:stretch}
- .actionbuttons button{width:100%;min-width:0;min-height:0;height:100%;padding:3px 1px;border-radius:9px;font-size:clamp(10px,1.8vw,13px);line-height:1.05;white-space:normal;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
- #attack{grid-column:auto;grid-row:auto;background:#9f1239;border-color:#fb7185;font-size:clamp(11px,2vw,14px)}#dodge-button{background:#0f766e;border-color:#5eead4}
- #skill1{background:#1d4ed8;border-color:#60a5fa}#skill2{background:#6d28d9;border-color:#c4b5fd}#skill3{background:#92400e;border-color:#fbbf24}
- .log{display:none}#shop{flex:0 0 auto;max-height:26dvh;overflow:auto;padding:7px;margin:0!important}
- #shop h2{font-size:14px;margin:0}#shop .sub{font-size:10px;margin:2px 0}#shop .row{display:flex;gap:4px}#shop button{min-height:30px;padding:4px;font-size:10px;flex:1}
- #exit-game{display:block;min-height:28px;height:28px;padding:3px 10px;font-size:11px}#game>.row:last-child{flex:0 0 28px;margin:0!important;min-height:0}
+@media(orientation:portrait) and (max-width:900px){
+ body{overflow:hidden}
+ .rotate-notice{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#080d16;padding:24px;text-align:center}
+ .rotate-card{max-width:320px;border:1px solid #334155;background:#151e30;border-radius:22px;padding:28px 22px;box-shadow:0 20px 60px #0008}
+ .rotate-icon{font-size:54px;margin-bottom:12px}
+ .rotate-card h2{margin:0 0 12px;font-size:23px}
+ .rotate-card p{color:#cbd5e1;line-height:1.65;margin:0}
+ .wrap{display:none!important}
 }
-@media(orientation:landscape) and (max-width:560px){#game .hud{flex-basis:20px}.gamecontrols{grid-template-columns:70px minmax(0,1fr);flex-basis:72px}.stick{width:62px;height:62px}.actionbuttons{gap:3px}.actionbuttons button{font-size:10px;padding:2px 0}}
-
-/* Scrollable landscape layout: keep game canvas and controls usable without trapping the page */
 @media(orientation:landscape) and (max-width:900px){
- html,body{height:auto;min-height:100%;max-height:none;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain;touch-action:pan-y}
- .wrap{height:auto;min-height:100dvh;max-height:none;overflow:visible;padding-bottom:calc(12px + env(safe-area-inset-bottom));touch-action:pan-y}
- #game{height:auto;max-height:none;min-height:0;flex:0 0 auto;overflow:visible}
- .canvasbox{height:min(46dvh,360px);min-height:180px;max-height:none;flex:none;touch-action:pan-y}
- #world{height:100%;touch-action:pan-y}
- .gamecontrols{flex:0 0 76px;max-height:none}
- #shop{max-height:none;overflow:visible}
-}
-
-/* Stable mobile landscape: fit controls in viewport; scroll overflow inside game */
-@media(orientation:landscape) and (max-width:900px){
- html,body{width:100%;height:100%;min-height:0;max-height:100%;overflow:hidden!important;touch-action:pan-y}
- .wrap{width:100%;height:100dvh;min-height:0;max-height:100dvh;overflow:hidden;padding:3px 5px calc(3px + env(safe-area-inset-bottom));display:flex;flex-direction:column}
- #game{height:100%;max-height:100%;min-height:0;flex:1 1 0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;touch-action:pan-y;display:flex;flex-direction:column;gap:3px}
- #game .hud{flex:0 0 19px;height:19px;min-height:19px;margin:0;gap:3px;overflow:hidden}
- #game .hud .pill{font-size:9px;padding:2px 4px}
- #game .bar{width:clamp(25px,6vw,48px);height:3px}
- .canvasbox{width:100%;height:38dvh;min-height:115px;max-height:38dvh;flex:0 0 38dvh;overflow:hidden;touch-action:pan-y}
- #world{width:100%;height:100%;max-width:100%;max-height:100%;touch-action:pan-y}
- .gamecontrols{flex:0 0 66px;height:66px;min-height:66px;max-height:66px;grid-template-columns:64px minmax(0,1fr);gap:4px;margin:0}
- .stick{width:58px;height:58px}
- .knob{width:28px;height:28px;left:calc(50% - 14px);top:calc(50% - 14px)}
- .actionbuttons{grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}
- .actionbuttons button{min-height:0;height:100%;font-size:clamp(9px,1.6vw,12px);padding:2px 0}
- #attack{font-size:clamp(9px,1.7vw,12px)}
- #game>.row:last-child{flex:0 0 25px;height:25px;min-height:25px;margin:0!important}
- #exit-game{height:25px;min-height:25px;padding:2px 8px;font-size:10px}
- #shop{flex:0 0 auto;max-height:none;overflow:visible;padding:6px;margin:0!important}
- #shop h2{font-size:13px;margin:0}
- #shop .sub{font-size:10px;margin:2px 0}
- #shop button{min-height:28px;padding:3px;font-size:10px}
+ html,body{width:100%;height:100%;min-height:0;max-height:100%;margin:0;overflow:hidden!important;touch-action:none}
+ .wrap{width:100vw;height:100dvh;min-height:0;max-height:100dvh;margin:0;padding:3px 5px calc(3px + env(safe-area-inset-bottom));overflow:hidden;display:flex;flex-direction:column;gap:3px}
+ .top{display:none}
+ #game{width:100%;height:100%;min-height:0;max-height:100%;flex:1 1 0;overflow:hidden;display:grid;grid-template-rows:19px 19px minmax(0,1fr) clamp(50px,15dvh,66px) 23px;gap:3px}
+ #game .hud{display:flex;flex:0 0 auto;height:19px;min-height:19px;max-height:19px;flex-wrap:nowrap;align-items:center;gap:3px;margin:0;overflow:hidden}
+ #game .hud .pill{font-size:clamp(8px,1.25vw,10px);line-height:1;padding:2px 4px;border-radius:6px;white-space:nowrap;min-width:0;overflow:hidden}
+ #game .bar{width:clamp(20px,5vw,42px);height:3px;margin-top:2px}
+ #game .canvasbox{width:100%;height:100%;min-height:0;max-height:none;flex:none;overflow:hidden;border-radius:7px;display:grid;place-items:center}
+ #world{display:block;width:auto;height:100%;max-width:100%;max-height:100%;aspect-ratio:8/5;touch-action:none}
+ .gamecontrols{width:100%;height:100%;min-height:0;max-height:none;display:grid;grid-template-columns:clamp(50px,12dvh,70px) minmax(0,1fr);gap:4px;align-items:center;margin:0;flex:none}
+ .mobilepad{display:flex;justify-content:center;align-items:center;min-width:0;gap:0}
+ .mobilepad .sub{display:none}
+ .stick{width:clamp(48px,12dvh,64px);height:clamp(48px,12dvh,64px);min-width:0;min-height:0;max-width:100%;max-height:100%;border-radius:50%;position:relative;touch-action:none;user-select:none;-webkit-user-select:none;background:radial-gradient(circle,#30435f,#172438 75%);border:2px solid #5b718d;box-shadow:inset 0 0 0 4px #182438}
+ .knob{width:clamp(22px,5.5dvh,30px);height:clamp(22px,5.5dvh,30px);left:50%;top:50%;transform:translate(-50%,-50%);position:absolute;pointer-events:none;background:#dbeafe;border:2px solid #64748b;border-radius:50%}
+ .actionbuttons{width:100%;height:100%;max-width:none;min-width:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:minmax(0,1fr);gap:3px;justify-content:stretch}
+ .actionbuttons button{width:100%;min-width:0;min-height:0;height:100%;padding:2px 1px;border-radius:7px;font-size:clamp(8px,1.45vw,12px);line-height:1.05;white-space:normal;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+ #attack{background:#9f1239;border-color:#fb7185;font-size:clamp(9px,1.55vw,13px)}
+ #dodge-button{background:#0f766e;border-color:#5eead4}
+ #skill1{background:#1d4ed8;border-color:#60a5fa}
+ #skill2{background:#6d28d9;border-color:#c4b5fd}
+ #skill3{background:#92400e;border-color:#fbbf24}
+ .log{display:none}
+ #game>.row:last-child{height:23px;min-height:23px;max-height:23px;margin:0!important;flex:none}
+ #exit-game{display:block;height:23px;min-height:23px;padding:2px 8px;font-size:10px;line-height:1}
+ #shop{grid-column:1/-1;max-height:15dvh;overflow:auto;padding:4px;margin:0!important;gap:3px}
+ #shop h2{font-size:12px;margin:0}
+ #shop .sub{font-size:9px;margin:1px 0}
+ #shop .row{display:flex;gap:3px}
+ #shop button{min-height:24px;padding:2px;font-size:9px;flex:1}
+ #game:has(#shop:not(.hidden)){grid-template-rows:18px 18px minmax(0,1fr) clamp(48px,13dvh,58px) auto 22px}
 }
 @media(orientation:landscape) and (max-width:560px){
- .canvasbox{height:34dvh;max-height:34dvh;flex-basis:34dvh;min-height:100px}
- .gamecontrols{flex-basis:60px;height:60px;min-height:60px;max-height:60px;grid-template-columns:58px minmax(0,1fr)}
- .stick{width:54px;height:54px}
- #game .hud{flex-basis:18px;height:18px;min-height:18px}
+ #game{grid-template-rows:17px 17px minmax(0,1fr) clamp(46px,14dvh,56px) 21px;gap:2px}
+ #game .hud{height:17px;min-height:17px;max-height:17px}
+ #game .hud .pill{font-size:8px;padding:2px 3px}
+ #game .bar{width:clamp(17px,4.5vw,28px)}
+ .gamecontrols{grid-template-columns:clamp(46px,11dvh,56px) minmax(0,1fr);gap:3px}
+ .stick{width:clamp(44px,11dvh,52px);height:clamp(44px,11dvh,52px)}
+ .actionbuttons{gap:2px}
+ .actionbuttons button{font-size:8px;padding:1px 0}
+ #attack{font-size:9px}
+ #game>.row:last-child,#exit-game{height:21px;min-height:21px;max-height:21px}
 }
 </style></head><body><div id="rotate-notice" class="rotate-notice" aria-live="polite"><div class="rotate-card"><div class="rotate-icon">📱↻</div><h2>가로 모드로 플레이</h2><p>휴대폰을 가로로 돌려주세요.<br>게임은 가로 화면에서만 표시됩니다.</p></div></div><div class="wrap">
 <header class="top"><h1>⚔ 김진수의 던전</h1><div class="pill" id="connection">서버 연결 중...</div></header>
