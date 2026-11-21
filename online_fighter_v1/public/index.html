@@ -65,6 +65,18 @@
  #shop{max-height:none;overflow:visible}
 }
 @media(orientation:landscape) and (max-width:560px){.gamecontrols{grid-template-columns:112px minmax(0,1fr);flex-basis:clamp(90px,25dvh,132px);gap:6px}.stick{width:min(27vw,122px);height:min(27vw,122px)}.actionbuttons{gap:4px}.actionbuttons button{font-size:11px;border-radius:9px}}
+/* Mobile landscape scroll recovery - retain full game markup and script */
+@media(orientation:landscape) and (max-width:900px){
+ html,body{height:auto!important;min-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important}
+ body{min-height:100dvh!important;touch-action:pan-y!important}
+ .wrap{height:auto!important;min-height:100dvh!important;max-height:none!important;overflow:visible!important;display:flex!important;flex-direction:column!important}
+ #game{height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:0 0 auto!important}
+ .canvasbox{height:clamp(180px,42dvh,360px)!important;min-height:180px!important;max-height:none!important;flex:0 0 auto!important}
+ #world{height:100%!important;width:100%!important;touch-action:pan-y!important}
+ .gamecontrols{flex:0 0 auto!important;min-height:94px!important;margin-bottom:8px!important}
+ #shop{max-height:none!important;overflow:visible!important}
+}
+
 </style></head><body><div id="rotate-notice" class="rotate-notice" aria-live="polite"><div class="rotate-card"><div class="rotate-icon">📱↻</div><h2>가로 모드로 플레이</h2><p>휴대폰을 가로로 돌려주세요.<br>게임은 가로 화면에서만 표시됩니다.</p></div></div><div class="wrap">
 <header class="top"><h1>⚔ 김진수의 던전</h1><div class="pill" id="connection">서버 연결 중...</div></header>
 <section id="home" class="panel stack"><h2>던전 로그라이크</h2><p class="sub">혼자 탐험하거나 최대 6명이 함께 던전을 공략하세요.</p><button id="go-start" class="primary big">시작</button></section>
@@ -166,14 +178,3 @@ $('#buy-hp').onclick=()=>{if(game.coins<5)return $('#shop-note').textContent='�
 $('#exit-game').onclick=()=>{started=false;game=null;if(isSolo){show('#mode')}else{show('#lobby');note('던전에서 나왔습니다.');}};
 })();
 </script></body></html>
-/* Mobile landscape scroll recovery - retain full game markup and script */
-@media(orientation:landscape) and (max-width:900px){
- html,body{height:auto!important;min-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important}
- body{min-height:100dvh!important;touch-action:pan-y!important}
- .wrap{height:auto!important;min-height:100dvh!important;max-height:none!important;overflow:visible!important;display:flex!important;flex-direction:column!important}
- #game{height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:0 0 auto!important}
- .canvasbox{height:clamp(180px,42dvh,360px)!important;min-height:180px!important;max-height:none!important;flex:0 0 auto!important}
- #world{height:100%!important;width:100%!important;touch-action:pan-y!important}
- .gamecontrols{flex:0 0 auto!important;min-height:94px!important;margin-bottom:8px!important}
- #shop{max-height:none!important;overflow:visible!important}
-}
