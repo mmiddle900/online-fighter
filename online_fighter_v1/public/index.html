@@ -39,7 +39,7 @@ if(r===1){knights=2;archers=0;guerrillas=1;}
 let specs=Array(knights).fill('knight').concat(Array(archers).fill('archer'),Array(guerrillas).fill('guerrilla'));
 if(r>=4&&r%4===0)specs.push('knight');
 specs.forEach((type,i)=>{let x,y;do{x=80+rand()*(W-160);y=80+rand()*(H-160);}while(Math.hypot(x-game.x,y-game.y)<180);
-let data=type==='knight'?{hp:120,speed:120,r:18,color:'#cbd5e1'}:type==='archer'?{hp:80,speed:40,r:15,color:'#65a30d'}:{hp:1,speed:240,r:13,color:'#c084fc'};
+let data=type==='knight'?{hp:100,speed:120,r:18,color:'#cbd5e1'}:type==='archer'?{hp:40,speed:40,r:15,color:'#65a30d'}:{hp:1,speed:240,r:13,color:'#c084fc'};
 game.enemies.push({id:i,type,x,y,hp:data.hp,max:data.hp,speed:data.speed,r:data.r,color:data.color,cd:.1,charge:0,chargeX:0,chargeY:0,chargeHit:false,shotCd:.5+rand()*.5,contactCd:0});});
 game.cleared=false;}
 function playHitSound(){try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;const a=window._hitAudio||(window._hitAudio=new A());if(a.state==='suspended')a.resume();const o=a.createOscillator(),g=a.createGain();o.type='sawtooth';o.frequency.setValueAtTime(155,a.currentTime);o.frequency.exponentialRampToValueAtTime(58,a.currentTime+.09);g.gain.setValueAtTime(.12,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.11);o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+.12);}catch(e){}}
@@ -56,7 +56,7 @@ for(let e of game.enemies){e.slow=Math.max(0,(e.slow||0)-dt);e.vulnerable=Math.m
 if(e.type==='knight'){if(e.charge>0){let ox=e.x,oy=e.y,step=Math.min(400*dt*(e.slow>0?.5:1),e.charge);e.x+=e.chargeX*step;e.y+=e.chargeY*step;e.charge-=step;let dx=e.x-ox,dy=e.y-oy,t=Math.max(0,Math.min(1,((game.x-ox)*dx+(game.y-oy)*dy)/(dx*dx+dy*dy||1)));if(!e.chargeHit&&game.dodge<=0&&Math.hypot(game.x-(ox+t*dx),game.y-(oy+t*dy))<27){game.hp=Math.max(0,game.hp-30);showDamage(game.x,game.y-24,30,'ally');e.chargeHit=true;game.flash=.16;}if(e.charge<=0)e.cd=1;}else{e.cd-=dt;if(e.cd<=0){e.chargeX=vx/d;e.chargeY=vy/d;e.charge=160;e.chargeHit=false;}}}
 else if(e.type==='archer'){let preferred=240;if(d>preferred+35){e.x+=vx/d*es*dt;e.y+=vy/d*es*dt;}else if(d<preferred-55){e.x-=vx/d*es*dt;e.y-=vy/d*es*dt;}e.shotCd-=dt;if(e.shotCd<=0){let a=Math.atan2(game.y-e.y,game.x-e.x);game.enemyArrows.push({x:e.x,y:e.y,angle:a,travel:0,hit:false});e.shotCd=2;}}
 else{if(d>e.r+19){e.x+=vx/d*es*dt;e.y+=vy/d*es*dt;}else{e.contactCd-=dt;if(e.contactCd<=0&&game.dodge<=0){game.hp=Math.max(0,game.hp-10);showDamage(game.x,game.y-24,10,'ally');e.contactCd=.5;game.flash=.1;}}}}
-for(let a of game.enemyArrows){let speed=600;a.x+=Math.cos(a.angle)*speed*dt;a.y+=Math.sin(a.angle)*speed*dt;a.travel+=speed*dt;if(!a.hit&&a.travel<=400&&Math.hypot(a.x-game.x,a.y-game.y)<22&&game.dodge<=0){a.hit=true;game.hp=Math.max(0,game.hp-20);showDamage(game.x,game.y-24,20,'ally');game.flash=.12;}}
+for(let a of game.enemyArrows){let speed=400;a.x+=Math.cos(a.angle)*speed*dt;a.y+=Math.sin(a.angle)*speed*dt;a.travel+=speed*dt;if(!a.hit&&a.travel<=400&&Math.hypot(a.x-game.x,a.y-game.y)<22&&game.dodge<=0){a.hit=true;game.hp=Math.max(0,game.hp-20);showDamage(game.x,game.y-24,20,'ally');game.flash=.12;}}
 game.enemyArrows=game.enemyArrows.filter(a=>!a.hit&&a.travel<400&&a.x>wall&&a.x<W-wall&&a.y>wall&&a.y<H-wall);
 game.enemies=game.enemies.filter(e=>e.hp>0);
 if(!game.enemies.length&&!game.cleared){game.cleared=true;send('game-event',{event:'room-clear',data:{room:game.room}});note('방 클리어! 출구가 열렸습니다. 오른쪽 출구로 이동하세요.');}
