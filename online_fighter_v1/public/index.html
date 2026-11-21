@@ -307,6 +307,16 @@
 #players .player-slot.empty-slot .icon{font-size:22px;color:#64748b;}
 @media(max-width:900px){#players{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;}#players .player-slot{min-height:clamp(66px,17dvh,92px);padding:5px 3px;border-radius:10px;gap:3px;}#players .slot-number{font-size:8px;letter-spacing:.5px;}#players .player-slot .icon{font-size:clamp(17px,4dvh,24px);}#players .player-slot b{font-size:clamp(10px,2.2dvh,13px);}#players .player-slot .status{font-size:clamp(9px,1.8dvh,11px);}}
 @media(max-width:560px){#players{gap:4px!important;}#players .player-slot{min-height:62px;padding:4px 2px;}#players .player-slot .status{font-size:9px;}}
+
+/* Waiting-room player slots: allow independent two-axis scrolling on mobile */
+@media(max-width:900px){
+ #lobby #players{display:grid!important;grid-template-columns:repeat(3,minmax(112px,1fr))!important;grid-auto-rows:minmax(82px,auto)!important;width:100%!important;min-width:0!important;max-width:100%!important;max-height:27dvh!important;overflow:auto!important;overflow-x:auto!important;overflow-y:auto!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-x pan-y!important;align-content:start!important;justify-items:stretch!important;}
+ #lobby #players .player-slot{min-width:112px!important;min-height:82px!important;}
+}
+@media(max-width:560px){
+ #lobby #players{grid-template-columns:repeat(3,minmax(108px,1fr))!important;grid-auto-rows:minmax(76px,auto)!important;max-height:25dvh!important;}
+ #lobby #players .player-slot{min-width:108px!important;min-height:76px!important;}
+}
 </style></head><body><div id="rotate-notice" class="rotate-notice" aria-live="polite"><div class="rotate-card"><div class="rotate-icon">📱↻</div><h2>가로 모드로 플레이</h2><p>휴대폰을 가로로 돌려주세요.<br>게임은 가로 화면에서만 표시됩니다.</p></div></div><div class="wrap">
 <header class="top"><h1>⚔ 김진수의 던전</h1><div class="pill" id="connection">서버 연결 중...</div></header>
 <section id="home" class="panel stack"><h2>던전 로그라이크</h2><p class="sub">혼자 탐험하거나 최대 6명이 함께 던전을 공략하세요.</p><button id="go-start" class="primary big">시작</button></section>
