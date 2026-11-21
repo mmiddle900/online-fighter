@@ -100,7 +100,7 @@ wss.on('connection', ws => {
         if(target&&target.id!==player.id&&damage>0)send(target.ws,{type:'player-hit',from:player.id,damage});return;
       }
       if (msg.event==='enemy-hit') {
-        const enemy=String(data.enemy||'').slice(0,32), damage=Math.max(0,Math.min(300,Number(data.damage)||0)), hitRoom=Math.max(1,Math.min(999,Math.floor(Number(data.room)||1)));
+        const enemy=String(data.enemy??'').slice(0,32), damage=Math.max(0,Math.min(300,Number(data.damage)||0)), hitRoom=Math.max(1,Math.min(999,Math.floor(Number(data.room)||1)));
         if (!enemy || damage<=0) return;
         broadcast(room,{type:'game-event',id:player.id,event:'enemy-hit',data:{room:hitRoom,enemy,damage}}); return;
       }
