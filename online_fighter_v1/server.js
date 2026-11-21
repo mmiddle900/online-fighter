@@ -81,7 +81,7 @@ wss.on('connection', ws => {
     if (msg.type==='game-state' && room.started) {
       const state=msg.state;
       if (!state || !Number.isFinite(state.x) || !Number.isFinite(state.y)) return;
-      broadcast(room,{type:'remote-state',id:player.id,state:{x:Math.max(0,Math.min(1,state.x)),y:Math.max(0,Math.min(1,state.y)),hp:Math.max(0,Math.min(100,Number(state.hp)||0)),face:state.face==='left'?'left':'right',attack:!!state.attack}});
+      broadcast(room,{type:'remote-state',id:player.id,name:player.name,state:{x:Math.max(0,Math.min(1,state.x)),y:Math.max(0,Math.min(1,state.y)),hp:Math.max(0,Math.min(250,Number(state.hp)||0)),face:Number.isFinite(state.face)?Math.max(-Math.PI,Math.min(Math.PI,state.face)):0,attack:!!state.attack}});
       return;
     }
     if (msg.type==='game-event' && room.started) {
