@@ -81,7 +81,7 @@ wss.on('connection', ws => {
     if (msg.type==='game-state' && room.started) {
       const state=msg.state;
       if (!state || !Number.isFinite(state.x) || !Number.isFinite(state.y)) return;
-      broadcast(room,{type:'remote-state',id:player.id,name:player.name,state:{x:Math.max(0,Math.min(1,state.x)),y:Math.max(0,Math.min(1,state.y)),hp:Math.max(0,Math.min(250,Number(state.hp)||0)),face:Number.isFinite(state.face)?Math.max(-Math.PI,Math.min(Math.PI,state.face)):0,attack:!!state.attack}});
+      broadcast(room,{type:'remote-state',id:player.id,name:player.name,state:{x:Math.max(0,Math.min(1,state.x)),y:Math.max(0,Math.min(1,state.y)),hp:Math.max(0,Math.min(250,Number(state.hp)||0)),face:Number.isFinite(state.face)?Math.max(-Math.PI,Math.min(Math.PI,state.face)):0,attack:!!state.attack,xp:Math.max(0,Math.min(1000000,Math.floor(Number(state.xp)||0))),coins:Math.max(0,Math.min(1000000,Math.floor(Number(state.coins)||0))),kills:Math.max(0,Math.min(1000000,Math.floor(Number(state.kills)||0)))}});
       return;
     }
     if (msg.type==='enemy-sync' && room.started && room.host===player.id) {
@@ -93,7 +93,15 @@ wss.on('connection', ws => {
     }
     if (msg.type==='game-event' && room.started) {
       if (!['room-clear','room-enter','enemy-hit','enemy-killed','xp'].includes(msg.event)) return;
-      broadcast(room,{type:'game-event',id:player.id,event:msg.event,data:msg.data||{}});
+      const data=msg.data&&typeof msg.data==='object'?msg.data:{};
+      if (msg.event==='enemy-hit') {
+        const enemy=String(data.enemy||'').slice(0,32), damage=Math.max(0,Math.min(300,Number(data.damage)||0)), hitRoom=Math.max(1,Math.min(999,Math.floor(Number(data.room)||1)));
+        if (!enemy || damage<=0) return;
+        broadcast(room,{type:'game-event',id:player.id,event:'enemy-hit',data:{room:hitRoom,enemy,damage}}); return;
+      }
+      if (player.id!==room.host) return;
+      const safe={room:Math.max(1,Math.min(999,Math.floor(Number(data.room)||1))),enemy:String(data.enemy||'').slice(0,32),xp:Math.max(0,Math.min(100000,Math.floor(Number(data.xp)||0))),coins:Math.max(0,Math.min(100000,Math.floor(Number(data.coins)||0))),amount:Math.max(0,Math.min(100000,Math.floor(Number(data.amount)||0))),total:Math.max(0,Math.min(1000000,Math.floor(Number(data.total)||0)))};
+      broadcast(room,{type:'game-event',id:player.id,event:msg.event,data:safe});
     }
   });
   ws.on('close',()=>removePlayer(ws));
