@@ -4,89 +4,41 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#101827">
-<title>새 게임</title>
+<title>온라인 PVP</title>
 <style>
-.account-open,.account-tabs button,#account-submit,.close{border:1px solid #475569;border-radius:10px;padding:10px 15px;background:#2563eb;color:white;font:inherit;cursor:pointer}.account-panel{margin-bottom:18px;padding:20px;border:1px solid #334155;border-radius:14px;background:#1e293b}.account-panel h2{margin:0 0 14px}.account-tabs{display:flex;gap:8px;margin-bottom:14px}.account-tabs button{background:#334155}.account-tabs button.active{background:#2563eb}#account-form{display:grid;gap:12px;max-width:420px}#account-form label{display:grid;gap:6px;color:#cbd5e1}#account-form input{padding:11px;border:1px solid #475569;border-radius:8px;background:#0f172a;color:white;font:inherit}#account-feedback{color:#cbd5e1}.close{background:#334155}
-*{box-sizing:border-box}
-:root{color-scheme:dark}
+*{box-sizing:border-box}:root{color-scheme:dark}
 body{margin:0;min-height:100vh;background:#101827;color:#edf2f7;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:24px}
-main{width:min(100%,1000px)}
-header{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px}
-h1{font-size:clamp(28px,5vw,42px);margin:0}
-.status{display:flex;align-items:center;gap:9px;padding:8px 12px;border:1px solid #334155;border-radius:999px;background:#1e293b;font-size:14px;color:#cbd5e1}
-.dot{width:9px;height:9px;border-radius:50%;background:#f59e0b}
-.status[data-state="connected"] .dot{background:#34d399}
-.status[data-state="disconnected"] .dot{background:#f87171}
+main{width:min(100%,1000px)}header{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px}
+h1{font-size:clamp(28px,5vw,42px);margin:0}.status{display:flex;align-items:center;gap:9px;padding:8px 12px;border:1px solid #334155;border-radius:999px;background:#1e293b;font-size:14px;color:#cbd5e1}
+.dot{width:9px;height:9px;border-radius:50%;background:#f59e0b}.status[data-state="connected"] .dot{background:#34d399}.status[data-state="disconnected"] .dot{background:#f87171}
 .stage{min-height:420px;display:grid;place-items:center;border:1px solid #334155;border-radius:16px;background:#0b1220;position:relative;overflow:hidden}
 .stage:before{content:"";position:absolute;inset:0;background-image:linear-gradient(to right,rgba(148,163,184,.12) 1px,transparent 1px),linear-gradient(to bottom,rgba(148,163,184,.12) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
-.message{position:relative;text-align:center;padding:24px}
-.message h2{font-size:clamp(22px,3vw,30px);margin:0 0 10px}
-.message p{margin:0;color:#94a3b8}
-footer{margin-top:14px;color:#64748b;font-size:13px;text-align:right}
-@media(max-width:600px){body{padding:14px}.stage{min-height:300px}}
+.message{position:relative;text-align:center;padding:24px}.message h2{font-size:clamp(22px,3vw,30px);margin:0 0 10px}.message p{margin:0;color:#94a3b8}
+footer{margin-top:14px;color:#64748b;font-size:13px;text-align:right}@media(max-width:600px){body{padding:14px}.stage{min-height:300px}}
 </style>
 </head>
 <body>
 <main>
-<header>
-<h1>새 RPG</h1><button id="account-open" class="account-open">로그인 / 계정 생성</button>
-<div id="online-status" class="status" data-state="connecting" role="status" aria-live="polite"><span class="dot"></span><span id="online-label">온라인 서버 연결 중</span></div>
-</header><section id="account-panel" class="account-panel" hidden><h2>계정</h2><div class="account-tabs"><button data-mode="login" class="active">로그인</button><button data-mode="register">계정 생성</button></div><form id="account-form"><label>아이디<input id="username" minlength="3" maxlength="24" autocomplete="username" required></label><label>비밀번호<input id="password" type="password" minlength="8" maxlength="128" autocomplete="current-password" required></label><button id="account-submit" type="submit">로그인</button></form><p id="account-feedback" role="status"></p><section id="player-data-panel" hidden><h3 id="account-welcome"></h3><label>저장된 RPG 데이터 (JSON)<textarea id="player-json" rows="10" spellcheck="false" style="width:100%;max-width:600px;padding:10px;border-radius:8px;background:#0f172a;color:white;border:1px solid #475569"></textarea></label><button id="player-save" class="close">데이터 저장</button> <button id="account-logout" class="close">로그아웃</button></section><button id="account-close" class="close">닫기</button></section>
-<section class="stage" aria-label="새 게임 제작 공간">
-<div class="message">
-<h2>새 게임 제작 공간</h2>
-<p>기존 게임 요소가 초기화되었습니다.</p>
-</div>
-</section>
-<footer>온라인 연결 기능 유지 · RPG 계정</footer>
+<header><h1>온라인 PVP</h1><div id="online-status" class="status" data-state="connecting" role="status" aria-live="polite"><span class="dot"></span><span id="online-label">온라인 서버 연결 중</span></div></header>
+<section class="stage" aria-label="온라인 PVP 게임 공간"><div class="message"><h2>온라인 PVP 준비 중</h2><p>온라인 연결을 유지하고 있습니다. 전투 시스템을 이곳에 추가할 예정입니다.</p></div></section>
+<footer>실시간 온라인 서버 연결</footer>
 </main>
 <script>
 (() => {
-  const status = document.querySelector('#online-status');
-  const label = document.querySelector('#online-label');
-  let socket;
-  let retryTimer;
-  let stopped = false;
-  function setStatus(state, text) {
-    status.dataset.state = state;
-    label.textContent = text;
+  const status=document.querySelector('#online-status'),label=document.querySelector('#online-label');
+  let socket,retryTimer,stopped=false;
+  function setStatus(state,text){status.dataset.state=state;label.textContent=text;}
+  function connect(){
+    if(stopped)return;
+    const scheme=location.protocol==='https:'?'wss:':'ws:';
+    socket=new WebSocket(scheme+'//'+location.host);
+    socket.addEventListener('open',()=>setStatus('connected','온라인 서버 연결됨'));
+    socket.addEventListener('message',event=>{try{if(JSON.parse(event.data).type==='connected')setStatus('connected','온라인 서버 연결됨');}catch(_){}});
+    socket.addEventListener('close',()=>{setStatus('disconnected','서버 연결 끊김 · 재연결 중');if(!stopped)retryTimer=setTimeout(connect,1800);});
+    socket.addEventListener('error',()=>{setStatus('disconnected','온라인 연결 오류');try{socket.close();}catch(_){}});
   }
-  function connect() {
-    if (stopped) return;
-    const scheme = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    socket = new WebSocket(scheme + '//' + location.host);
-    socket.addEventListener('open', () => setStatus('connected', '온라인 서버 연결됨'));
-    socket.addEventListener('message', event => {
-      try {
-        const message = JSON.parse(event.data);
-        if (message.type === 'connected') setStatus('connected', '온라인 서버 연결됨');
-      } catch (_) {}
-    });
-    socket.addEventListener('close', () => {
-      setStatus('disconnected', '서버 연결 끊김 · 재연결 중');
-      if (!stopped) retryTimer = setTimeout(connect, 1800);
-    });
-    socket.addEventListener('error', () => {
-      setStatus('disconnected', '온라인 연결 오류');
-      try { socket.close(); } catch (_) {}
-    });
-  }
-  window.addEventListener('beforeunload', () => {
-    stopped = true;
-    clearTimeout(retryTimer);
-    if (socket) socket.close();
-  });
+  window.addEventListener('beforeunload',()=>{stopped=true;clearTimeout(retryTimer);if(socket)socket.close();});
   connect();
-  const panel=document.querySelector('#account-panel'),form=document.querySelector('#account-form'),feedback=document.querySelector('#account-feedback'),dataPanel=document.querySelector('#player-data-panel'),jsonBox=document.querySelector('#player-json');let mode='login';
-  document.querySelector('#account-open').onclick=()=>panel.hidden=false;
-  document.querySelector('#account-close').onclick=()=>panel.hidden=true;
-  document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));document.querySelector('#account-submit').textContent=mode==='login'?'로그인':'계정 생성';document.querySelector('#password').autocomplete=mode==='login'?'current-password':'new-password';feedback.textContent='';});
-  async function loadPlayer(){const me=await fetch('/api/account/me');if(!me.ok){dataPanel.hidden=true;return;}const account=await me.json();document.querySelector('#account-welcome').textContent='로그인됨: '+account.username+' · 계정 ID '+account.id;const saved=await fetch('/api/player-data');if(!saved.ok)throw new Error('플레이어 데이터를 불러오지 못했습니다.');const result=await saved.json();jsonBox.value=JSON.stringify(result.data,null,2);dataPanel.hidden=false;document.querySelector('#account-open').textContent=account.username+' · 계정';}
-  form.addEventListener('submit',async e=>{e.preventDefault();feedback.textContent='처리 중...';try{const response=await fetch('/api/account/'+mode,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.querySelector('#username').value,password:document.querySelector('#password').value})});const data=await response.json();if(!response.ok)throw new Error(data.error||'요청 실패');feedback.textContent=(mode==='register'?'계정 생성 완료 · ':'로그인 완료 · ')+data.username+' (ID: '+data.id+')';await loadPlayer();}catch(error){feedback.textContent=error.message;}});
-  document.querySelector('#player-save').onclick=async()=>{try{const data=JSON.parse(jsonBox.value);const r=await fetch('/api/player-data',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({data})});const result=await r.json();if(!r.ok)throw new Error(result.error||'저장 실패');feedback.textContent='계정 ID에 RPG 데이터 저장 완료';}catch(e){feedback.textContent=e instanceof SyntaxError?'JSON 형식을 확인하세요.':e.message;}};
-  document.querySelector('#account-logout').onclick=async()=>{await fetch('/api/account/logout',{method:'POST'});dataPanel.hidden=true;document.querySelector('#account-open').textContent='로그인 / 계정 생성';feedback.textContent='로그아웃되었습니다.';};
-  loadPlayer().catch(e=>{feedback.textContent=e.message;});
-
 })();
 </script>
 </body>
