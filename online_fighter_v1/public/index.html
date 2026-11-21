@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#101827">
 <title>새 게임</title>
 <style>
+.account-open,.account-tabs button,#account-submit,.close{border:1px solid #475569;border-radius:10px;padding:10px 15px;background:#2563eb;color:white;font:inherit;cursor:pointer}.account-panel{margin-bottom:18px;padding:20px;border:1px solid #334155;border-radius:14px;background:#1e293b}.account-panel h2{margin:0 0 14px}.account-tabs{display:flex;gap:8px;margin-bottom:14px}.account-tabs button{background:#334155}.account-tabs button.active{background:#2563eb}#account-form{display:grid;gap:12px;max-width:420px}#account-form label{display:grid;gap:6px;color:#cbd5e1}#account-form input{padding:11px;border:1px solid #475569;border-radius:8px;background:#0f172a;color:white;font:inherit}#account-feedback{color:#cbd5e1}.close{background:#334155}
 *{box-sizing:border-box}
 :root{color-scheme:dark}
 body{margin:0;min-height:100vh;background:#101827;color:#edf2f7;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:24px}
@@ -28,16 +29,16 @@ footer{margin-top:14px;color:#64748b;font-size:13px;text-align:right}
 <body>
 <main>
 <header>
-<h1>새 게임</h1>
+<h1>새 RPG</h1><button id="account-open" class="account-open">로그인 / 계정 생성</button>
 <div id="online-status" class="status" data-state="connecting" role="status" aria-live="polite"><span class="dot"></span><span id="online-label">온라인 서버 연결 중</span></div>
-</header>
+</header><section id="account-panel" class="account-panel" hidden><h2>계정</h2><div class="account-tabs"><button data-mode="login" class="active">로그인</button><button data-mode="register">계정 생성</button></div><form id="account-form"><label>아이디<input id="username" minlength="3" maxlength="24" autocomplete="username" required></label><label>비밀번호<input id="password" type="password" minlength="8" maxlength="128" autocomplete="current-password" required></label><button id="account-submit" type="submit">로그인</button></form><p id="account-feedback" role="status"></p><button id="account-close" class="close">닫기</button></section>
 <section class="stage" aria-label="새 게임 제작 공간">
 <div class="message">
 <h2>새 게임 제작 공간</h2>
 <p>기존 게임 요소가 초기화되었습니다.</p>
 </div>
 </section>
-<footer>온라인 연결 기능 유지</footer>
+<footer>온라인 연결 기능 유지 · RPG 계정</footer>
 </main>
 <script>
 (() => {
@@ -76,6 +77,12 @@ footer{margin-top:14px;color:#64748b;font-size:13px;text-align:right}
     if (socket) socket.close();
   });
   connect();
+  const panel=document.querySelector('#account-panel'),form=document.querySelector('#account-form'),feedback=document.querySelector('#account-feedback');let mode='login';
+  document.querySelector('#account-open').onclick=()=>panel.hidden=false;
+  document.querySelector('#account-close').onclick=()=>panel.hidden=true;
+  document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));document.querySelector('#account-submit').textContent=mode==='login'?'로그인':'계정 생성';document.querySelector('#password').autocomplete=mode==='login'?'current-password':'new-password';feedback.textContent='';});
+  form.addEventListener('submit',async e=>{e.preventDefault();feedback.textContent='처리 중...';try{const response=await fetch('/api/account/'+mode,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.querySelector('#username').value,password:document.querySelector('#password').value})});const data=await response.json();if(!response.ok)throw new Error(data.error||'요청 실패');feedback.textContent=(mode==='register'?'계정 생성 완료 · ':'로그인 완료 · ')+data.username;}catch(error){feedback.textContent=error.message;}});
+
 })();
 </script>
 </body>
