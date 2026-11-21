@@ -320,6 +320,37 @@
  }
  #lobby #players .player-slot{width:220px!important;min-width:220px!important;max-width:none!important;height:82px!important;min-height:82px!important;box-sizing:border-box!important;}
 }
+
+/* Fit the complete mobile landscape lobby on one screen; preserve card proportions */
+@media(orientation:landscape) and (max-width:900px){
+ .wrap{gap:3px!important;padding:3px!important}
+ #lobby:not(.hidden){display:flex!important;flex-direction:column!important;flex:1 1 0!important;width:100%!important;height:100%!important;min-height:0!important;max-height:100%!important;padding:clamp(4px,1dvh,8px)!important;gap:clamp(3px,.8dvh,6px)!important;overflow:hidden!important;touch-action:auto!important}
+ #lobby:not(.hidden)>*{flex-shrink:1!important;min-height:0!important}
+ #lobby .row{flex-wrap:nowrap!important;gap:clamp(3px,.8vw,8px)!important}
+ #lobby .stack{gap:clamp(3px,.8dvh,6px)!important;min-height:0!important}
+ #lobby .row:first-child h2{font-size:clamp(14px,2.8dvh,20px)!important;line-height:1.1!important}
+ #lobby #room-area:not(.hidden){display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:3px!important;flex:0 0 auto!important}
+ #lobby #room-area .row{min-width:0!important;gap:4px!important}
+ #lobby #room-area .sub{font-size:clamp(9px,1.7dvh,12px)!important;white-space:nowrap!important}
+ #lobby #room-area #room-code{font-size:clamp(14px,3dvh,22px)!important;letter-spacing:clamp(1px,.4dvh,4px)!important}
+ #lobby #join-code{width:clamp(75px,16vw,150px)!important;flex:1 1 70px!important;font-size:clamp(10px,2dvh,14px)!important;padding:clamp(4px,.8dvh,8px)!important}
+ #lobby #room-area button{min-height:clamp(24px,5dvh,34px)!important;padding:3px clamp(5px,1vw,10px)!important;font-size:clamp(9px,1.8dvh,13px)!important;white-space:nowrap!important}
+ #lobby #characters{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:3px!important;flex:0 0 auto!important}
+ #lobby #characters h3{font-size:clamp(11px,2dvh,15px)!important;line-height:1.1!important}
+ #lobby #characters .slot{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:clamp(5px,1vw,12px)!important;width:100%!important;height:clamp(32px,7dvh,48px)!important;min-height:0!important;padding:3px 8px!important;aspect-ratio:auto!important;overflow:hidden!important}
+ #lobby #characters .slot .icon{font-size:clamp(16px,3.4dvh,24px)!important}
+ #lobby #characters .slot b{font-size:clamp(10px,2dvh,14px)!important}
+ #lobby #characters .slot .small{font-size:clamp(8px,1.5dvh,11px)!important}
+ #lobby #players{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;grid-auto-flow:row!important;flex:1 1 0!important;width:100%!important;min-width:0!important;min-height:0!important;height:auto!important;max-height:none!important;overflow:hidden!important;gap:clamp(3px,.7vw,7px)!important;align-content:stretch!important;touch-action:auto!important}
+ #lobby #players .player-slot{width:100%!important;min-width:0!important;max-width:100%!important;height:100%!important;min-height:0!important;max-height:100%!important;padding:clamp(2px,.5dvh,5px)!important;gap:clamp(1px,.3dvh,3px)!important;aspect-ratio:1.7/1!important;overflow:hidden!important}
+ #lobby #players .slot-number{font-size:clamp(7px,1.3dvh,10px)!important;line-height:1!important}
+ #lobby #players .player-slot .icon{font-size:clamp(12px,2.5dvh,19px)!important;line-height:1!important}
+ #lobby #players .player-slot b{font-size:clamp(8px,1.6dvh,12px)!important;line-height:1.05!important}
+ #lobby #players .player-slot .status{font-size:clamp(7px,1.3dvh,10px)!important;line-height:1!important}
+ #lobby>.row:has(#ready){display:grid!important;grid-template-columns:1fr 1fr!important;gap:5px!important;flex:0 0 auto!important}
+ #lobby #ready,#lobby #start-dungeon{height:clamp(28px,6dvh,38px)!important;min-height:0!important;padding:2px 6px!important;font-size:clamp(10px,1.9dvh,14px)!important}
+ #lobby #lobby-note{font-size:clamp(8px,1.5dvh,11px)!important;line-height:1.1!important;margin:0!important;flex:0 0 auto!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+}
 </style></head><body><div id="rotate-notice" class="rotate-notice" aria-live="polite"><div class="rotate-card"><div class="rotate-icon">📱↻</div><h2>가로 모드로 플레이</h2><p>휴대폰을 가로로 돌려주세요.<br>게임은 가로 화면에서만 표시됩니다.</p></div></div><div class="wrap">
 <header class="top"><h1>⚔ 김진수의 던전</h1><div class="pill" id="connection">서버 연결 중...</div></header>
 <section id="home" class="panel stack"><h2>던전 로그라이크</h2><p class="sub">혼자 탐험하거나 최대 6명이 함께 던전을 공략하세요.</p><button id="go-start" class="primary big">시작</button></section>
