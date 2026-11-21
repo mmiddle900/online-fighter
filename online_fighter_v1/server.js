@@ -84,7 +84,14 @@ wss.on('connection', ws => {
       broadcast(room,{type:'remote-state',id:player.id,name:player.name,state:{x:Math.max(0,Math.min(1,state.x)),y:Math.max(0,Math.min(1,state.y)),hp:Math.max(0,Math.min(250,Number(state.hp)||0)),face:Number.isFinite(state.face)?Math.max(-Math.PI,Math.min(Math.PI,state.face)):0,attack:!!state.attack}});
       return;
     }
-    if (msg.type==='enemy-sync' && room.started && room.host===player.id) {\n      const state=msg.state;\n      if (!state || !Array.isArray(state.enemies) || !Array.isArray(state.enemyArrows)) return;\n      const payload=JSON.stringify({type:'enemy-sync',state:{room:Math.max(1,Math.min(999,Number(state.room)||1)),cleared:!!state.cleared,enemies:state.enemies,enemyArrows:state.enemyArrows}});\n      for (const p of room.players.values()) if (p.id!==room.host && p.ws.readyState===WebSocket.OPEN) p.ws.send(payload);\n      return;\n    }\n    if (msg.type==='game-event' && room.started) {
+    if (msg.type==='enemy-sync' && room.started && room.host===player.id) {
+      const state=msg.state;
+      if (!state || !Array.isArray(state.enemies) || !Array.isArray(state.enemyArrows)) return;
+      const payload=JSON.stringify({type:'enemy-sync',state:{room:Math.max(1,Math.min(999,Number(state.room)||1)),cleared:!!state.cleared,enemies:state.enemies,enemyArrows:state.enemyArrows}});
+      for (const p of room.players.values()) if (p.id!==room.host && p.ws.readyState===WebSocket.OPEN) p.ws.send(payload);
+      return;
+    }
+    if (msg.type==='game-event' && room.started) {
       if (!['room-clear','room-enter','enemy-hit','enemy-killed','xp'].includes(msg.event)) return;
       broadcast(room,{type:'game-event',id:player.id,event:msg.event,data:msg.data||{}});
     }
