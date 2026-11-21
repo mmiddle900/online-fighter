@@ -3,80 +3,33 @@
 <style>
 *{box-sizing:border-box} :root{color-scheme:dark} body{margin:0;background:#0b1020;color:#f1f5f9;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}button,input{font:inherit}button{border:1px solid #475569;background:#263449;color:#f8fafc;border-radius:12px;padding:12px 16px;cursor:pointer;font-weight:700}button:disabled{opacity:.4;cursor:not-allowed}button.primary{background:#7c3aed;border-color:#8b5cf6}button.ready{background:#047857;border-color:#10b981}.hidden{display:none!important}.wrap{width:min(100%,1000px);margin:auto;padding:20px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}h1{margin:0;font-size:clamp(24px,4vw,36px)}.panel{background:#151e30;border:1px solid #2b3850;border-radius:18px;padding:20px}.sub{color:#94a3b8}.stack{display:grid;gap:14px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.modegrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.big{padding:24px;min-height:110px;font-size:20px}.slotgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.slot{background:#0e1626;border:1px solid #334155;border-radius:14px;padding:14px;text-align:center;min-height:100px}.slot .icon{font-size:30px}.slot .small{font-size:12px;color:#94a3b8}.code{font-size:28px;letter-spacing:5px;font-weight:800}.canvasbox{position:relative;background:#080d16;border:1px solid #334155;border-radius:16px;overflow:hidden}canvas{display:block;width:100%;height:min(68vh,620px);touch-action:none}.hud{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}.pill{background:#1e293b;border:1px solid #334155;border-radius:999px;padding:7px 12px;font-size:14px}.bar{height:9px;background:#334155;border-radius:99px;overflow:hidden;width:150px}.bar>i{display:block;height:100%;background:#ef4444;width:100%}.xpbar>i{background:#a78bfa}.gamecontrols{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-top:12px}.mobilepad{display:flex;align-items:center;gap:10px}.stick{width:116px;height:116px;border-radius:50%;background:#243249;border:1px solid #475569;position:relative;touch-action:none}.knob{width:44px;height:44px;border-radius:50%;background:#94a3b8;position:absolute;left:36px;top:36px}.actionbuttons{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.actionbuttons button{min-width:62px;min-height:58px}.log{font-size:13px;color:#cbd5e1;min-height:20px;margin-top:8px}@media(max-width:620px){.wrap{padding:12px}.panel{padding:14px}.modegrid{grid-template-columns:1fr}.slotgrid{gap:6px}.slot{padding:9px;min-height:90px}.gamecontrols{align-items:center}.actionbuttons{max-width:190px}.actionbuttons button{min-width:54px;padding:8px}.code{font-size:23px}}
 
-/* Mobile-first combat controls */
-@media(max-width:620px){
- body{min-height:100dvh;padding-bottom:env(safe-area-inset-bottom)}
- .wrap{padding:10px 10px calc(12px + env(safe-area-inset-bottom))}
- .top{margin-bottom:10px;gap:8px}.top h1{font-size:21px}.top .pill{font-size:12px;padding:6px 9px}
- #game .hud{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:6px}
- #game .hud .pill{border-radius:10px;padding:7px 9px;font-size:12px;min-width:0}
- #game .bar{width:100%;max-width:130px;height:6px;margin-top:3px}
- #game .hud:nth-of-type(2){display:flex;justify-content:space-between}
- .canvasbox{border-radius:12px}
- #world{width:100%;height:clamp(230px,43svh,390px);touch-action:none}
- .gamecontrols{display:grid;grid-template-columns:minmax(108px,34%) minmax(0,1fr);align-items:center;gap:10px;margin-top:10px}
- .mobilepad{flex-direction:column;gap:5px;justify-content:center}
- .mobilepad .sub{font-size:11px}
- .stick{width:clamp(104px,30vw,132px);height:clamp(104px,30vw,132px);background:radial-gradient(circle,#2d405c 0%,#1c2a40 72%);border:2px solid #526782;box-shadow:inset 0 0 0 8px #182438;}
- .knob{width:44px;height:44px;left:calc(50% - 22px);top:calc(50% - 22px);background:#cbd5e1;border:2px solid #64748b;box-shadow:0 2px 8px #0008}
- .actionbuttons{max-width:none;width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;justify-content:stretch}
- .actionbuttons button{min-width:0;width:100%;min-height:58px;padding:8px 5px;border-radius:13px;font-size:13px;line-height:1.15;white-space:normal;touch-action:manipulation}
- #attack{grid-column:1/-1;min-height:54px;background:#9f1239;border-color:#fb7185;font-size:15px}
- #skill1{background:#1d4ed8;border-color:#60a5fa}#skill2{background:#6d28d9;border-color:#c4b5fd}#skill3{background:#92400e;border-color:#fbbf24}
- .log{font-size:12px;line-height:1.35;min-height:34px;margin-top:7px}
- #shop .row{display:grid;grid-template-columns:1fr;gap:8px}#shop button{min-height:48px}
- #exit-game{min-height:44px}
- button,input{touch-action:manipulation}
-}
-@media(max-width:360px){.gamecontrols{grid-template-columns:102px minmax(0,1fr);gap:7px}.stick{width:98px;height:98px}.actionbuttons button{font-size:12px;min-height:54px}}
-
-/* Landscape-only mobile game */
+/* Mobile compact viewport + robust multitouch */
+@media(max-width:620px){.wrap{padding:10px}.panel{padding:12px}.modegrid{grid-template-columns:1fr}.slotgrid{gap:6px}.slot{padding:8px;min-height:80px}}
 .rotate-notice{display:none}
 @media(orientation:portrait) and (max-width:900px){body{overflow:hidden}.rotate-notice{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#080d16;padding:24px;text-align:center}.rotate-card{max-width:320px;border:1px solid #334155;background:#151e30;border-radius:22px;padding:28px 22px;box-shadow:0 20px 60px #0008}.rotate-icon{font-size:54px;margin-bottom:12px}.rotate-card h2{margin:0 0 12px;font-size:23px}.rotate-card p{color:#cbd5e1;line-height:1.65;margin:0}.wrap{display:none!important}}
 @media(orientation:landscape) and (max-width:900px){
- body{overflow:hidden;min-height:100dvh}.wrap{width:100%;max-width:none;height:100dvh;padding:6px 9px calc(6px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:5px}
- .top{display:none}#game{flex:1;min-height:0;display:flex;flex-direction:column;gap:5px}
- #game .hud{display:flex;flex-wrap:nowrap;align-items:center;gap:5px;margin:0;min-height:25px;overflow:hidden}
- #game .hud .pill{font-size:11px;line-height:1.1;padding:4px 7px;border-radius:8px;white-space:nowrap;min-width:0}
- #game .bar{width:clamp(45px,10vw,95px);height:5px;margin-top:3px}
- #game .hud:nth-of-type(2) .pill{overflow:hidden;text-overflow:ellipsis}
- .canvasbox{flex:1;min-height:0;border-radius:10px;display:flex}
- #world{width:100%;height:100%;max-height:none;touch-action:none}
- .gamecontrols{display:grid;grid-template-columns:minmax(118px,22%) minmax(0,1fr);gap:8px;align-items:stretch;margin:0;flex:0 0 clamp(94px,23dvh,150px)}
- .mobilepad{justify-content:center;align-items:center;gap:4px;min-width:0}.mobilepad .sub{display:none}
- .stick{width:min(22vw,140px);height:min(22vw,140px);max-width:100%;max-height:100%;background:radial-gradient(circle,#30435f,#172438 75%);border:2px solid #5b718d;box-shadow:inset 0 0 0 7px #182438}
- .knob{width:clamp(38px,8vh,52px);height:clamp(38px,8vh,52px);left:calc(50% - clamp(19px,4vh,26px));top:calc(50% - clamp(19px,4vh,26px));background:#dbeafe;border:2px solid #64748b}
- .actionbuttons{width:100%;max-width:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:6px;justify-content:stretch}
- .actionbuttons button{min-width:0;width:100%;min-height:0;height:100%;padding:5px 3px;border-radius:12px;font-size:clamp(11px,2.2vw,15px);line-height:1.05;white-space:normal;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
- #attack{grid-column:auto;grid-row:1/-1;background:#9f1239;border-color:#fb7185;font-size:clamp(13px,2.7vw,17px)}
- #dodge-button{background:#0f766e;border-color:#5eead4;font-size:clamp(12px,2.5vw,16px)}
+ html,body{width:100%;height:100%;min-height:0;max-height:100%;margin:0;overflow:hidden!important;overscroll-behavior:none;touch-action:none}
+ .wrap{width:100%;max-width:none;height:100dvh;min-height:0;max-height:100dvh;overflow:hidden;padding:4px 6px calc(4px + env(safe-area-inset-bottom));margin:0;display:flex;flex-direction:column;gap:4px}
+ .top{display:none}#game{width:100%;height:100%;max-height:100%;min-height:0;flex:1 1 auto;overflow:hidden;display:flex;flex-direction:column;gap:4px}
+ #game .hud{display:flex;flex:0 0 22px;flex-wrap:nowrap;align-items:center;gap:4px;margin:0;min-height:0;overflow:hidden}
+ #game .hud .pill{font-size:10px;line-height:1;padding:3px 5px;border-radius:7px;white-space:nowrap;min-width:0;overflow:hidden}
+ #game .bar{width:clamp(32px,8vw,68px);height:4px;margin-top:2px}
+ #game .hud:nth-of-type(2) .pill{font-size:10px}
+ .canvasbox{width:100%;flex:1 1 auto;min-height:0;height:auto;max-height:none;overflow:hidden;border-radius:8px;display:flex}
+ #world{display:block;width:100%;height:100%;max-width:100%;max-height:100%;touch-action:none}
+ .gamecontrols{width:100%;display:grid;grid-template-columns:clamp(72px,18vw,100px) minmax(0,1fr);gap:6px;align-items:center;margin:0;flex:0 0 clamp(72px,19dvh,88px);min-height:0;max-height:88px}
+ .mobilepad{display:flex;justify-content:center;align-items:center;min-width:0;gap:0}.mobilepad .sub{display:none}
+ .stick{width:clamp(64px,17vw,82px);height:clamp(64px,17vw,82px);min-width:0;min-height:0;max-width:100%;max-height:100%;border-radius:50%;position:relative;touch-action:none;user-select:none;-webkit-user-select:none;background:radial-gradient(circle,#30435f,#172438 75%);border:2px solid #5b718d;box-shadow:inset 0 0 0 5px #182438}
+ .knob{width:32px;height:32px;left:calc(50% - 16px);top:calc(50% - 16px);position:absolute;pointer-events:none;background:#dbeafe;border:2px solid #64748b;border-radius:50%}
+ .actionbuttons{width:100%;height:100%;max-width:none;min-width:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:minmax(0,1fr);gap:4px;justify-content:stretch}
+ .actionbuttons button{width:100%;min-width:0;min-height:0;height:100%;padding:3px 1px;border-radius:9px;font-size:clamp(10px,1.8vw,13px);line-height:1.05;white-space:normal;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+ #attack{grid-column:auto;grid-row:auto;background:#9f1239;border-color:#fb7185;font-size:clamp(11px,2vw,14px)}#dodge-button{background:#0f766e;border-color:#5eead4}
  #skill1{background:#1d4ed8;border-color:#60a5fa}#skill2{background:#6d28d9;border-color:#c4b5fd}#skill3{background:#92400e;border-color:#fbbf24}
- .log{display:none}#shop{max-height:35dvh;overflow:auto;padding:9px;margin:0!important}#shop h2{font-size:16px;margin:0}#shop .sub{font-size:11px;margin:3px 0}#shop .row{display:flex;gap:5px}#shop button{min-height:38px;padding:6px;font-size:11px;flex:1}
- #exit-game{display:none}
+ .log{display:none}#shop{flex:0 0 auto;max-height:26dvh;overflow:auto;padding:7px;margin:0!important}
+ #shop h2{font-size:14px;margin:0}#shop .sub{font-size:10px;margin:2px 0}#shop .row{display:flex;gap:4px}#shop button{min-height:30px;padding:4px;font-size:10px;flex:1}
+ #exit-game{display:block;min-height:28px;height:28px;padding:3px 10px;font-size:11px}#game>.row:last-child{flex:0 0 28px;margin:0!important;min-height:0}
 }
-/* Restore page scrolling in landscape; keep controls reachable on short screens */
-@media(orientation:landscape) and (max-width:900px){
- body{overflow-x:hidden!important;overflow-y:auto!important;min-height:100dvh;height:auto}
- .wrap{height:auto!important;min-height:100dvh;display:flex;flex-direction:column}
- #game{flex:0 0 auto!important;min-height:0;height:auto}
- .canvasbox{flex:0 0 auto!important;height:44dvh;min-height:190px}
- #world{height:100%!important}
- .gamecontrols{flex:0 0 auto!important;min-height:100px;margin-bottom:8px}
- #shop{max-height:none;overflow:visible}
-}
-@media(orientation:landscape) and (max-width:560px){.gamecontrols{grid-template-columns:112px minmax(0,1fr);flex-basis:clamp(90px,25dvh,132px);gap:6px}.stick{width:min(27vw,122px);height:min(27vw,122px)}.actionbuttons{gap:4px}.actionbuttons button{font-size:11px;border-radius:9px}}
-/* Mobile landscape scroll recovery - retain full game markup and script */
-@media(orientation:landscape) and (max-width:900px){
- html,body{height:auto!important;min-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important}
- body{min-height:100dvh!important;touch-action:pan-y!important}
- .wrap{height:auto!important;min-height:100dvh!important;max-height:none!important;overflow:visible!important;display:flex!important;flex-direction:column!important}
- #game{height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:0 0 auto!important}
- .canvasbox{height:clamp(180px,42dvh,360px)!important;min-height:180px!important;max-height:none!important;flex:0 0 auto!important}
- #world{height:100%!important;width:100%!important;touch-action:pan-y!important}
- .gamecontrols{flex:0 0 auto!important;min-height:94px!important;margin-bottom:8px!important}
- #shop{max-height:none!important;overflow:visible!important}
-}
-
+@media(orientation:landscape) and (max-width:560px){#game .hud{flex-basis:20px}.gamecontrols{grid-template-columns:70px minmax(0,1fr);flex-basis:72px}.stick{width:62px;height:62px}.actionbuttons{gap:3px}.actionbuttons button{font-size:10px;padding:2px 0}}
 </style></head><body><div id="rotate-notice" class="rotate-notice" aria-live="polite"><div class="rotate-card"><div class="rotate-icon">📱↻</div><h2>가로 모드로 플레이</h2><p>휴대폰을 가로로 돌려주세요.<br>게임은 가로 화면에서만 표시됩니다.</p></div></div><div class="wrap">
 <header class="top"><h1>⚔ 김진수의 던전</h1><div class="pill" id="connection">서버 연결 중...</div></header>
 <section id="home" class="panel stack"><h2>던전 로그라이크</h2><p class="sub">혼자 탐험하거나 최대 6명이 함께 던전을 공략하세요.</p><button id="go-start" class="primary big">시작</button></section>
@@ -168,12 +121,12 @@ function playSwordSound(){try{const A=window.AudioContext||window.webkitAudioCon
 function attack(){if(!started||game.attackCd>0||game.actionLock>0)return;game.attackCd=1;game.attackAnim=.2;game.attackDelay=.1;playSwordSound();game.attackAngle=game.face;note('목검 타격!');}function resolveBasicAttack(){let hit=false;for(let e of game.enemies){let dx=e.x-game.x,dy=e.y-game.y,d=Math.hypot(dx,dy),a=Math.atan2(dy,dx),diff=Math.atan2(Math.sin(a-game.attackAngle),Math.cos(a-game.attackAngle));if(d<=80+e.r&&Math.abs(diff)<=Math.PI*5/12){let dealt=Math.round(20*((e.vulnerable||0)>0?1.5:1));e.hp-=dealt;showDamage(e.x,e.y-e.r-12,dealt,'enemy',e.y);hit=true;game.particles.push({x:e.x,y:e.y,vx:0,vy:-40,life:.3,color:'#d1d5db'});if(e.hp<=0){game.kills++;awardCoins(e.type);let xp=e.type==='elite'?100:e.type==='fast'?15:25;gainXp(xp);note('적 처치! +'+xp+' EXP');send('game-event',{event:'enemy-killed',data:{room:game.room,xp,coins:e.type==='knight'?5:e.type==='archer'?3:1}});}send('game-event',{event:'enemy-hit',data:{room:game.room,enemy:e.id,damage:20}});}}if(!hit)note('목검을 휘둘렀습니다.');}
 function useSkill(i){if(!started||!game||game.actionLock>0)return;let req=[50,400,200][i],cd=[5,12,45][i],cost=[20,40,50][i];if((i===0&&game.xp<50)||(i===1&&levelOf(game.xp)<5)||(i===2&&levelOf(game.xp)<10)||game.skillCd[i]>0)return;if(game.mana<cost){note('마나가 부족합니다. ('+cost+' MP 필요)');return;}game.mana-=cost;game.skillCd[i]=cd;if(i===1){let a=game.face;game.potions.push({x:game.x+Math.cos(a)*24,y:game.y+Math.sin(a)*24,angle:a,travel:0});note('김진수: 마녀의 물약! -40 MP');return;}if(i===0){playSwordSound();game.skillCd[i]=5;game.actionLock=.15;game.skill1Cast=.05;note('검기 준비! -20 MP');return;}if(i===2){game.skillCd[i]=45;game.actionLock=1;game.skill3Cast=1;game.invuln=1;note('마녀 찬가: 1초간 무적·정지! -50 MP');return;}let radius=[145,110,220][i],damage=[55,80,160][i];for(let e of game.enemies){let d=Math.hypot(e.x-game.x,e.y-game.y);if(d<radius){let dealt=Math.round(damage*((e.vulnerable||0)>0?1.5:1));e.hp-=dealt;showDamage(e.x,e.y-e.r-12,dealt,'enemy',e.y);game.particles.push({x:e.x,y:e.y,vx:0,vy:-80,life:.5,color:['#93c5fd','#c4b5fd','#fbbf24'][i]});if(e.hp<=0){game.kills++;awardCoins(e.type);gainXp(e.type==='elite'?100:e.type==='fast'?15:25);}}}note(['김진수: 검기! -20 MP','김진수: 마녀의 물약! -40 MP','김진수: 마녀 찬가! -50 MP'][i]);}
 function dodge(){if(!started||game.dodgeCd>0)return;game.dodge=.35;game.dodgeCd=.25;}$('#dodge-button').classList.add('ready');
-$('#attack').onclick=attack;$('#dodge-button').onclick=dodge;$('#skill1').onclick=()=>useSkill(0);$('#skill2').onclick=()=>useSkill(1);$('#skill3').onclick=()=>useSkill(2);
+const actionFns=[attack,dodge,()=>useSkill(0),()=>useSkill(1),()=>useSkill(2)];['#attack','#dodge-button','#skill1','#skill2','#skill3'].forEach((sel,i)=>{const b=$(sel);b.onclick=actionFns[i];b.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'){e.preventDefault();if(!b.disabled)actionFns[i]();}},{passive:false});});
 window.addEventListener('keydown',e=>{let k=e.key.length===1?e.key.toLowerCase():e.key;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();keys[k]=true;if(e.repeat)return;if(k===' '||k==='Shift')dodge();if(k==='q'||k==='1')useSkill(0);if(k==='e'||k==='2')useSkill(1);if(k==='r'||k==='3')useSkill(2);if(k==='j'||k==='Enter')attack();});
 window.addEventListener('keyup',e=>{let k=e.key.length===1?e.key.toLowerCase():e.key;keys[k]=false;});
 canvas.addEventListener('pointerdown',e=>{if(!started)return;const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;attack();});
-const stick=$('#stick'),knob=$('#knob');function setStick(e){const r=stick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=(e.clientX-cx)/(r.width/2),dy=(e.clientY-cy)/(r.height/2),d=Math.hypot(dx,dy);if(d>1){dx/=d;dy/=d}stickVec={x:dx,y:dy};knob.style.transform='translate('+dx*34+'px,'+dy*34+'px)';}
-stick.addEventListener('pointerdown',e=>{stickActive=true;stick.setPointerCapture(e.pointerId);setStick(e)});stick.addEventListener('pointermove',e=>{if(stickActive)setStick(e)});function resetStick(){stickActive=false;stickVec={x:0,y:0};knob.style.transform=''}stick.addEventListener('pointerup',resetStick);stick.addEventListener('pointercancel',resetStick);
+const stick=$('#stick'),knob=$('#knob');let stickPointerId=null;function setStick(e){const r=stick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=(e.clientX-cx)/(r.width/2),dy=(e.clientY-cy)/(r.height/2),d=Math.hypot(dx,dy);if(d>1){dx/=d;dy/=d}stickVec={x:dx,y:dy};const travel=Math.max(0,r.width/2-18);knob.style.transform='translate('+dx*travel+'px,'+dy*travel+'px)';}
+stick.addEventListener('pointerdown',e=>{if(stickPointerId!==null)return;e.preventDefault();stickPointerId=e.pointerId;stickActive=true;try{stick.setPointerCapture(e.pointerId)}catch{}setStick(e)},{passive:false});stick.addEventListener('pointermove',e=>{if(e.pointerId===stickPointerId&&stickActive)setStick(e)});function resetStick(e){if(e&&e.pointerId!==stickPointerId)return;stickPointerId=null;stickActive=false;stickVec={x:0,y:0};knob.style.transform=''}stick.addEventListener('pointerup',resetStick);stick.addEventListener('pointercancel',resetStick);stick.addEventListener('lostpointercapture',resetStick);
 $('#buy-hp').onclick=()=>{if(game.coins<5)return $('#shop-note').textContent='코인이 부족합니다.';if(game.hp>=game.maxHp)return $('#shop-note').textContent='HP가 이미 가득 찼습니다.';game.coins-=5;game.hp=Math.min(game.maxHp,game.hp+50);$('#shop-note').textContent='HP를 50 회복했습니다.';updateHud();};$('#buy-mp').onclick=()=>{if(game.coins<3)return $('#shop-note').textContent='코인이 부족합니다.';if(game.mana>=game.maxMana)return $('#shop-note').textContent='MP가 이미 가득 찼습니다.';game.coins-=3;game.mana=Math.min(game.maxMana,game.mana+30);$('#shop-note').textContent='MP를 30 회복했습니다.';updateHud();};$('#shop-continue').onclick=()=>{if(!game.shopOpen)return;game.shopOpen=false;$('#shop').classList.add('hidden');game.potions=[];game.zones=[];game.explosions=[];game.room++;game.x=wall+40;game.y=H/2;spawnRoom();send('game-event',{event:'room-enter',data:{room:game.room}});note('던전 '+game.room+'번째 방');};
 $('#exit-game').onclick=()=>{started=false;game=null;if(isSolo){show('#mode')}else{show('#lobby');note('던전에서 나왔습니다.');}};
 })();
