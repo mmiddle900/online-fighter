@@ -293,6 +293,20 @@
  #game:has(#shop:not(.hidden)) .gamecontrols{pointer-events:none!important;opacity:.35!important}
  #game:has(#shop:not(.hidden)) #shop{pointer-events:auto!important}
 }
+
+/* Multiplayer player slots: clear numbered cards and readable ready states */
+#players{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important;width:100%;}
+#players .player-slot{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:112px;padding:10px 6px;border:1px solid #475569;border-radius:14px;background:linear-gradient(155deg,#1c2940,#101827);text-align:center;overflow:hidden;}
+#players .player-slot.occupied{border-color:#64748b;background:linear-gradient(155deg,#263b58,#142236);}
+#players .player-slot.is-ready{border-color:#34d399;background:linear-gradient(155deg,#123c36,#102820);box-shadow:inset 0 0 0 1px #10b98155;}
+#players .slot-number{font-size:10px;letter-spacing:1px;font-weight:800;color:#94a3b8;}
+#players .player-slot .icon{font-size:24px;line-height:1.05;}
+#players .player-slot b{font-size:clamp(12px,2vw,16px);overflow-wrap:anywhere;}
+#players .player-slot .status{font-size:11px;line-height:1.25;}
+#players .player-slot.empty-slot{border-style:dashed;background:#0d1523;color:#64748b;}
+#players .player-slot.empty-slot .icon{font-size:22px;color:#64748b;}
+@media(max-width:900px){#players{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;}#players .player-slot{min-height:clamp(66px,17dvh,92px);padding:5px 3px;border-radius:10px;gap:3px;}#players .slot-number{font-size:8px;letter-spacing:.5px;}#players .player-slot .icon{font-size:clamp(17px,4dvh,24px);}#players .player-slot b{font-size:clamp(10px,2.2dvh,13px);}#players .player-slot .status{font-size:clamp(9px,1.8dvh,11px);}}
+@media(max-width:560px){#players{gap:4px!important;}#players .player-slot{min-height:62px;padding:4px 2px;}#players .player-slot .status{font-size:9px;}}
 </style></head><body><div id="rotate-notice" class="rotate-notice" aria-live="polite"><div class="rotate-card"><div class="rotate-icon">📱↻</div><h2>가로 모드로 플레이</h2><p>휴대폰을 가로로 돌려주세요.<br>게임은 가로 화면에서만 표시됩니다.</p></div></div><div class="wrap">
 <header class="top"><h1>⚔ 김진수의 던전</h1><div class="pill" id="connection">서버 연결 중...</div></header>
 <section id="home" class="panel stack"><h2>던전 로그라이크</h2><p class="sub">혼자 탐험하거나 최대 6명이 함께 던전을 공략하세요.</p><button id="go-start" class="primary big">시작</button></section>
@@ -318,7 +332,7 @@ $('#ready').onclick=()=>{ready=!ready;$('#ready').textContent=ready?'준비 취�
 $('#start-dungeon').onclick=()=>{if(isSolo){startGame(Math.floor(Math.random()*1e9));return}if(!room)return note('먼저 방을 생성하거나 참가하세요.');if(!isHost)return note('방장만 던전을 시작할 수 있습니다.');if(room.players.some(p=>!p.ready))return note('모든 플레이어가 준비 완료해야 합니다.');send('start-dungeon');};
 $('#leave').onclick=()=>{room=null;isSolo=false;ready=false;show('#mode');};
 function showLobby(){show('#lobby');$('#room-area').classList.toggle('hidden',isSolo);$('#lobby-title').textContent=isSolo?'1인 대기실':'다인 대기실';$('#room-code').textContent=room?.code||'';renderPlayers();note(isSolo?'김진수를 선택하고 던전 입장을 누르세요.':'캐릭터를 선택하고 준비 완료하세요. 방장은 모두 준비하면 던전을 시작할 수 있습니다.');}
-function renderPlayers(){let root=$('#players');root.innerHTML='';let players=isSolo?[{name:'김진수',host:true,ready:true}]:room?.players||[];for(let i=0;i<6;i++){let p=players[i],d=document.createElement('div');d.className='slot';d.innerHTML=p?'<div class="icon">🗡️</div><b>'+escapeHtml(p.name||'김진수')+'</b><div class="small">'+(p.host?'👑 방장 · ':'')+(p.ready?'준비 완료':'선택/준비 중')+'</div>':'<div class="icon">＋</div><div class="small">빈 슬롯</div>';root.appendChild(d)}$('#start-dungeon').disabled=!isSolo&&(!room||!isHost||room.players.length<1||room.players.some(p=>!p.ready));}
+function renderPlayers(){let root=$('#players');root.innerHTML='';let players=isSolo?[{name:'김진수',host:true,ready:true}]:room?.players||[];for(let i=0;i<6;i++){let p=players[i],d=document.createElement('div');d.className='slot player-slot '+(p?'occupied':'empty-slot')+(p&&p.ready?' is-ready':'');d.innerHTML=p?'<div class="slot-number">PLAYER '+(i+1)+'</div><div class="icon">🗡️</div><b>'+escapeHtml(p.name||'김진수')+'</b><div class="small status">'+(p.host?'👑 방장 · ':'')+(p.ready?'✓ 준비 완료':'대기 중')+'</div>':'<div class="slot-number">PLAYER '+(i+1)+'</div><div class="icon">＋</div><b>참가 대기</b><div class="small status">빈 슬롯</div>';root.appendChild(d)}$('#start-dungeon').disabled=!isSolo&&(!room||!isHost||room.players.length<1||room.players.some(p=>!p.ready));}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 const canvas=$('#world'),ctx=canvas.getContext('2d');let game=null,keys={},remote={},lastSync=0,stickVec={x:0,y:0},stickActive=false;
 const W=960,H=600,wall=34;
