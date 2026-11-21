@@ -54,6 +54,16 @@
  .log{display:none}#shop{max-height:35dvh;overflow:auto;padding:9px;margin:0!important}#shop h2{font-size:16px;margin:0}#shop .sub{font-size:11px;margin:3px 0}#shop .row{display:flex;gap:5px}#shop button{min-height:38px;padding:6px;font-size:11px;flex:1}
  #exit-game{display:none}
 }
+/* Restore page scrolling in landscape; keep controls reachable on short screens */
+@media(orientation:landscape) and (max-width:900px){
+ body{overflow-x:hidden!important;overflow-y:auto!important;min-height:100dvh;height:auto}
+ .wrap{height:auto!important;min-height:100dvh;display:flex;flex-direction:column}
+ #game{flex:0 0 auto!important;min-height:0;height:auto}
+ .canvasbox{flex:0 0 auto!important;height:44dvh;min-height:190px}
+ #world{height:100%!important}
+ .gamecontrols{flex:0 0 auto!important;min-height:100px;margin-bottom:8px}
+ #shop{max-height:none;overflow:visible}
+}
 @media(orientation:landscape) and (max-width:560px){.gamecontrols{grid-template-columns:112px minmax(0,1fr);flex-basis:clamp(90px,25dvh,132px);gap:6px}.stick{width:min(27vw,122px);height:min(27vw,122px)}.actionbuttons{gap:4px}.actionbuttons button{font-size:11px;border-radius:9px}}
 </style></head><body><div id="rotate-notice" class="rotate-notice" aria-live="polite"><div class="rotate-card"><div class="rotate-icon">📱↻</div><h2>가로 모드로 플레이</h2><p>휴대폰을 가로로 돌려주세요.<br>게임은 가로 화면에서만 표시됩니다.</p></div></div><div class="wrap">
 <header class="top"><h1>⚔ 김진수의 던전</h1><div class="pill" id="connection">서버 연결 중...</div></header>
