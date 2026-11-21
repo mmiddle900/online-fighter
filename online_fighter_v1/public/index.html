@@ -65,6 +65,32 @@
  #shop{max-height:none;overflow:visible}
 }
 @media(orientation:landscape) and (max-width:560px){.gamecontrols{grid-template-columns:112px minmax(0,1fr);flex-basis:clamp(90px,25dvh,132px);gap:6px}.stick{width:min(27vw,122px);height:min(27vw,122px)}.actionbuttons{gap:4px}.actionbuttons button{font-size:11px;border-radius:9px}}
+/* Compact one-screen landscape combat layout */
+@media(orientation:landscape) and (max-width:900px){
+ body{overflow:hidden!important;height:100dvh;min-height:0}
+ .wrap{height:100dvh!important;min-height:0!important;overflow:hidden;padding:4px 7px calc(4px + env(safe-area-inset-bottom));gap:3px}
+ #game{flex:1 1 auto!important;height:100%;min-height:0;overflow:hidden;gap:3px}
+ #game .hud{flex:0 0 22px;min-height:22px;gap:3px}
+ #game .hud .pill{font-size:10px;padding:3px 5px}
+ .canvasbox{flex:1 1 auto!important;min-height:90px;height:auto;max-height:44dvh}
+ #world{height:100%!important;width:100%;object-fit:contain}
+ .gamecontrols{flex:0 0 clamp(76px,22dvh,106px)!important;min-height:0!important;margin:0;grid-template-columns:minmax(88px,18%) minmax(0,1fr);gap:5px}
+ .mobilepad{height:100%;min-height:0}
+ .stick{width:min(18vw,92px);height:min(18vw,92px);min-width:72px;min-height:72px}
+ .knob{width:36px;height:36px;left:calc(50% - 18px);top:calc(50% - 18px)}
+ .actionbuttons{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:1fr;gap:4px}
+ .actionbuttons button{min-height:0;height:100%;padding:3px 2px;font-size:clamp(10px,1.8vw,13px);line-height:1.05}
+ #attack{grid-column:auto;grid-row:auto;font-size:clamp(11px,2vw,14px)}
+ #dodge-button{font-size:clamp(10px,1.8vw,13px)}
+ #exit-game{display:none}
+ #shop{max-height:calc(100dvh - 35px);overflow-y:auto}
+}
+@media(orientation:landscape) and (max-width:560px){
+ .gamecontrols{grid-template-columns:82px minmax(0,1fr)!important;flex-basis:clamp(74px,21dvh,94px)!important}
+ .stick{width:72px;height:72px;min-width:72px;min-height:72px}
+ .actionbuttons{grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:1fr!important}
+ .actionbuttons button{font-size:10px;padding:2px 1px}
+}
 </style></head><body><div id="rotate-notice" class="rotate-notice" aria-live="polite"><div class="rotate-card"><div class="rotate-icon">📱↻</div><h2>가로 모드로 플레이</h2><p>휴대폰을 가로로 돌려주세요.<br>게임은 가로 화면에서만 표시됩니다.</p></div></div><div class="wrap">
 <header class="top"><h1>⚔ 김진수의 던전</h1><div class="pill" id="connection">서버 연결 중...</div></header>
 <section id="home" class="panel stack"><h2>던전 로그라이크</h2><p class="sub">혼자 탐험하거나 최대 6명이 함께 던전을 공략하세요.</p><button id="go-start" class="primary big">시작</button></section>
