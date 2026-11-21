@@ -242,6 +242,23 @@
  #game #attack{width:clamp(82px,21vw,104px)!important;height:clamp(82px,21vw,104px)!important}
  #game .mobilepad{width:clamp(105px,30vw,140px)!important;height:clamp(105px,30vw,140px)!important;left:10px!important;bottom:10px!important}
 }
+
+/* Mobile: let the battlefield itself cover the entire display; HUD and controls float above it */
+@media(max-width:900px){
+ #game:not(.hidden){display:block!important;position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;background:#080d16!important}
+ #game>.canvasbox{position:absolute!important;inset:0!important;grid-row:auto!important;width:100vw!important;height:100dvh!important;min-height:0!important;max-height:none!important;border:0!important;border-radius:0!important;overflow:hidden!important;z-index:1!important}
+ #game #world{position:absolute!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;object-fit:fill!important}
+ #game>.hud{position:absolute!important;left:0!important;right:0!important;z-index:4!important;width:100%!important;height:26px!important;min-height:26px!important;max-height:26px!important;padding:2px 5px!important;background:rgba(8,13,22,.38)!important}
+ #game>.hud:first-child{top:env(safe-area-inset-top)!important}
+ #game>.hud:nth-child(2){top:calc(env(safe-area-inset-top) + 26px)!important;height:22px!important;min-height:22px!important;max-height:22px!important}
+ #game .gamecontrols{position:absolute!important;inset:0!important;z-index:5!important;pointer-events:none!important}
+ #game .mobilepad{pointer-events:auto!important}
+ #game .actionbuttons{pointer-events:auto!important;display:flex!important;flex-direction:column!important}
+ #game #attack{display:none!important}
+ #game>.row:last-child{z-index:8!important}
+ #game #shop:not(.hidden){z-index:10!important}
+}
+
 </style></head><body><div id="rotate-notice" class="rotate-notice" aria-live="polite"><div class="rotate-card"><div class="rotate-icon">📱↻</div><h2>가로 모드로 플레이</h2><p>휴대폰을 가로로 돌려주세요.<br>게임은 가로 화면에서만 표시됩니다.</p></div></div><div class="wrap">
 <header class="top"><h1>⚔ 김진수의 던전</h1><div class="pill" id="connection">서버 연결 중...</div></header>
 <section id="home" class="panel stack"><h2>던전 로그라이크</h2><p class="sub">혼자 탐험하거나 최대 6명이 함께 던전을 공략하세요.</p><button id="go-start" class="primary big">시작</button></section>
@@ -350,18 +367,3 @@ $('#buy-hp').onclick=()=>{if(game.coins<25)return $('#shop-note').textContent='�
 $('#exit-game').onclick=()=>{started=false;game=null;if(isSolo){show('#mode')}else{show('#lobby');note('던전에서 나왔습니다.');}};
 })();
 </script></body></html>
-/* Mobile: let the battlefield itself cover the entire display; HUD and controls float above it */
-@media(max-width:900px){
- #game:not(.hidden){display:block!important;position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;background:#080d16!important}
- #game>.canvasbox{position:absolute!important;inset:0!important;grid-row:auto!important;width:100vw!important;height:100dvh!important;min-height:0!important;max-height:none!important;border:0!important;border-radius:0!important;overflow:hidden!important;z-index:1!important}
- #game #world{position:absolute!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;object-fit:fill!important}
- #game>.hud{position:absolute!important;left:0!important;right:0!important;z-index:4!important;width:100%!important;height:26px!important;min-height:26px!important;max-height:26px!important;padding:2px 5px!important;background:rgba(8,13,22,.38)!important}
- #game>.hud:first-child{top:env(safe-area-inset-top)!important}
- #game>.hud:nth-child(2){top:calc(env(safe-area-inset-top) + 26px)!important;height:22px!important;min-height:22px!important;max-height:22px!important}
- #game .gamecontrols{position:absolute!important;inset:0!important;z-index:5!important;pointer-events:none!important}
- #game .mobilepad{pointer-events:auto!important}
- #game .actionbuttons{pointer-events:auto!important;display:flex!important;flex-direction:column!important}
- #game #attack{display:none!important}
- #game>.row:last-child{z-index:8!important}
- #game #shop:not(.hidden){z-index:10!important}
-}
