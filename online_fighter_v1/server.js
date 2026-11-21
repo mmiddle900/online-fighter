@@ -81,7 +81,7 @@ wss.on('connection', ws => {
     if (msg.type==='game-state' && room.started) {
       const state=msg.state;
       if (!state || !Number.isFinite(state.x) || !Number.isFinite(state.y)) return;
-      for(const p of room.players.values())if(p.id!==player.id)send(p.ws,{type:'remote-state',id:player.id,name:player.name,state:{x:Math.max(0,Math.min(1,state.x)),y:Math.max(0,Math.min(1,state.y)),hp:Math.max(0,Math.min(250,Number(state.hp)||0)),face:Number.isFinite(state.face)?Math.max(-Math.PI,Math.min(Math.PI,state.face)):0,attack:!!state.attack,xp:Math.max(0,Math.min(1000000,Math.floor(Number(state.xp)||0))),coins:Math.max(0,Math.min(1000000,Math.floor(Number(state.coins)||0))),kills:Math.max(0,Math.min(1000000,Math.floor(Number(state.kills)||0)))}});
+      for(const p of room.players.values())if(p.id!==player.id)send(p.ws,{type:'remote-state',id:player.id,name:player.name,state:{x:Math.max(0,Math.min(1,state.x)),y:Math.max(0,Math.min(1,state.y)),hp:Math.max(0,Math.min(250,Number(state.hp)||0)),face:Number.isFinite(state.face)?Math.max(-Math.PI,Math.min(Math.PI,state.face)):0,attack:!!state.attack,xp:Math.max(0,Math.min(1000000,Math.floor(Number(state.xp)||0))),coins:Math.max(0,Math.min(1000000,Math.floor(Number(state.coins)||0))),kills:Math.max(0,Math.min(1000000,Math.floor(Number(state.kills)||0))),character:state.character==='aneria'?'aneria':'jinsoo'}});
       return;
     }
     if (msg.type==='enemy-sync' && room.started && room.host===player.id) {
