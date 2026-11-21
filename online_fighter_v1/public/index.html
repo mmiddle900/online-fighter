@@ -146,6 +146,31 @@
  #attack{font-size:clamp(9px,1.6vw,12px)!important}
  #game>.row:last-child,#exit-game{height:17px!important;min-height:17px!important;max-height:17px!important;font-size:8px!important}
 }
+
+/* Fit every game element inside the actual mobile landscape viewport */
+@media(orientation:landscape) and (max-width:900px){
+ html,body{height:100dvh!important;min-height:0!important;overflow:hidden!important}
+ .wrap{height:100dvh!important;min-height:0!important;max-height:100dvh!important;padding:2px!important;overflow:hidden!important}
+ #game{box-sizing:border-box!important;width:100%!important;height:100dvh!important;min-height:0!important;max-height:100dvh!important;overflow:hidden!important;grid-template-rows:12px 12px minmax(0,1fr) clamp(78px,23dvh,104px) 16px!important;gap:2px!important}
+ #game .hud{height:12px!important;min-height:12px!important;max-height:12px!important;overflow:hidden!important;margin:0!important}
+ #game .canvasbox{min-height:0!important;height:100%!important;max-height:100%!important;width:100%!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important}
+ #world{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;aspect-ratio:auto!important}
+ .gamecontrols{height:100%!important;min-height:0!important;max-height:100%!important;grid-template-columns:clamp(82px,23dvh,108px) minmax(0,1fr)!important;gap:3px!important}
+ .mobilepad{height:100%!important;min-height:0!important}
+ .stick{width:clamp(76px,21dvh,98px)!important;height:clamp(76px,21dvh,98px)!important;max-width:100%!important;max-height:100%!important}
+ .knob{width:clamp(32px,8dvh,40px)!important;height:clamp(32px,8dvh,40px)!important}
+ .actionbuttons{height:100%!important;min-height:0!important;grid-template-columns:repeat(5,minmax(0,1fr))!important}
+ .actionbuttons button{height:100%!important;min-height:0!important;padding:1px!important;font-size:clamp(8px,1.25vw,11px)!important}
+ #game>.row:last-child,#exit-game{height:16px!important;min-height:16px!important;max-height:16px!important;margin:0!important;padding:0 6px!important;font-size:8px!important}
+}
+@media(orientation:landscape) and (max-width:560px){
+ #game{grid-template-rows:11px 11px minmax(0,1fr) clamp(74px,23dvh,90px) 15px!important;gap:1px!important}
+ #game .hud{height:11px!important;min-height:11px!important;max-height:11px!important}
+ .gamecontrols{grid-template-columns:clamp(78px,23dvh,94px) minmax(0,1fr)!important;gap:2px!important}
+ .stick{width:clamp(72px,21dvh,88px)!important;height:clamp(72px,21dvh,88px)!important}
+ .knob{width:clamp(30px,8dvh,36px)!important;height:clamp(30px,8dvh,36px)!important}
+ #game>.row:last-child,#exit-game{height:15px!important;min-height:15px!important;max-height:15px!important}
+}
 </style></head><body><div id="rotate-notice" class="rotate-notice" aria-live="polite"><div class="rotate-card"><div class="rotate-icon">📱↻</div><h2>가로 모드로 플레이</h2><p>휴대폰을 가로로 돌려주세요.<br>게임은 가로 화면에서만 표시됩니다.</p></div></div><div class="wrap">
 <header class="top"><h1>⚔ 김진수의 던전</h1><div class="pill" id="connection">서버 연결 중...</div></header>
 <section id="home" class="panel stack"><h2>던전 로그라이크</h2><p class="sub">혼자 탐험하거나 최대 6명이 함께 던전을 공략하세요.</p><button id="go-start" class="primary big">시작</button></section>
