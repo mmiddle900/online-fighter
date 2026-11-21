@@ -69,7 +69,7 @@ wss.on('connection', ws => {
     const player=room.players.get(ws.playerId);
     if (!player) return;
     if (msg.type==='choose-character') {
-      player.character='jinsoo'; player.ready=false; updateRoom(room); return;
+      player.character=String(msg.character||'jinsoo')==='aneria'?'aneria':'jinsoo'; player.ready=false; updateRoom(room); return;
     }
     if (msg.type==='ready') { player.ready=!!msg.ready; updateRoom(room); return; }
     if (msg.type==='start-dungeon') {
