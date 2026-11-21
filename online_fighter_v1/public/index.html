@@ -89,6 +89,35 @@
  #lobby button{padding:6px 9px;font-size:clamp(10px,2dvh,13px);min-height:30px}
  #lobby input{padding:6px!important;min-width:0}
 }
+
+/* Compact landscape HUD and a genuinely large touch joystick */
+@media(orientation:landscape) and (max-width:900px){
+ .wrap{padding:2px 4px calc(2px + env(safe-area-inset-bottom));gap:2px}
+ #game{grid-template-rows:16px 16px minmax(0,1fr) clamp(72px,21dvh,108px) 20px;gap:2px}
+ #game .hud{height:16px;min-height:16px;max-height:16px;gap:2px}
+ #game .hud .pill{font-size:clamp(7px,1.05vw,9px);padding:1px 3px;border-radius:4px}
+ #game .bar{width:clamp(16px,4vw,32px);height:3px}
+ .gamecontrols{grid-template-columns:clamp(76px,22dvh,112px) minmax(0,1fr);gap:4px}
+ .mobilepad{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+ .stick{width:clamp(70px,20dvh,104px);height:clamp(70px,20dvh,104px);max-width:100%;max-height:100%;border-width:3px;box-shadow:inset 0 0 0 5px #182438}
+ .knob{width:clamp(30px,8dvh,44px);height:clamp(30px,8dvh,44px);border-width:3px}
+ .actionbuttons{gap:3px}
+ .actionbuttons button{font-size:clamp(9px,1.6vw,13px);padding:2px;min-height:0;border-radius:8px}
+ #attack{font-size:clamp(10px,1.8vw,14px)}
+ #game>.row:last-child,#exit-game{height:20px;min-height:20px;max-height:20px;padding:1px 8px;font-size:10px}
+}
+@media(orientation:landscape) and (max-width:560px){
+ #game{grid-template-rows:15px 15px minmax(0,1fr) clamp(68px,21dvh,92px) 19px;gap:2px}
+ #game .hud{height:15px;min-height:15px;max-height:15px}
+ #game .hud .pill{font-size:7px;padding:1px 2px}
+ .gamecontrols{grid-template-columns:clamp(72px,22dvh,96px) minmax(0,1fr);gap:2px}
+ .stick{width:clamp(68px,20dvh,92px);height:clamp(68px,20dvh,92px)}
+ .knob{width:clamp(29px,8dvh,39px);height:clamp(29px,8dvh,39px)}
+ .actionbuttons{gap:2px}
+ .actionbuttons button{font-size:8px;padding:1px 0}
+ #attack{font-size:9px}
+ #game>.row:last-child,#exit-game{height:19px;min-height:19px;max-height:19px;font-size:9px}
+}
 </style></head><body><div id="rotate-notice" class="rotate-notice" aria-live="polite"><div class="rotate-card"><div class="rotate-icon">📱↻</div><h2>가로 모드로 플레이</h2><p>휴대폰을 가로로 돌려주세요.<br>게임은 가로 화면에서만 표시됩니다.</p></div></div><div class="wrap">
 <header class="top"><h1>⚔ 김진수의 던전</h1><div class="pill" id="connection">서버 연결 중...</div></header>
 <section id="home" class="panel stack"><h2>던전 로그라이크</h2><p class="sub">혼자 탐험하거나 최대 6명이 함께 던전을 공략하세요.</p><button id="go-start" class="primary big">시작</button></section>
